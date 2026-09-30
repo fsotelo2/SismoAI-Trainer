@@ -1,0 +1,88 @@
+/* Phase 6 — Windows view controller */
+(() => {
+  'use strict';
+  let context = null, windows = [], mode = 'fixed', dragStart = null, dragEnd = null;
+  const $ = id => document.getElementById(id);
+  const sec = us => (us / 1e6).toFixed(3);
+  const sensors = manual => [$(manual ? 'wm-geo' : 'w-geo').checked ? 'GEO' : null,
+    $(manual ? 'wm-mpu' : 'w-mpu').checked ? 'MPU' : null].filter(Boolean);
+  function setMode(next) {
+    mode = next;
+    $('w-auto-controls').style.display = next === 'manual' ? 'none' : 'flex';
+    $('w-manual-controls').style.display = next === 'manual' ? 'flex' : 'none';
+    $('w-mode-title').textContent = next === 'manual' ? 'Selección manual de intervalo' : 'Configuración de segmentación';
+    $('w-mode-subtitle').textContent = next === 'manual' ? 'Selecciona un intervalo específico del evento.' : 'Genera ventanas fijas o deslizantes.';
+    document.querySelectorAll('[data-w-action="mode"]').forEach(b => {
+      b.classList.toggle('btn-primary', b.dataset.mode === next);
+      b.classList.toggle('btn-secondary', b.dataset.mode !== next);
+    });
+  }
+  function draw(canvas, times, values, color, select) {
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, rect.width*dpr); canvas.height = Math.max(1, 150*dpr);
+    const c = canvas.getContext('2d'); c.scale(dpr,dpr);
+    const w=rect.width,h=150,p={l:42,r:10,t:10,b:25}, pw=w-p.l-p.r,ph=h-p.t-p.b;
+    c.clearRect(0,0,w,h); c.strokeStyle='#e2e8f0'; c.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=p.t+ph*i/4;c.beginPath();c.moveTo(p.l,y);c.lineTo(w-p.r,y);c.stroke();}
+    const maxT=Math.max(context?.duration_seconds||0,1), minV=Math.min(0,...values), maxV=Math.max(0,...values);
+    const span=maxV-minV||1;
+    c.fillStyle='#64748b';c.font='11px sans-serif';c.fillText('0 s',p.l,h-5);c.fillText(maxT.toFixed(1)+' s',w-45,h-5);
+    c.strokeStyle=color;c.lineWidth=1;c.beginPath();
+    const n=Math.min(times.length,values.length), stride=Math.max(1,Math.floor(n/2500));
+    for(let i=0;i<n;i+=stride){const x=p.l+(times[i]/maxT)*pw,y=p.t+(1-(values[i]-minV)/span)*ph;if(i===0)c.moveTo(x,y);else c.lineTo(x,y);}
+    c.stroke();
+    if(select && dragStart!==null && dragEnd!==null){const x1=p.l+Math.min(dragStart,dragEnd)*pw/maxT,x2=p.l+Math.max(dragStart,dragEnd)*pw/maxT;c.fillStyle='rgba(16,185,129,.2)';c.fillRect(x1,p.t,x2-x1,ph);c.strokeStyle='#059669';c.strokeRect(x1,p.t,x2-x1,ph);}
+    if(select){canvas.onpointerdown=e=>{const r=canvas.getBoundingClientRect();dragStart=Math.max(0,Math.min(maxT,(e.clientX-r.left-p.l)*maxT/pw));dragEnd=dragStart;canvas.setPointerCapture(e.pointerId);};
+      canvas.onpointermove=e=>{if(dragStart===null)return;const r=canvas.getBoundingClientRect();dragEnd=Math.max(0,Math.min(maxT,(e.clientX-r.left-p.l)*maxT/pw));draw(canvas,times,values,color,true);};
+      canvas.onpointerup=()=>{if(dragStart!==null){const a=Math.min(dragStart,dragEnd),b=Math.max(dragStart,dragEnd);$('w-start').value=a.toFixed(3);$('w-end').value=b.toFixed(3);}};
+    }
+  }
+  function renderContext() {
+    $('w-file').textContent=context?.file_name||'—';$('w-event').textContent=context?.event_counter_text||'—';
+    $('w-status').textContent=context?.ready?'Evento listo':(context?.message||'Sin contexto');
+    $('w-geo-freq').textContent=context?.geophone_frequency_text||'—';$('w-mpu-freq').textContent=context?.mpu_frequency_text||'—';
+    if(!context?.ready)return;
+    draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',mode==='manual');
+    draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',false);
+    $('w-end').value=(context.duration_seconds||5).toFixed(3);
+  }
+  function renderRows() {
+    $('w-count').textContent=windows.length+' ventanas';
+    $('w-rows').innerHTML=windows.length?windows.map(w=>{
+      const q=w.quality?.status||'accepted', label=q==='accepted'?'Aceptada':q==='review'?'Revisión':'Inválida';
+      return '<tr><td>'+w.window_id+'</td><td>'+sec(w.start_us)+'</td><td>'+sec(w.end_us)+'</td><td>'+((w.end_us-w.start_us)/1e6).toFixed(3)+'</td><td>'+w.sensors.join(' + ')+'</td><td>'+w.origin_mode+'</td><td><span class="status-pill '+q+'">'+label+'</span></td><td><select class="form-select" data-w-action="selection" data-id="'+w.window_id+'"><option value="include" '+(w.selection_status==='include'?'selected':'')+'>Incluir</option><option value="review" '+(w.selection_status==='review'?'selected':'')+'>Revisar</option><option value="exclude" '+(w.selection_status==='exclude'?'selected':'')+'>Excluir</option></select></td></tr>';
+    }).join(''):'<tr><td colspan="8" class="text-center">No hay ventanas extraídas.</td></tr>';
+  }
+  async function refresh() {
+    context=await Bridge.getWindowContext();windows=await Bridge.getWindows();
+    renderContext();renderRows();
+  }
+  async function action(e) {
+    const b=e.target.closest('[data-w-action]');if(!b)return;
+    const a=b.dataset.wAction;
+    if(a==='mode'){setMode(b.dataset.mode);renderContext();}
+    if(a==='refresh')await refresh();
+    if(a==='clear'){const r=await Bridge.clearWindows();if(r.success)await refresh();}
+    if(a==='generate'){
+      const d=Number($('w-duration').value),s=Number($('w-step').value);
+      if(!(d>0&&s>0)||!sensors(false).length){alert('Verifica duración, paso y sensores.');return;}
+      const r=await Bridge.generateWindows({mode:$('w-kind').value,duration_seconds:d,step_seconds:s,sensors:sensors(false)});
+      if(!r.success)alert(r.error||'No se pudieron generar ventanas.');await refresh();
+    }
+    if(a==='add-manual'){
+      const start=Number($('w-start').value),end=Number($('w-end').value);
+      if(!(end>start)||!sensors(true).length){alert('Verifica el intervalo y selecciona al menos un sensor.');return;}
+      const r=await Bridge.addManualWindow({start_seconds:start,end_seconds:end,sensors:sensors(true)});
+      if(!r.success)alert(r.error||'No se pudo añadir la ventana.');await refresh();
+    }
+  }
+  document.addEventListener('click',action);
+  document.addEventListener('change',async e=>{
+    const el=e.target.closest('[data-w-action="selection"]');if(!el)return;
+    await Bridge.setWindowSelection(el.dataset.id,el.value);await refresh();
+  });
+  window.addEventListener('resize',()=>{if(context?.ready)renderContext();});
+  window.initWindows=refresh;
+  setMode('fixed');
+})();
