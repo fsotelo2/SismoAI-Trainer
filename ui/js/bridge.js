@@ -60,6 +60,7 @@ const Bridge = (() => {
     addManualWindow: (params) => call('add_manual_window', params),
     getWindows: () => call('get_windows'),
     getLabelingWorkspace: () => call('get_labeling_workspace'),
+    getWindowSignal: (windowId) => call('get_window_signal', windowId),
     saveWindowLabel: (windowId, payload) => call('save_window_label', windowId, payload),
     clearWindows: () => call('clear_windows'),
     setWindowSelection: (windowId, status) => call('set_window_selection', windowId, status),
