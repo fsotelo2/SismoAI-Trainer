@@ -312,6 +312,9 @@ const App = (() => {
       case 'analisis':
         await refreshAnalysisState();
         break;
+      case 'ventanas':
+        if (window.initWindows) await window.initWindows();
+        break;
       default:
         // Placeholder views
         break;
