@@ -57,7 +57,7 @@
           const g=geometry(),x=coords(e),d1=Math.abs(x-g.xStart),d2=Math.abs(x-g.xEnd);
           const lo=Math.min(g.xStart,g.xEnd),hi=Math.max(g.xStart,g.xEnd);
           if(Math.min(d1,d2)<=16)activeHandle=d1<=d2?'start':'end';
-          else if(x>=lo+8&&x<=hi-8)activeHandle='move';
+          else if(x>lo+16&&x<hi-16)activeHandle='move';
           else return;
           const startValue=Number($('w-start').value)||0,endValue=Number($('w-end').value)||0;
           canvas.dataset.moveStart=String(startValue);canvas.dataset.moveEnd=String(endValue);
@@ -68,10 +68,18 @@
           if(!activeHandle)return;
           const g=geometry(),x=coords(e),value=Math.max(0,Math.min(g.dt,(x-g.plotL)*g.dt/g.plotW));
           const start=$('w-start'),end=$('w-end'),ss=$('w-start-slider'),es=$('w-end-slider');
-          if(activeHandle==='start'){const v=Math.min(value,Number(end.value)-0.001);start.value=roundRange(Math.max(0,v)).toFixed(1);if(ss)ss.value=start.value;}
-          else{const v=Math.max(value,Number(start.value)+0.001);end.value=roundRange(Math.min(g.dt,v)).toFixed(1);if(es)es.value=end.value;}
-          if(ss)$('w-start-slider-value').textContent=Number(start.value).toFixed(1)+' s';
-          if(es)$('w-end-slider-value').textContent=Number(end.value).toFixed(1)+' s';
+          if(activeHandle==='start'){
+            const v=Math.min(value,Number(end.value)-RANGE_STEP);
+            start.value=roundRange(Math.max(0,v)).toFixed(1);
+          }else if(activeHandle==='end'){
+            const v=Math.max(value,Number(start.value)+RANGE_STEP);
+            end.value=roundRange(Math.min(g.dt,v)).toFixed(1);
+          }else if(activeHandle==='move'){
+            const delta=value-Number(canvas.dataset.movePointer);
+            const width=Number(canvas.dataset.moveEnd)-Number(canvas.dataset.moveStart);
+            const movedStart=roundRange(Math.max(0,Math.min(g.dt-width,Number(canvas.dataset.moveStart)+delta)));
+            start.value=movedStart.toFixed(1);end.value=(movedStart+width).toFixed(1);
+          }
           renderContext();
         });
         const stop=()=>{activeHandle=null;};
@@ -199,7 +207,21 @@
     if(source==='end-slider'||source==='end')end.value=Number(es.value).toFixed(1);
     if(source==='start-slider'||source==='start')start.value=Number(ss.value).toFixed(1);
   }
-  ['w-start','w-end'].forEach(id=>$(id)?.addEventListener('input',()=>{if(context?.ready)renderContext();}));
+  ['w-start','w-end'].forEach(id=>$(id)?.addEventListener('input',e=>{
+    if(!context?.ready)return;
+    const duration=Math.max(0.1,Number(context.duration_seconds)||5),start=$('w-start'),end=$('w-end');
+    let value=Number(e.target.value);
+    if(!Number.isFinite(value))return;
+    value=roundRange(Math.max(0,Math.min(duration,value)));
+    if(e.target===start){
+      value=Math.min(value,Math.max(0,Number(end.value)-RANGE_STEP));
+      start.value=value.toFixed(1);
+    }else{
+      value=Math.max(value,Number(start.value)+RANGE_STEP);
+      end.value=Math.min(duration,value).toFixed(1);
+    }
+    renderContext();
+  }));
   document.addEventListener('click',action);
   document.addEventListener('change',async e=>{
     if(e.target.id==='w-file-select'){
