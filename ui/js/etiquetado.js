@@ -41,8 +41,9 @@
     const button=$('btn-continue-dataset');
     if(!button)return;
     const ready=items.length>0&&items.every(item=>{
-      const l=labelOf(item);
-      return l&& (l.class_code===0||l.class_code===1)&&l.quality_review==='confirmed';
+      // Gate progression only on the last persisted label, never unsaved editor state.
+      const l=item._savedLabel;
+      return l&&(l.class_code===0||l.class_code===1)&&l.quality_review==='confirmed';
     });
     button.disabled=!ready;
     button.title=ready?'Todas las ventanas están etiquetadas y confirmadas':'Confirma todas las etiquetas para continuar a Dataset';
