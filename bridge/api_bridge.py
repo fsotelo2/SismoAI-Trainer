@@ -1040,6 +1040,8 @@ class ApiBridge:
                 "file_name": state.get("selected_file_name", ""),
                 "event_index": state.get("selected_event_index", -1),
                 "event_counter_text": state.get("event_counter_text", ""),
+                "can_select_previous_event": state.get("can_select_previous_event", False),
+                "can_select_next_event": state.get("can_select_next_event", False),
                 "duration_seconds": duration,
                 "geophone_frequency_text": state.get("geophone_frequency_text", "—"),
                 "mpu_frequency_text": state.get("mpu_frequency_text", "—"),
