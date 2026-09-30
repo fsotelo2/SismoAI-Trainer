@@ -103,11 +103,17 @@
     if(act==='save-next')await save(true);
     if(act==='prev'||act==='next'){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;discardChanges();const i=filtered.findIndex(x=>x.window.window_id===selectedId),d=act==='next'?1:-1;selectedId=filtered[(i+d+filtered.length)%filtered.length]?.window.window_id||selectedId;dirty=false;renderList();renderEditor();}
   });
-  $('label-filter').addEventListener('change',filter);
-  $('label-category').addEventListener('change',e=>updateSelected({disturbance:e.target.value||null}));
-  $('label-observations').addEventListener('input',e=>{const item=current();if(!item)return;item.label={...(item.label||{window_id:selectedId,class_code:null,quality_review:'confirmed'}),observations:e.target.value.slice(0,200)};markDirty();$('label-char-count').textContent=e.target.value.length;});
-  $('label-show-geo').addEventListener('change',()=>current()&&drawSignals(current()));
-  $('label-show-mpu').addEventListener('change',()=>current()&&drawSignals(current()));
-  window.initLabeling=async()=>{try{context=null;await load();}catch(err){console.error('[Etiquetado] Error de inicialización:',err);const list=$('label-window-list');if(list)list.innerHTML='<p class="label-empty">Error al cargar ventanas: '+esc(err?.message||err)+'</p>';const summary=$('label-summary');if(summary)summary.textContent='No se pudo cargar el espacio de etiquetado.';}};
+  let boundRoot=null;
+  function bindViewControls(){
+    const root=$('label-filter')?.closest('.labeling-view')||document;
+    if(boundRoot===root)return;
+    boundRoot=root;
+    $('label-filter')?.addEventListener('change',filter);
+    $('label-category')?.addEventListener('change',e=>updateSelected({disturbance:e.target.value||null}));
+    $('label-observations')?.addEventListener('input',e=>{const item=current();if(!item)return;item.label={...(item.label||{window_id:selectedId,class_code:null,quality_review:'confirmed'}),observations:e.target.value.slice(0,200)};markDirty();$('label-char-count').textContent=e.target.value.length;});
+    $('label-show-geo')?.addEventListener('change',()=>current()&&drawSignals(current()));
+    $('label-show-mpu')?.addEventListener('change',()=>current()&&drawSignals(current()));
+  }
+  window.initLabeling=async()=>{try{bindViewControls();context=null;await load();}catch(err){console.error('[Etiquetado] Error de inicialización:',err);const list=$('label-window-list');if(list)list.innerHTML='<p class="label-empty">Error al cargar ventanas: '+esc(err?.message||err)+'</p>';const summary=$('label-summary');if(summary)summary.textContent='No se pudo cargar el espacio de etiquetado.';}};
   window.addEventListener('resize',()=>current()&&drawSignals(current()));
 })();
