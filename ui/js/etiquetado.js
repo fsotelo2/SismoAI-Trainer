@@ -42,7 +42,7 @@
     const f=$('label-filter').value;activeFilter=f;
     filtered=items.filter(x=>f==='all'||status(x)===f);
     if(!filtered.some(x=>x.window.window_id===selectedId))selectedId=filtered[0]?.window.window_id||null;
-    renderList(); if(selectedId)renderEditor(); else {$('label-position').textContent='Sin ventanas';$('label-window-info').textContent='No hay ventanas para mostrar.';}
+    renderList(); if(selectedId)renderEditor(); else { $('label-position').textContent='Sin ventanas'; $('label-window-info').textContent='No hay ventanas para mostrar.'; $('label-signal-note').textContent=''; $('label-message').textContent=''; document.querySelectorAll('[data-label-class]').forEach(b=>b.classList.remove('chosen')); document.querySelectorAll('[data-label-review]').forEach(b=>b.classList.toggle('selected',b.dataset.labelReview==='pending')); $('label-category').value=''; $('label-category').disabled=true; $('label-observations').value=''; $('label-char-count').textContent='0'; draw('label-geo-chart',[],[],'#2563eb'); draw('label-mpu-chart',[],[],'#7c3aed'); }
   }
   function updateSelected(patch){
     const item=current();if(!item)return;
