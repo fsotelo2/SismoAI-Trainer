@@ -1,0 +1,31 @@
+/* Phase 6 — Windows view styles, aligned with the existing design tokens */
+.windows-page{display:flex;flex-direction:column;gap:12px;padding:4px 0 16px}
+.windows-mode-tabs{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.windows-source{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
+.windows-source strong{color:var(--color-text-primary);margin-right:12px}
+.windows-config,.windows-charts .panel,.windows-list-panel{background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow-sm)}
+.windows-config-head,.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.windows-config-head h2{font-size:16px;margin:0;color:var(--color-text-primary)}
+.windows-config-head p{margin:4px 0 0;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
+.windows-controls{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.windows-controls>label{display:flex;flex-direction:column;gap:6px;color:var(--color-text-secondary);font-size:var(--font-size-sm);min-width:130px}
+.windows-controls .form-input,.windows-controls .form-select{min-height:34px}
+.windows-controls fieldset{border:1px solid var(--color-border);border-radius:var(--radius-md);display:flex;gap:12px;padding:8px 10px;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
+.windows-controls fieldset legend{font-size:11px;padding:0 4px}
+.windows-controls fieldset label{display:flex;align-items:center;gap:5px}
+.windows-hint{color:var(--color-text-muted);font-size:12px;flex-basis:100%;margin:0}
+.windows-charts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.windows-charts .panel{min-width:0}
+.panel-heading{font-size:14px;color:var(--color-text-primary);margin-bottom:6px}
+.panel-heading span{font-size:12px;color:var(--color-text-muted);font-weight:400}
+.windows-canvas{display:block;width:100%;height:150px;touch-action:none}
+.windows-list-panel .panel-heading>div{display:flex;align-items:center;gap:6px}
+.windows-list-panel .table-responsive{overflow:auto}
+.windows-list-panel table{width:100%;border-collapse:collapse;font-size:12px}
+.windows-list-panel th,.windows-list-panel td{padding:9px 10px;border-bottom:1px solid var(--color-border);text-align:left;white-space:nowrap}
+.windows-list-panel th{color:var(--color-text-secondary);font-weight:600;background:#f8fafc}
+.status-pill{display:inline-block;padding:4px 8px;border-radius:5px;background:#f1f5f9;color:#475569;font-size:11px}
+.status-pill.accepted{background:var(--color-success-bg);color:#047857}
+.status-pill.review{background:var(--color-warning-bg);color:#92400e}
+.status-pill.blocked{background:var(--color-danger-bg);color:#b91c1c}
+@media(max-width:1050px){.windows-charts{grid-template-columns:1fr}.windows-source{margin-left:0}}
