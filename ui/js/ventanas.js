@@ -70,8 +70,8 @@
           const start=$('w-start'),end=$('w-end'),ss=$('w-start-slider'),es=$('w-end-slider');
           if(activeHandle==='start'){const v=Math.min(value,Number(end.value)-0.001);start.value=roundRange(Math.max(0,v)).toFixed(1);if(ss)ss.value=start.value;}
           else{const v=Math.max(value,Number(start.value)+0.001);end.value=roundRange(Math.min(g.dt,v)).toFixed(1);if(es)es.value=end.value;}
-          if(ss)$('w-start-slider-value').textContent=Number(start.value).toFixed(3)+' s';
-          if(es)$('w-end-slider-value').textContent=Number(end.value).toFixed(3)+' s';
+          if(ss)$('w-start-slider-value').textContent=Number(start.value).toFixed(1)+' s';
+          if(es)$('w-end-slider-value').textContent=Number(end.value).toFixed(1)+' s';
           renderContext();
         });
         const stop=()=>{activeHandle=null;};
@@ -96,14 +96,14 @@
     if(manualContextKey!==key){
       manualContextKey=key;startInput.value='0.0';endInput.value=duration.toFixed(1);
     }
-    [startSlider,endSlider].filter(Boolean).forEach(el=>{el.max=duration.toFixed(3);});
+    [startSlider,endSlider].filter(Boolean).forEach(el=>{el.max=duration.toFixed(1);});
     const start=Math.min(Number(startInput.value)||0,duration);
     const end=Math.min(Math.max(start+0.001,Number(endInput.value)||duration),duration);
     startInput.value=roundRange(start).toFixed(1);endInput.value=roundRange(end).toFixed(1);
     if(startSlider)startSlider.value=String(start);
     if(endSlider)endSlider.value=String(end);
-    if($('w-start-slider-value'))$('w-start-slider-value').textContent=start.toFixed(3)+' s';
-    if($('w-end-slider-value'))$('w-end-slider-value').textContent=end.toFixed(3)+' s';
+    if($('w-start-slider-value'))$('w-start-slider-value').textContent=start.toFixed(1)+' s';
+    if($('w-end-slider-value'))$('w-end-slider-value').textContent=end.toFixed(1)+' s';
   }
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -114,7 +114,7 @@
       const q=w.quality?.status||'accepted', label=q==='accepted'?'Aceptada':q==='review'?'Revisión':'Inválida';
       const eventNumber=Number(w.source_event_id);
       const eventLabel=Number.isInteger(eventNumber)?String(eventNumber+1).padStart(2,'0'):'—';
-      return '<tr><td>'+w.window_id+'</td><td>'+escapeHtml(w.source_file||'—')+'</td><td>'+eventLabel+'</td><td>'+sec(w.start_us)+'</td><td>'+sec(w.end_us)+'</td><td>'+((w.end_us-w.start_us)/1e6).toFixed(3)+'</td><td>'+w.sensors.join(' + ')+'</td><td>'+w.origin_mode+'</td><td><span class="status-pill '+q+'">'+label+'</span></td><td><select class="form-select" data-w-action="selection" data-id="'+w.window_id+'"><option value="include" '+(w.selection_status==='include'?'selected':'')+'>Incluir</option><option value="review" '+(w.selection_status==='review'?'selected':'')+'>Revisar</option><option value="exclude" '+(w.selection_status==='exclude'?'selected':'')+'>Excluir</option></select></td></tr>';
+      return '<tr><td>'+w.window_id+'</td><td>'+escapeHtml(w.source_file||'—')+'</td><td>'+eventLabel+'</td><td>'+sec(w.start_us)+'</td><td>'+sec(w.end_us)+'</td><td>'+((w.end_us-w.start_us)/1e6).toFixed(1)+'</td><td>'+w.sensors.join(' + ')+'</td><td>'+w.origin_mode+'</td><td><span class="status-pill '+q+'">'+label+'</span></td><td><select class="form-select" data-w-action="selection" data-id="'+w.window_id+'"><option value="include" '+(w.selection_status==='include'?'selected':'')+'>Incluir</option><option value="review" '+(w.selection_status==='review'?'selected':'')+'>Revisar</option><option value="exclude" '+(w.selection_status==='exclude'?'selected':'')+'>Excluir</option></select></td></tr>';
     }).join(''):'<tr><td colspan="10" class="text-center">No hay ventanas extraídas.</td></tr>';
   }
   async function loadFileOptions() {
@@ -184,20 +184,20 @@
     const max=Number(ss.max)||5;
     if(source==='start-slider'){
       const v=Math.min(Number(ss.value),Number(es.value)-0.001);
-      ss.value=String(Math.max(0,v));start.value=Number(ss.value).toFixed(3);
+      ss.value=String(Math.max(0,v));start.value=Number(ss.value).toFixed(1);
     }else if(source==='end-slider'){
       const v=Math.max(Number(es.value),Number(ss.value)+0.001);
-      es.value=String(Math.min(max,v));end.value=Number(es.value).toFixed(3);
+      es.value=String(Math.min(max,v));end.value=Number(es.value).toFixed(1);
     }else if(source==='start'){
       ss.value=String(Math.min(max,Math.max(0,Number(start.value)||0)));
-      if(Number(ss.value)>=Number(es.value)){es.value=String(Math.min(max,Number(ss.value)+0.001));end.value=Number(es.value).toFixed(3);}
+      if(Number(ss.value)>=Number(es.value)){es.value=String(Math.min(max,Number(ss.value)+0.001));end.value=Number(es.value).toFixed(1);}
     }else if(source==='end'){
       es.value=String(Math.min(max,Math.max(Number(ss.value)+0.001,Number(end.value)||0)));
     }
-    $('w-start-slider-value').textContent=Number(ss.value).toFixed(3)+' s';
-    $('w-end-slider-value').textContent=Number(es.value).toFixed(3)+' s';
-    if(source==='end-slider'||source==='end')end.value=Number(es.value).toFixed(3);
-    if(source==='start-slider'||source==='start')start.value=Number(ss.value).toFixed(3);
+    $('w-start-slider-value').textContent=Number(ss.value).toFixed(1)+' s';
+    $('w-end-slider-value').textContent=Number(es.value).toFixed(1)+' s';
+    if(source==='end-slider'||source==='end')end.value=Number(es.value).toFixed(1);
+    if(source==='start-slider'||source==='start')start.value=Number(ss.value).toFixed(1);
   }
   ['w-start','w-end'].forEach(id=>$(id)?.addEventListener('input',()=>{if(context?.ready)renderContext();}));
   document.addEventListener('click',action);
