@@ -52,12 +52,17 @@
     draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',false);
     $('w-end').value=(context.duration_seconds||5).toFixed(3);
   }
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
   function renderRows() {
     $('w-count').textContent=windows.length+' ventanas';
     $('w-rows').innerHTML=windows.length?windows.map(w=>{
       const q=w.quality?.status||'accepted', label=q==='accepted'?'Aceptada':q==='review'?'Revisión':'Inválida';
-      return '<tr><td>'+w.window_id+'</td><td>'+sec(w.start_us)+'</td><td>'+sec(w.end_us)+'</td><td>'+((w.end_us-w.start_us)/1e6).toFixed(3)+'</td><td>'+w.sensors.join(' + ')+'</td><td>'+w.origin_mode+'</td><td><span class="status-pill '+q+'">'+label+'</span></td><td><select class="form-select" data-w-action="selection" data-id="'+w.window_id+'"><option value="include" '+(w.selection_status==='include'?'selected':'')+'>Incluir</option><option value="review" '+(w.selection_status==='review'?'selected':'')+'>Revisar</option><option value="exclude" '+(w.selection_status==='exclude'?'selected':'')+'>Excluir</option></select></td></tr>';
-    }).join(''):'<tr><td colspan="8" class="text-center">No hay ventanas extraídas.</td></tr>';
+      const eventNumber=Number(w.source_event_id);
+      const eventLabel=Number.isInteger(eventNumber)?String(eventNumber+1).padStart(2,'0'):'—';
+      return '<tr><td>'+w.window_id+'</td><td>'+escapeHtml(w.source_file||'—')+'</td><td>'+eventLabel+'</td><td>'+sec(w.start_us)+'</td><td>'+sec(w.end_us)+'</td><td>'+((w.end_us-w.start_us)/1e6).toFixed(3)+'</td><td>'+w.sensors.join(' + ')+'</td><td>'+w.origin_mode+'</td><td><span class="status-pill '+q+'">'+label+'</span></td><td><select class="form-select" data-w-action="selection" data-id="'+w.window_id+'"><option value="include" '+(w.selection_status==='include'?'selected':'')+'>Incluir</option><option value="review" '+(w.selection_status==='review'?'selected':'')+'>Revisar</option><option value="exclude" '+(w.selection_status==='exclude'?'selected':'')+'>Excluir</option></select></td></tr>';
+    }).join(''):'<tr><td colspan="10" class="text-center">No hay ventanas extraídas.</td></tr>';
   }
   async function loadFileOptions() {
     const select=$('w-file-select'); if(!select)return;
