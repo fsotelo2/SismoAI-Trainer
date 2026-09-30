@@ -14,7 +14,7 @@ const App = (() => {
     etiquetado: { title: 'Etiquetado', subtitle: 'Revisión y clasificación de ventanas de señal' },
     ventanas: { title: 'Ventanas', subtitle: 'Configuración de ventanas' },
     dataset: { title: 'Dataset', subtitle: 'Preparación de dataset' },
-    modelo: { title: 'Modelo', subtitle: 'Entrenamiento de modelo' },
+    modelos: { title: 'Modelos', subtitle: 'Entrenamiento de modelo' },
     exportar: { title: 'Exportar', subtitle: 'Exportar resultados' },
     ajustes: { title: 'Ajustes', subtitle: 'Configuración de la aplicación' },
   };
@@ -288,6 +288,8 @@ const App = (() => {
     if (!container) return;
 
     currentView = viewName;
+    const datasetFooter=document.getElementById('ds-footer-controls');
+    if(datasetFooter) datasetFooter.hidden=viewName!=='dataset';
     const continueLabelingBtn = document.getElementById('btn-continue-labeling');
     if (continueLabelingBtn) continueLabelingBtn.hidden = viewName !== 'ventanas';
     const continueDatasetBtn=document.getElementById('btn-continue-dataset');
@@ -346,6 +348,12 @@ const App = (() => {
         break;
       case 'etiquetado':
         if (window.initLabeling) await window.initLabeling();
+        break;
+      case 'dataset':
+        if (window.initDataset) await window.initDataset();
+        break;
+      case 'modelos':
+        if (window.initModels) await window.initModels();
         break;
       default:
         // Placeholder views
