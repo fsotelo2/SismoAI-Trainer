@@ -36,7 +36,7 @@ function updateSplit(){
   setText('ds-leg-'+keys[i],n.toLocaleString('es-ES'));
  });
  const ok=validSplit();
- setText('ds-validation',ok?'Distribución configurada: '+vals.join(' / ')+'%.':'Los porcentajes deben sumar exactamente 100%. Total actual: '+sum+'%.';
+ setText('ds-validation',ok?'Distribución configurada: '+vals.join(' / ')+'%.':'Los porcentajes deben sumar exactamente 100%. Total actual: '+sum+'%.');
  if($('ds-validation'))$('ds-validation').classList.toggle('error',!ok);
  return ok;
 }
