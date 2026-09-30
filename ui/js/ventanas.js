@@ -33,10 +33,12 @@
     const n=Math.min(times.length,values.length), stride=Math.max(1,Math.floor(n/2500));
     for(let i=0;i<n;i+=stride){const x=p.l+(times[i]/maxT)*pw,y=p.t+(1-(values[i]-minV)/span)*ph;if(i===0)c.moveTo(x,y);else c.lineTo(x,y);}
     c.stroke();
-    if(select && dragStart!==null && dragEnd!==null){const x1=p.l+Math.min(dragStart,dragEnd)*pw/maxT,x2=p.l+Math.max(dragStart,dragEnd)*pw/maxT;c.fillStyle='rgba(16,185,129,.2)';c.fillRect(x1,p.t,x2-x1,ph);c.strokeStyle='#059669';c.strokeRect(x1,p.t,x2-x1,ph);}
-    if(select){canvas.onpointerdown=e=>{const r=canvas.getBoundingClientRect();dragStart=Math.max(0,Math.min(maxT,(e.clientX-r.left-p.l)*maxT/pw));dragEnd=dragStart;canvas.setPointerCapture(e.pointerId);};
-      canvas.onpointermove=e=>{if(dragStart===null)return;const r=canvas.getBoundingClientRect();dragEnd=Math.max(0,Math.min(maxT,(e.clientX-r.left-p.l)*maxT/pw));draw(canvas,times,values,color,true);};
-      canvas.onpointerup=()=>{if(dragStart!==null){const a=Math.min(dragStart,dragEnd),b=Math.max(dragStart,dragEnd);$('w-start').value=a.toFixed(3);$('w-end').value=b.toFixed(3);}};
+    if(select){
+      const a=Math.max(0,Math.min(maxT,Number($('w-start')?.value)||0));
+      const b=Math.max(a,Math.min(maxT,Number($('w-end')?.value)||0));
+      const x1=p.l+a*pw/maxT,x2=p.l+b*pw/maxT;
+      c.fillStyle='rgba(16,185,129,.18)';c.fillRect(x1,p.t,x2-x1,ph);
+      c.strokeStyle='#059669';c.lineWidth=1.5;c.strokeRect(x1,p.t,x2-x1,ph);
     }
   }
   function renderContext() {
@@ -48,7 +50,7 @@
     $('w-status').textContent=context?.ready?'Evento listo':(context?.message||'Sin contexto');
     $('w-geo-freq').textContent=context?.geophone_frequency_text||'—';$('w-mpu-freq').textContent=context?.mpu_frequency_text||'—';
     if(!context?.ready)return;
-    draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',false);
+    draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',mode==='manual');
     draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',false);
     const duration=Math.max(0.001,Number(context.duration_seconds)||5);
     const endInput=$('w-end'),startSlider=$('w-start-slider'),endSlider=$('w-end-slider');
@@ -156,8 +158,8 @@
     if(source==='end-slider'||source==='end')end.value=Number(es.value).toFixed(3);
     if(source==='start-slider'||source==='start')start.value=Number(ss.value).toFixed(3);
   }
-  ['w-start-slider','w-end-slider'].forEach(id=>$(id)?.addEventListener('input',()=>syncManualRange(id==='w-start-slider'?'start-slider':'end-slider')));
-  ['w-start','w-end'].forEach(id=>$(id)?.addEventListener('input',()=>syncManualRange(id==='w-start'?'start':'end')));
+  ['w-start-slider','w-end-slider'].forEach(id=>$(id)?.addEventListener('input',()=>{syncManualRange(id==='w-start-slider'?'start-slider':'end-slider');if(context?.ready)renderContext();}));
+  ['w-start','w-end'].forEach(id=>$(id)?.addEventListener('input',()=>{syncManualRange(id==='w-start'?'start':'end');if(context?.ready)renderContext();}));
   document.addEventListener('click',action);
   document.addEventListener('change',async e=>{
     if(e.target.id==='w-file-select'){
