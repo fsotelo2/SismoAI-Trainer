@@ -1,5 +1,41 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.4.0] — Preparación y generación de Dataset
+
+**Fecha:** 2026-09-30  
+**Rama de integración:** `main`  
+**Rama de origen:** `feature/fase-8-dataset`  
+**Versión anterior:** 0.3.0  
+**Tipo:** MINOR
+
+**Justificación:** se incorpora el módulo Dataset como nueva etapa del flujo de preparación de datos, posterior a Ventanas y Etiquetado, para organizar las ventanas confirmadas y definir una partición reproducible para entrenamiento, validación y prueba.
+
+**Cambios**
+
+- **Added:** módulo Dataset integrado en la navegación de SismoAI Trainer.
+- **Added:** consulta de ventanas existentes y etiquetas confirmadas desde Etiquetado, con métricas de ventanas, clases y eventos de origen.
+- **Added:** distribución de clases que refleja las clases principales y las subcategorías de NO_SISMICO.
+- **Added:** vista de ejemplos con tabla expandible y desplazamiento interno, sin desplazar las demás secciones del workspace.
+- **Added:** filtros visibles de ventanas para consultar todas, confirmadas, pendientes o por clase.
+- **Added:** configuración porcentual de entrenamiento, validación y prueba.
+- **Changed:** la partición se realiza por evento de origen para mantener juntas las ventanas relacionadas y reducir fuga de información entre conjuntos.
+- **Added:** validaciones de preparación, advertencias sobre desbalance de clases y cantidad limitada de eventos independientes.
+- **Added:** generación de manifiesto de Dataset con configuración y asignaciones reproducibles, como entrada para la etapa Modelos.
+- **Added:** pantalla inicial de Modelos para consultar el Dataset activo.
+
+**Verificación**
+
+- Fase validada funcionalmente por el usuario en ejecución local.
+- No se declara una nueva ejecución automatizada de pruebas como parte de esta actualización.
+
+**Compatibilidad**
+
+- Dataset organiza ventanas ya generadas y etiquetadas; no modifica los archivos BIN originales.
+- La división se establece por evento de origen, no por ventana individual.
+- La etapa Modelos recibe el Dataset preparado; el entrenamiento del modelo no forma parte de esta versión.
+
+---
+
 ## [v0.3.0] — Etiquetado de ventanas
 
 **Fecha:** 2026-09-30
