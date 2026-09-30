@@ -112,6 +112,10 @@ const App = (() => {
       return;
     }
 
+    if (action === 'footer-analyze') { const fileName=target.getAttribute('data-file'); if(fileName) await analyzeFile(fileName); return; }
+
+    if (action === 'footer-windows') { await navigateTo('ventanas'); return; }
+
     if (action === 'analyze-file') {
       const fileName = target.getAttribute('data-file');
       if (fileName) await analyzeFile(fileName);
@@ -254,6 +258,19 @@ const App = (() => {
     const titleEl = document.getElementById('topbar-title');
     const subtitleEl = document.getElementById('topbar-subtitle');
     if (titleEl) titleEl.textContent = meta.title;
+    const topbarIcon=document.querySelector('.topbar-heading-icon');
+    const iconPaths={
+      proyecto:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+      datos:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+      analisis:'<polyline points="2 12 5 12 8 4 12 20 16 4 19 12 22 12"/>',
+      ventanas:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+      etiquetado:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7.5" cy="7.5" r="1"/>',
+      dataset:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',
+      modelos:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+      exportar:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+      ajustes:'<circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.8 7.8 0 0 0 0-3l2-1.2-2-3.4-2.2 1a7.8 7.8 0 0 0-2.6-1.5L14 3h-4l-.3 2.4A7.8 7.8 0 0 0 7 7L4.8 6l-2 3.4 2 1.2a7.8 7.8 0 0 0 0 3l-2 1.2 2 3.4 2.2-1a7.8 7.8 0 0 0 2.6 1.5L10 21h4l.3-2.4a7.8 7.8 0 0 0 2.2-1.1l2.2 1 2-3.4z"/>'
+    };
+    if(topbarIcon) topbarIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(iconPaths[viewName]||iconPaths.proyecto)+'</svg>';
     if (subtitleEl) subtitleEl.textContent = meta.subtitle;
 
     // Show/hide rescan button
@@ -267,6 +284,12 @@ const App = (() => {
     if (!container) return;
 
     currentView = viewName;
+    const continueLabelingBtn = document.getElementById('btn-continue-labeling');
+    if (continueLabelingBtn) continueLabelingBtn.hidden = viewName !== 'ventanas';
+    const footerAnalysis=document.getElementById('btn-footer-analysis');
+    const footerWindows=document.getElementById('btn-footer-windows');
+    if(footerAnalysis) footerAnalysis.hidden=viewName!=='datos';
+    if(footerWindows) footerWindows.hidden=viewName!=='analisis';
 
     // Load view HTML
     try {
@@ -311,6 +334,9 @@ const App = (() => {
         break;
       case 'analisis':
         await refreshAnalysisState();
+        break;
+      case 'ventanas':
+        if (window.initWindows) await window.initWindows();
         break;
       default:
         // Placeholder views
@@ -409,6 +435,8 @@ const App = (() => {
   function renderDataState(container, state) {
     const files = state.files || [];
     const selectedFile = state.selected_file_name || '';
+    const footerAnalyze=document.getElementById('btn-footer-analysis');
+    if(footerAnalyze){footerAnalyze.disabled=!selectedFile;footerAnalyze.dataset.action='footer-analyze';footerAnalyze.dataset.file=selectedFile;}
 
     // Update file count
     const fileCountEl = document.getElementById('data-file-count');
@@ -528,15 +556,6 @@ const App = (() => {
         </div>
       </div>
 
-      <!-- Sección 3: Acción -->
-      <div class="detail-action-section">
-        <button class="btn btn-primary w-100" data-action="analyze-file" data-file="${file.name}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
-            <polyline points="2 12 5 12 8 4 12 20 16 4 19 12 22 12"/>
-          </svg>
-          Ver en análisis →
-        </button>
-      </div>
     `;
 
     // Load events for this file

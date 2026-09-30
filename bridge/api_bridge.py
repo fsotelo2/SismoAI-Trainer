@@ -21,6 +21,12 @@ from core.dataengine.series import CHANNEL_VELOCITY, CHANNEL_MAGNITUDE
 from core.analysis.stalta import calculate_stalta
 from core.analysis.spectrum import calculate_spectrum
 from core.analysis.spectrogram import calculate_spectrogram
+from core.windowing import (
+    WindowSpec, WindowingError, build_window, evaluate_structure,
+    generate_intervals, seconds_to_us, validate_sensors,
+)
+from core.windowing.models import ORIGIN_FIXED, ORIGIN_SLIDING, ORIGIN_MANUAL, WindowRecord, WindowQuality
+from core.windowing import persistence as window_persistence
 
 
 def _sanitize_nan(obj):
@@ -41,6 +47,10 @@ class ApiBridge:
         self._project = ProjectService()
         self._data = DataService(self._project)
         self._analysis = AnalysisService(self._data)
+        self._window_path = window_persistence.default_path()
+        self._window_records = []
+        self._window_sequence = 0
+        self._restore_windows()
 
         # Wire callbacks for potential future async notifications
         self._project.add_changed_callback(self._on_project_changed)
@@ -623,6 +633,10 @@ class ApiBridge:
             list of dicts with keys: path, name
         """
         try:
+            # Opening the Windows file list also activates Analysis. This ensures
+            # its default valid BIN/event is loaded even when the user never
+            # visited the Analysis view first.
+            self._analysis.activate()
             sources = self._data.analysis_sources()
             return [{"path": path, "name": name} for path, name in sources]
         except Exception as exc:
@@ -638,6 +652,7 @@ class ApiBridge:
             dict with success status
         """
         try:
+            self._analysis.activate()
             sources = self._data.analysis_sources()
             for path, name in sources:
                 if name == file_name:
@@ -974,3 +989,185 @@ class ApiBridge:
             return {"success": True}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
+
+
+    # ------------------------------------------------------------------
+    # 8. Phase 6 — Windowing
+    # ------------------------------------------------------------------
+
+    def _restore_windows(self):
+        raw_records, sequence = window_persistence.load(self._window_path)
+        restored = []
+        for raw in raw_records:
+            try:
+                item = dict(raw)
+                q = item.get("quality") or {}
+                item["quality"] = WindowQuality(q.get("status", "accepted"), tuple(q.get("findings", ())))
+                item["sensors"] = tuple(item.get("sensors", ()))
+                item["sample_ranges"] = {k: tuple(v) for k, v in (item.get("sample_ranges") or {}).items()}
+                restored.append(WindowRecord(**item))
+            except (TypeError, ValueError):
+                continue
+        self._window_records = restored
+        self._window_sequence = max(sequence, len(restored))
+
+    def _persist_windows(self):
+        window_persistence.save(self._window_path, [item.to_dict() for item in self._window_records], self._window_sequence)
+
+    @staticmethod
+    def _window_sample_count(times, start_seconds, end_seconds):
+        """Count samples in the half-open interval [start, end)."""
+        import bisect
+        left = bisect.bisect_left(times, start_seconds)
+        right = bisect.bisect_left(times, end_seconds)
+        return max(0, right - left)
+
+    def get_window_context(self) -> dict:
+        """Expose the selected Analysis event as windowing source context."""
+        try:
+            state = self.get_analysis_state()
+            if not state.get("has_selection"):
+                return {"ready": False, "message": "Seleccione un archivo y evento válido en Análisis."}
+            geo_times = list(state.get("geophone_times") or [])
+            mpu_times = list(state.get("mpu_times") or [])
+            geo_values = list(state.get("geophone_values") or [])
+            mpu_values = list(state.get("mpu_values") or [])
+            selected = self._analysis._selected_event()
+            origin_us = self._analysis._origin_us
+            event_start = ((selected.start_us - origin_us) / 1_000_000.0
+                           if selected is not None and origin_us is not None else 0.0)
+            geo_times = [t - event_start for t in geo_times]
+            mpu_times = [t - event_start for t in mpu_times]
+            event_end = ((selected.end_us - origin_us) / 1_000_000.0
+                         if selected is not None and origin_us is not None else event_start)
+            duration = max(0.0, event_end - event_start)
+            available = []
+            if geo_times and geo_values:
+                available.append("GEO")
+            if mpu_times and mpu_values:
+                available.append("MPU")
+            return {
+                "ready": bool(available),
+                "message": "" if available else "El evento no contiene series utilizables.",
+                "file_name": state.get("selected_file_name", ""),
+                "event_index": state.get("selected_event_index", -1),
+                "event_counter_text": state.get("event_counter_text", ""),
+                "can_select_previous_event": state.get("can_select_previous_event", False),
+                "can_select_next_event": state.get("can_select_next_event", False),
+                "duration_seconds": duration,
+                "geophone_frequency_text": state.get("geophone_frequency_text", "—"),
+                "mpu_frequency_text": state.get("mpu_frequency_text", "—"),
+                "available_sensors": available,
+                "geophone_times": geo_times,
+                "geophone_values": geo_values,
+                "mpu_times": mpu_times,
+                "mpu_values": mpu_values,
+            }
+        except Exception as exc:
+            return {"ready": False, "message": str(exc)}
+
+    def _add_window(self, start_seconds, end_seconds, mode, sensors, config):
+        context = self.get_window_context()
+        if not context.get("ready"):
+            raise WindowingError(context.get("message", "No hay evento seleccionado."))
+        chosen = validate_sensors(sensors, context["available_sensors"])
+        bounds = (0, seconds_to_us(context["duration_seconds"]))
+        start_us, end_us = seconds_to_us(start_seconds), seconds_to_us(end_seconds)
+        from core.windowing import validate_interval
+        validate_interval(start_us, end_us, bounds)
+        counts, ranges = {}, {}
+        import bisect
+        for sensor in chosen:
+            times = context["geophone_times"] if sensor == "GEO" else context["mpu_times"]
+            left = bisect.bisect_left(times, start_seconds)
+            right = bisect.bisect_left(times, end_seconds)
+            counts[sensor] = max(0, right - left)
+            ranges[sensor] = (left, right)
+        quality = evaluate_structure(start_us, end_us, bounds, chosen, counts)
+        if quality.status == "blocked":
+            raise WindowingError("; ".join(quality.findings))
+        self._window_sequence += 1
+        record = build_window(
+            "W-%03d" % self._window_sequence, context["file_name"],
+            str(context["event_index"]), mode, start_us, end_us, chosen,
+            config, counts, quality,
+        )
+        record.sample_ranges = ranges
+        self._window_records.append(record)
+        self._persist_windows()
+        return record.to_dict()
+
+    def generate_windows(self, params: dict) -> dict:
+        """Generate fixed or sliding windows for the selected Analysis event."""
+        try:
+            context = self.get_window_context()
+            if not context.get("ready"):
+                return {"success": False, "error": context.get("message")}
+            mode = str(params.get("mode", "fixed")).lower()
+            duration = float(params.get("duration_seconds", 5.0))
+            step = float(params.get("step_seconds", duration))
+            sensors = params.get("sensors", context["available_sensors"])
+            spec = WindowSpec(seconds_to_us(duration),
+                              seconds_to_us(step), mode, discard_partial=True)
+            intervals = generate_intervals(0, seconds_to_us(context["duration_seconds"]), spec)
+            # Keep generation atomic: a rejected interval must not leave a partial batch.
+            previous_records = list(self._window_records)
+            previous_sequence = self._window_sequence
+            created = []
+            try:
+                for start_us, end_us in intervals:
+                    created.append(self._add_window(
+                        start_us / 1_000_000.0, end_us / 1_000_000.0,
+                        mode, sensors, {
+                            "mode": mode, "duration_seconds": duration,
+                            "step_seconds": step, "discard_partial": True,
+                        }))
+            except Exception:
+                self._window_records = previous_records
+                self._window_sequence = previous_sequence
+                self._persist_windows()
+                raise
+            return {"success": True, "created": len(created), "windows": created}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def add_manual_window(self, params: dict) -> dict:
+        """Add a manually selected interval in event-relative seconds."""
+        try:
+            record = self._add_window(
+                float(params["start_seconds"]), float(params["end_seconds"]),
+                ORIGIN_MANUAL, params.get("sensors", ["GEO", "MPU"]),
+                {"reference": "event_relative_seconds"},
+            )
+            return {"success": True, "window": record}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def get_windows(self) -> list:
+        """Return the complete persisted window registry across files and events."""
+        return [item.to_dict() for item in self._window_records]
+
+    def clear_windows(self) -> dict:
+        self._window_records = []
+        self._window_sequence = 0
+        try:
+            self._persist_windows()
+            return {"success": True}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def set_window_selection(self, window_id: str, status: str) -> dict:
+        """Set include/review/exclude workflow status."""
+        from core.windowing.models import SELECTION_EXCLUDE, SELECTION_INCLUDE, SELECTION_REVIEW
+        allowed = {SELECTION_INCLUDE, SELECTION_REVIEW, SELECTION_EXCLUDE}
+        if status not in allowed:
+            return {"success": False, "error": "Estado de selección no reconocido."}
+        for item in self._window_records:
+            if item.window_id == window_id:
+                item.selection_status = status
+                try:
+                    self._persist_windows()
+                    return {"success": True}
+                except Exception as exc:
+                    return {"success": False, "error": str(exc)}
+        return {"success": False, "error": "Ventana no encontrada."}

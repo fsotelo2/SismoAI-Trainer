@@ -2079,3 +2079,59 @@ input[type="radio"] {
   color: #ffffff !important;
   stroke: currentColor;
 }
+
+/* Análisis: selector, navegación y metadatos en una sola fila */
+@media (min-width: 993px){
+ #analysis-content > .analysis-header{align-items:center}
+ #analysis-content .analysis-header-controls{flex-direction:row;align-items:center;min-width:0;gap:14px}
+ #analysis-content .analysis-header-control-row{flex:1 1 auto;min-width:0;justify-content:flex-start;gap:14px}
+ #analysis-content .analysis-time-info{flex:0 0 auto;gap:12px;white-space:nowrap}
+ #analysis-content .analysis-event-nav{margin-left:auto}
+}
+
+
+/* Panel lateral adaptable: distribuir el alto libre entre las tarjetas visibles
+   según la pestaña activa, sin reservar espacio para tarjetas ocultas. */
+@media (min-width: 993px) {
+  #analysis-content .analysis-sidebar {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    gap: 8px;
+  }
+
+  #analysis-content .analysis-sidebar > .analysis-info-card:not([style*="display: none"]) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  #analysis-content .analysis-sidebar > .analysis-info-card:not([style*="display: none"]) > .analysis-info-body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  #analysis-content .analysis-sidebar > .analysis-info-card:not([style*="display: none"]) .analysis-info-table {
+    height: auto;
+    flex: 0 0 auto;
+  }
+
+  /* Tipografía ligeramente mayor y filas compactas: el espacio sobrante
+     queda al final de la tarjeta, no se reparte entre cada registro. */
+  #analysis-content .analysis-sidebar .analysis-info-table {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  #analysis-content .analysis-sidebar .analysis-info-table td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    line-height: 1.2;
+  }
+
+  #analysis-content .analysis-sidebar .analysis-info-header h3 {
+    font-size: 14px;
+  }
+}
