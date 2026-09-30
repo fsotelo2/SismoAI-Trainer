@@ -1020,6 +1020,34 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": [], "counts": {}}
 
+    def get_window_signal(self, window_id: str) -> dict:
+        """Load the source event channels and crop them to one window interval."""
+        try:
+            window = next((w for w in self._window_records if w.window_id == window_id), None)
+            if window is None:
+                return {"success": False, "error": "Ventana no encontrada."}
+            try:
+                event_index = int(window.source_event_id)
+            except (TypeError, ValueError):
+                return {"success": False, "error": "La ventana no tiene un índice de evento válido."}
+            start, end = window.start_us / 1_000_000.0, window.end_us / 1_000_000.0
+            result = {}
+            for sensor, channel in (("GEO", "velocity"), ("MPU", "magnitude")):
+                if sensor not in window.sensors:
+                    result[sensor] = {"times": [], "amplitudes": []}
+                    continue
+                series = self.get_channel_series(window.source_file, event_index, channel)
+                if "error" in series:
+                    result[sensor] = {"times": [], "amplitudes": [], "error": series["error"]}
+                    continue
+                pairs = [(t, y) for t, y in zip(series["times"], series["amplitudes"])
+                         if start <= t < end]
+                result[sensor] = {"times": [p[0] for p in pairs],
+                                  "amplitudes": [p[1] for p in pairs]}
+            return {"success": True, "window_id": window_id, "signals": result}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
     def save_window_label(self, window_id: str, payload: dict) -> dict:
         """Validate and persist one annotation without modifying the source window."""
         try:
