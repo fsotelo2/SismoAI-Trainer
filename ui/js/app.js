@@ -116,6 +116,8 @@ const App = (() => {
 
     if (action === 'footer-windows') { await navigateTo('ventanas'); return; }
 
+    if (action === 'footer-continue-labeling') { await navigateTo('etiquetado'); return; }
+
     if (action === 'analyze-file') {
       const fileName = target.getAttribute('data-file');
       if (fileName) await analyzeFile(fileName);
