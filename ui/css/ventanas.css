@@ -43,7 +43,3 @@
 .windows-source strong{margin:0 4px;white-space:nowrap}
 .windows-source button{flex:0 0 auto}
 
-.windows-range-controls{display:flex;flex:1 1 100%;gap:24px;align-items:center;padding:4px 0 0}
-.windows-range-controls label{display:grid;grid-template-columns:minmax(130px,180px) minmax(160px,1fr) 58px;align-items:center;gap:10px;color:var(--color-text-secondary);font-size:12px;flex:1;min-width:220px}
-.windows-range-controls input[type=range]{width:100%;accent-color:var(--color-primary);cursor:ew-resize}
-.windows-range-controls span{font-variant-numeric:tabular-nums;color:var(--color-text-primary);text-align:right}
