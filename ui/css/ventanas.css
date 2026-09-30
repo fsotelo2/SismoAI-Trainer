@@ -20,12 +20,12 @@
 .panel-heading span{font-size:12px;color:var(--color-text-muted);font-weight:400}
 .windows-canvas{display:block;width:100%;height:150px;touch-action:none}
 .windows-list-panel .panel-heading>div{display:flex;align-items:center;gap:6px}
-.windows-list-panel .table-responsive{max-height:320px;overflow-y:auto;overflow-x:auto;direction:rtl;scrollbar-gutter:stable}
+.windows-list-panel .table-responsive{max-height:240px;overflow-y:auto;overflow-x:auto;direction:rtl;scrollbar-gutter:stable}
 .windows-list-panel .table-responsive table{direction:ltr}
 .windows-list-panel table{width:100%;border-collapse:collapse;font-size:12px}
-.windows-list-panel th,.windows-list-panel td{padding:4px 8px;line-height:1.2;border-bottom:1px solid var(--color-border);text-align:left;white-space:nowrap}
-.windows-list-panel tbody tr{height:28px}
-.windows-list-panel td .form-select{min-height:26px;height:26px;padding:2px 22px 2px 7px;font-size:12px}
+.windows-list-panel th,.windows-list-panel td{padding:3px 7px;line-height:1.1;border-bottom:1px solid var(--color-border);text-align:left;white-space:nowrap}
+.windows-list-panel tbody tr{height:25px}
+.windows-list-panel td .form-select{min-height:23px;height:23px;padding:1px 22px 1px 7px;font-size:12px}
 .windows-list-panel th{color:var(--color-text-secondary);font-weight:600;background:#f8fafc}
 .status-pill{display:inline-block;padding:4px 8px;border-radius:5px;background:#f1f5f9;color:#475569;font-size:11px}
 .status-pill.accepted{background:var(--color-success-bg);color:#047857}
