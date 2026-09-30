@@ -112,6 +112,10 @@ const App = (() => {
       return;
     }
 
+    if (action === 'footer-analyze') { const fileName=target.getAttribute('data-file'); if(fileName) await analyzeFile(fileName); return; }
+
+    if (action === 'footer-windows') { await navigateTo('ventanas'); return; }
+
     if (action === 'analyze-file') {
       const fileName = target.getAttribute('data-file');
       if (fileName) await analyzeFile(fileName);
@@ -269,6 +273,10 @@ const App = (() => {
     currentView = viewName;
     const continueLabelingBtn = document.getElementById('btn-continue-labeling');
     if (continueLabelingBtn) continueLabelingBtn.hidden = viewName !== 'ventanas';
+    const footerAnalysis=document.getElementById('btn-footer-analysis');
+    const footerWindows=document.getElementById('btn-footer-windows');
+    if(footerAnalysis) footerAnalysis.hidden=viewName!=='datos';
+    if(footerWindows) footerWindows.hidden=viewName!=='analisis';
 
     // Load view HTML
     try {
@@ -414,6 +422,8 @@ const App = (() => {
   function renderDataState(container, state) {
     const files = state.files || [];
     const selectedFile = state.selected_file_name || '';
+    const footerAnalyze=document.getElementById('btn-footer-analysis');
+    if(footerAnalyze){footerAnalyze.disabled=!selectedFile;footerAnalyze.dataset.action='footer-analyze';footerAnalyze.dataset.file=selectedFile;}
 
     // Update file count
     const fileCountEl = document.getElementById('data-file-count');
