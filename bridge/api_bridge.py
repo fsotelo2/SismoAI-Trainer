@@ -25,7 +25,8 @@ from core.windowing import (
     WindowSpec, WindowingError, build_window, evaluate_structure,
     generate_intervals, seconds_to_us, validate_sensors,
 )
-from core.windowing.models import ORIGIN_FIXED, ORIGIN_SLIDING, ORIGIN_MANUAL
+from core.windowing.models import ORIGIN_FIXED, ORIGIN_SLIDING, ORIGIN_MANUAL, WindowRecord, WindowQuality
+from core.windowing import persistence as window_persistence
 
 
 def _sanitize_nan(obj):
@@ -46,8 +47,10 @@ class ApiBridge:
         self._project = ProjectService()
         self._data = DataService(self._project)
         self._analysis = AnalysisService(self._data)
+        self._window_path = window_persistence.default_path()
         self._window_records = []
         self._window_sequence = 0
+        self._restore_windows()
 
         # Wire callbacks for potential future async notifications
         self._project.add_changed_callback(self._on_project_changed)
@@ -988,6 +991,25 @@ class ApiBridge:
     # ------------------------------------------------------------------
 
     @staticmethod
+    def _restore_windows(self):
+        raw_records, sequence = window_persistence.load(self._window_path)
+        restored = []
+        for raw in raw_records:
+            try:
+                item = dict(raw)
+                q = item.get("quality") or {}
+                item["quality"] = WindowQuality(q.get("status", "accepted"), tuple(q.get("findings", ())))
+                item["sensors"] = tuple(item.get("sensors", ()))
+                item["sample_ranges"] = {k: tuple(v) for k, v in (item.get("sample_ranges") or {}).items()}
+                restored.append(WindowRecord(**item))
+            except (TypeError, ValueError):
+                continue
+        self._window_records = restored
+        self._window_sequence = max(sequence, len(restored))
+
+    def _persist_windows(self):
+        window_persistence.save(self._window_path, [item.to_dict() for item in self._window_records], self._window_sequence)
+
     def _window_sample_count(times, start_seconds, end_seconds):
         """Count samples in the half-open interval [start, end)."""
         import bisect
@@ -1121,7 +1143,11 @@ class ApiBridge:
     def clear_windows(self) -> dict:
         self._window_records = []
         self._window_sequence = 0
-        return {"success": True}
+        try:
+            self._persist_windows()
+            return {"success": True}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
 
     def set_window_selection(self, window_id: str, status: str) -> dict:
         """Set include/review/exclude workflow status."""
@@ -1132,5 +1158,9 @@ class ApiBridge:
         for item in self._window_records:
             if item.window_id == window_id:
                 item.selection_status = status
-                return {"success": True}
+                try:
+                    self._persist_windows()
+                    return {"success": True}
+                except Exception as exc:
+                    return {"success": False, "error": str(exc)}
         return {"success": False, "error": "Ventana no encontrada."}
