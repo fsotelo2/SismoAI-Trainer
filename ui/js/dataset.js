@@ -74,8 +74,25 @@ async function refresh(){
  $('ds-donut-total').textContent=items.length.toLocaleString('es-ES');
  $('ds-class-0').textContent=a.toLocaleString('es-ES')+' ('+percent(a,conf.length)+')';
  $('ds-class-1').textContent=b.toLocaleString('es-ES')+' ('+percent(b,conf.length)+')';
- const angle=conf.length?100*a/conf.length:50;
- $('ds-donut').style.background='conic-gradient(#ef4444 0 '+angle+'%, #2563eb '+angle+'% 100%)';
+ // Keep the primary binary classes intact, while subdividing NO_SISMICO by its
+ // persisted secondary disturbance category for visualization only.
+ const categories=['RUIDO','VIBRACIONES','GOLPES','INDETERMINADO'];
+ const categoryColors={'RUIDO':'#2563eb','VIBRACIONES':'#06b6d4','GOLPES':'#8b5cf6','INDETERMINADO':'#94a3b8','SIN_SUBCATEGORIA':'#cbd5e1'};
+ const subCounts={};
+ conf.filter(x=>l(x).class_code===1).forEach(x=>{
+   const raw=String(l(x).disturbance||'').trim().toUpperCase();
+   const key=categories.includes(raw)?raw:'SIN_SUBCATEGORIA';
+   subCounts[key]=(subCounts[key]||0)+1;
+ });
+ const subKeys=[...categories.filter(k=>subCounts[k]),...(subCounts.SIN_SUBCATEGORIA?['SIN_SUBCATEGORIA']:[])];
+ const slices=[{name:'TEMBLOR',count:a,color:'#ef4444'},...subKeys.map(k=>({name:k==='SIN_SUBCATEGORIA'?'Sin subcategoría':k,count:subCounts[k],color:categoryColors[k]}))].filter(x=>x.count>0);
+ let acc=0;
+ const stops=slices.map(s=>{const from=acc;acc+=conf.length?100*s.count/conf.length:0;return s.color+' '+from+'% '+acc+'%';});
+ $('ds-donut').style.background=slices.length?'conic-gradient('+stops.join(', ')+')':'#e2e8f0';
+ const subTotal=subKeys.reduce((n,k)=>n+subCounts[k],0);
+ $('ds-legend').innerHTML='<div class="ds-legend-primary"><i class="ds-dot tremor"></i><span>TEMBLOR</span><b>'+a.toLocaleString('es-ES')+' ('+percent(a,conf.length)+')</b></div>'+
+ '<div class="ds-legend-primary"><i class="ds-dot nonseismic"></i><span>NO_SISMICO</span><b>'+b.toLocaleString('es-ES')+' ('+percent(b,conf.length)+')</b></div>'+
+ subKeys.map(k=>'<div class="ds-legend-sub"><i class="ds-dot" style="background:'+categoryColors[k]+'"></i><span>'+ (k==='SIN_SUBCATEGORIA'?'Sin subcategoría':k)+'</span><b>'+subCounts[k].toLocaleString('es-ES')+' ('+percent(subCounts[k],conf.length)+')</b></div>').join('');
  $('ds-imbalance').hidden=!(conf.length&&(!a||!b||Math.max(a,b)>Math.max(1,Math.min(a,b))*4));
  const pending=items.length-conf.length;
  $('ds-summary').textContent=items.length+' ventanas incluidas · '+conf.length+' confirmadas · '+pending+' pendientes · '+events+' eventos';
