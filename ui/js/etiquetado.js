@@ -35,6 +35,18 @@
   function renderCounts(counts){
     const c=counts||{total:items.length,pending:0,labeled:0,review:0};
     $('label-summary').textContent=c.total+' ventanas · '+c.pending+' pendientes · '+c.labeled+' etiquetadas · '+c.review+' en revisión';
+    updateDatasetButton();
+  }
+  function updateDatasetButton(){
+    const button=$('btn-continue-dataset');
+    if(!button)return;
+    const ready=items.length>0&&items.every(item=>{
+      const l=labelOf(item);
+      return l&& (l.class_code===0||l.class_code===1)&&l.quality_review==='confirmed';
+    });
+    button.disabled=!ready;
+    button.title=ready?'Todas las ventanas están etiquetadas y confirmadas':'Confirma todas las etiquetas para continuar a Dataset';
+    button.setAttribute('aria-disabled',String(!ready));
   }
   function markDirty(){dirty=true;$('label-dirty').textContent='Cambios sin guardar';}
   function discardChanges(){if(!dirty)return;const active=items.find(x=>x.window.window_id===selectedId);if(active)active.label=active._savedLabel?JSON.parse(JSON.stringify(active._savedLabel)):null;dirty=false;$('label-dirty').textContent='Sin cambios';}
@@ -50,7 +62,7 @@
   function updateSelected(patch){
     const item=current();if(!item)return;
     item.label={...(item.label||{window_id:selectedId,class_code:null,quality_review:'confirmed',observations:''}),...patch,window_id:selectedId};
-    markDirty();renderList();renderEditor();
+    markDirty();renderList();renderEditor();updateDatasetButton();
   }
   async function save(next=false){
     const item=current();if(!item)return;
@@ -58,7 +70,7 @@
     if(l.class_code!==0&&l.class_code!==1){$('label-message').textContent='Selecciona una clase principal antes de guardar.';return;}
     const r=await Bridge.saveWindowLabel(selectedId,{class_code:l.class_code,disturbance:l.class_code===1?(l.disturbance||null):null,quality_review:l.quality_review||'pending',observations:l.observations||''});
     if(!r?.success){$('label-message').textContent=r?.error||'No se pudo guardar.';return;}
-    item.label=r.label;item._savedLabel=JSON.parse(JSON.stringify(r.label));dirty=false;$('label-dirty').textContent='Sin cambios';$('label-message').textContent='Etiqueta guardada.';
+    item.label=r.label;item._savedLabel=JSON.parse(JSON.stringify(r.label));dirty=false;updateDatasetButton();$('label-dirty').textContent='Sin cambios';$('label-message').textContent='Etiqueta guardada.';
     if(next){const i=filtered.findIndex(x=>x.window.window_id===selectedId);selectedId=filtered[(i+1)%filtered.length]?.window.window_id||selectedId;}
     await load();
   }
@@ -66,7 +78,7 @@
     $('label-window-list').innerHTML='<p class="label-empty">Cargando ventanas…</p>';
     const r=await Bridge.getLabelingWorkspace();
     if(!r?.success){$('label-window-list').innerHTML='<p class="label-empty">'+esc(r?.error||'No se pudo cargar.')+'</p>';return;}
-    items=r.items||[];items.forEach(x=>{x._savedLabel=x.label?JSON.parse(JSON.stringify(x.label)):null;});renderCounts(r.counts);filter();
+    items=r.items||[];updateDatasetButton();items.forEach(x=>{x._savedLabel=x.label?JSON.parse(JSON.stringify(x.label)):null;});renderCounts(r.counts);filter();
   }
   function draw(canvasId,ts,ys,color){
     const canvas=$(canvasId);if(!canvas)return;
