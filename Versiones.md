@@ -1,5 +1,31 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.3.0] — Etiquetado de ventanas
+
+**Fecha:** 2026-09-30  
+**Rama de origen:** `feature/fase-7-etiquetado`  
+**Integración:** Pull request #2, merge commit `a92188fd911b178fe40112b3fe8289d90b351037`
+
+**Tipo:** MINOR
+
+**Cambios**
+- **Added:** módulo de Etiquetado con modelos, servicio de dominio, persistencia JSON versionada e integración mediante PyWebView.
+- **Added:** listado de ventanas incluidas, filtros de estado y visualización sincronizada de señales GEO/MPU.
+- **Added:** clasificación binaria `0 = TEMBLOR` y `1 = NO_SISMICO`, estados de anotación y observaciones.
+- **Added:** categorías secundarias iniciales para NO_SISMICO: `RUIDO`, `VIBRACIONES`, `GOLPES` e `INDETERMINADO`; modelo preparado para admitir categorías personalizadas.
+- **Added:** categoría secundaria visible en una segunda línea del listado de ventanas.
+- **Added:** botón «Continuar a Dataset», habilitado únicamente cuando todas las ventanas tienen etiquetas guardadas y confirmadas.
+- **Changed:** identificación visual de NO_SISMICO en naranja y TEMBLOR en verde.
+- **Fixed:** numeración de eventos presentada desde 1 sin alterar los índices internos.
+- **Fixed:** «Limpiar lista» reinicia los IDs de ventanas desde `W-001` y elimina las etiquetas ligadas a los IDs limpiados.
+- **Improved:** control de cambios sin guardar, restauración y validación de esquema.
+
+**Verificación**
+- Fase validada funcionalmente por el usuario en ejecución local.
+- Se incorporaron pruebas unitarias para modelos y servicio de etiquetado. No se ejecutó una nueva corrida automatizada durante esta integración.
+
+---
+
 ## [v0.2.0] — Ventaneo y ajustes de interfaz de Análisis
 
 **Fecha:** 2026-09-30
