@@ -323,6 +323,43 @@ const Charts = (() => {
   /**
    * Plot spectrum (frequency domain)
    */
+  const spectrumInteractionState = new WeakMap();
+
+  function attachSpectrumInteractions(canvas) {
+    if (canvas.dataset.spectrumInteractions === 'true') return;
+    canvas.dataset.spectrumInteractions = 'true';
+    const clear = () => {
+      const state = spectrumInteractionState.get(canvas);
+      if (state?.onHover) state.onHover(null);
+    };
+    canvas.addEventListener('pointermove', (event) => {
+      const state = spectrumInteractionState.get(canvas);
+      if (!state) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = rect.width ? state.width / rect.width : 1;
+      const scaleY = rect.height ? state.height / rect.height : 1;
+      const x = (event.clientX - rect.left) * scaleX;
+      const y = (event.clientY - rect.top) * scaleY;
+      if (x < state.left || x > state.left + state.plotWidth ||
+          y < state.top || y > state.top + state.plotHeight) {
+        if (state.onHover) state.onHover(null);
+        return;
+      }
+      const frequency = state.xMin + ((x - state.left) / state.plotWidth) * (state.xMax - state.xMin);
+      let index = 0, bestDistance = Infinity;
+      for (let i = 0; i < state.freqs.length; i++) {
+        const distance = Math.abs(Number(state.freqs[i]) - frequency);
+        if (distance < bestDistance) { bestDistance = distance; index = i; }
+      }
+      if (state.onHover) state.onHover({
+        frequency: Number(state.freqs[index]),
+        amplitude: Number(state.mags[index]),
+        index,
+      });
+    });
+    canvas.addEventListener('pointerleave', clear);
+  }
+
   function plotSpectrum(canvas, freqs, mags, options = {}) {
     if (!canvas || !freqs || !mags || freqs.length === 0) return;
 
@@ -333,6 +370,7 @@ const Charts = (() => {
     const plotLeft = 82;
     const plotRight = 50;
     const plotWidth = Math.max(1, width - plotLeft - plotRight);
+    const plotHeight = Math.max(1, height - 2 * padding);
     const color = options.color || COLORS.geophone;
     const title = options.title || '';
 
@@ -343,6 +381,13 @@ const Charts = (() => {
     const xMax = Math.max(...freqs);
     const yMin = 0;
     const yMax = Math.max(...mags) * 1.1 || 1;
+
+    spectrumInteractionState.set(canvas, {
+      freqs, mags, xMin, xMax, width, height,
+      left: plotLeft, top: padding, plotWidth, plotHeight,
+      onHover: options.onHover,
+    });
+    attachSpectrumInteractions(canvas);
 
     ctx.clearRect(0, 0, width, height);
 
@@ -362,7 +407,7 @@ const Charts = (() => {
 
     for (let i = 0; i < freqs.length; i++) {
       const x = plotLeft + plotWidth * ((freqs[i] - xMin) / (xMax - xMin || 1)) - barWidth / 2;
-      const barHeight = (height - 2 * padding) * (mags[i] / yMax);
+      const barHeight = plotHeight * (mags[i] / yMax);
       const y = height - padding - barHeight;
       ctx.fillRect(x, y, barWidth, barHeight);
     }
