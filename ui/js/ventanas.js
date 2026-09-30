@@ -2,6 +2,7 @@
 (() => {
   'use strict';
   let context = null, windows = [], mode = 'fixed', dragStart = null, dragEnd = null, manualContextKey = null;
+  const manualRanges = new Map();
   const $ = id => document.getElementById(id);
   const sec = us => (us / 1e6).toFixed(1);
   const RANGE_STEP = 0.1;
@@ -98,23 +99,29 @@
     $('w-status').textContent=context?.ready?'Evento listo':(context?.message||'Sin contexto');
     $('w-geo-freq').textContent=context?.geophone_frequency_text||'—';$('w-mpu-freq').textContent=context?.mpu_frequency_text||'—';
     if(!context?.ready)return;
-    draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',mode==='manual');
-    draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',mode==='manual');
     const duration=Math.max(0.001,Number(context.duration_seconds)||5);
     const endInput=$('w-end'),startInput=$('w-start'),startSlider=$('w-start-slider'),endSlider=$('w-end-slider');
     startInput.max=duration.toFixed(1);endInput.max=duration.toFixed(1);
     const key=String(context.file_name||'')+':'+String(context.event_index??'');
     if(manualContextKey!==key){
-      manualContextKey=key;startInput.value='0.0';endInput.value=duration.toFixed(1);
+      manualContextKey=key;
+      const saved=manualRanges.get(key);
+      startInput.value=saved?String(saved.start):'0.0';
+      endInput.value=saved?String(saved.end):duration.toFixed(1);
     }
     [startSlider,endSlider].filter(Boolean).forEach(el=>{el.max=duration.toFixed(1);});
-    const start=Math.min(Number(startInput.value)||0,duration);
-    const end=Math.min(Math.max(start+0.001,Number(endInput.value)||duration),duration);
-    startInput.value=roundRange(start).toFixed(1);endInput.value=roundRange(end).toFixed(1);
+    let start=Math.min(Number(startInput.value)||0,duration);
+    let end=Math.min(Math.max(start+RANGE_STEP,Number(endInput.value)||duration),duration);
+    start=roundRange(start);end=roundRange(end);
+    if(end<=start)start=Math.max(0,end-RANGE_STEP);
+    startInput.value=start.toFixed(1);endInput.value=end.toFixed(1);
     if(startSlider)startSlider.value=String(start);
     if(endSlider)endSlider.value=String(end);
     if($('w-start-slider-value'))$('w-start-slider-value').textContent=start.toFixed(1)+' s';
     if($('w-end-slider-value'))$('w-end-slider-value').textContent=end.toFixed(1)+' s';
+    // Draw only after the selected event's range has been restored and normalized.
+    draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',mode==='manual');
+    draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',mode==='manual');
   }
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -228,6 +235,9 @@
       value=Math.min(duration,value);
       end.value=roundRange(value).toFixed(1);
     }
+    // Keep a separate manual interval for each file/event.
+    const key=String(context.file_name||'')+':'+String(context.event_index??'');
+    manualRanges.set(key,{start:Number(start.value),end:Number(end.value)});
     // Draw directly from the current fields; do not depend on a context refresh.
     const geo=$('w-chart-geo'),mpu=$('w-chart-mpu');
     draw(geo,context.geophone_times||[],context.geophone_values||[],'#2563eb',true);
