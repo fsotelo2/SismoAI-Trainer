@@ -118,6 +118,8 @@ const App = (() => {
 
     if (action === 'footer-continue-labeling') { await navigateTo('etiquetado'); return; }
 
+    if (action === 'footer-continue-dataset') { await navigateTo('dataset'); return; }
+
     if (action === 'analyze-file') {
       const fileName = target.getAttribute('data-file');
       if (fileName) await analyzeFile(fileName);
@@ -288,6 +290,8 @@ const App = (() => {
     currentView = viewName;
     const continueLabelingBtn = document.getElementById('btn-continue-labeling');
     if (continueLabelingBtn) continueLabelingBtn.hidden = viewName !== 'ventanas';
+    const continueDatasetBtn=document.getElementById('btn-continue-dataset');
+    if(continueDatasetBtn) continueDatasetBtn.hidden=viewName!=='etiquetado';
     const footerAnalysis=document.getElementById('btn-footer-analysis');
     const footerWindows=document.getElementById('btn-footer-windows');
     if(footerAnalysis) footerAnalysis.hidden=viewName!=='datos';
