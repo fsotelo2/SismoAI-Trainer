@@ -45,7 +45,7 @@ class WindowLabel:
     def validate(self):
         if not isinstance(self.window_id, str) or not self.window_id.strip():
             raise LabelingError("window_id es obligatorio.")
-        if self.class_code is not None and self.class_code not in OFFICIAL_CLASSES:
+        if self.class_code is not None and (isinstance(self.class_code, bool) or not isinstance(self.class_code, int) or self.class_code not in OFFICIAL_CLASSES):
             raise LabelingError("Código de clase no oficial.")
         if self.label_source not in (SOURCE_HUMAN, SOURCE_AUTOMATIC):
             raise LabelingError("label_source debe ser human o automatic.")
