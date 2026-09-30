@@ -128,5 +128,41 @@ class LabelingRestoreRobustnessTests(unittest.TestCase):
             self.assertEqual(service.labels, {})
 
 
+    def test_non_integer_persistence_schema_versions_start_empty(self):
+        for version in (1.0, True, "1"):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as folder:
+                path = os.path.join(folder, "labels.json")
+                with open(path, "w", encoding="utf-8") as stream:
+                    import json
+                    json.dump({
+                        "schema": "sismoai-labeling",
+                        "schema_version": version,
+                        "workspace": {},
+                        "labels": {},
+                    }, stream)
+                service = LabelingService(path)
+                self.assertEqual(service.labels, {})
+                self.assertEqual(service.workspace, {})
+
+    def test_restore_skips_malformed_label_and_keeps_valid_label(self):
+        import json
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "labels.json")
+            valid = WindowLabel("W-001", class_code=CLASS_TREMOR).to_dict()
+            with open(path, "w", encoding="utf-8") as stream:
+                json.dump({
+                    "schema": "sismoai-labeling",
+                    "schema_version": 1,
+                    "workspace": {"schema_version": 1},
+                    "labels": {
+                        "W-001": valid,
+                        "W-002": ["not", "a", "label"],
+                        "W-003": {"window_id": "W-004", "class_code": 0},
+                    },
+                }, stream)
+            service = LabelingService(path)
+            self.assertEqual(set(service.labels), {"W-001"})
+
+
 if __name__ == "__main__":
     unittest.main()
