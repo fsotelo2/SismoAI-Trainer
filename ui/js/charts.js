@@ -852,12 +852,52 @@ const Charts = (() => {
     }
   }
 
+  function cleanupCanvas(canvas) {
+    if (!canvas) return;
+    const time = timeChartState.get(canvas);
+    const stalta = staltaChartState.get(canvas);
+    for (const state of [time, stalta]) {
+      if (!state) continue;
+      const pointerId = state.drag?.pointerId;
+      state.drag = null;
+      if (pointerId !== undefined) {
+        try {
+          if (canvas.hasPointerCapture?.(pointerId)) canvas.releasePointerCapture(pointerId);
+        } catch (_) {}
+      }
+      if (state.options) {
+        state.options.cursorTime = undefined;
+        state.options.cursorIndex = undefined;
+        state.options.onHover?.(null);
+      }
+    }
+    canvas.style.cursor = 'crosshair';
+    canvas.style.touchAction = '';
+    canvas.style.userSelect = '';
+    for (const groups of [timeChartGroups, staltaChartGroups]) {
+      for (const [name, members] of groups) {
+        for (const member of [...members]) {
+          if (!member.canvas?.isConnected || member.canvas === canvas) members.delete(member);
+        }
+        if (!members.size) groups.delete(name);
+      }
+    }
+  }
+
+  function cleanupAllCanvases() {
+    document.querySelectorAll('canvas').forEach(cleanupCanvas);
+    timeChartGroups.clear();
+    staltaChartGroups.clear();
+  }
+
   // Public API
   return {
     plotTimeSeries,
     plotSpectrum,
     plotSpectrogram,
     plotStalta,
+    cleanupCanvas,
+    cleanupAllCanvases,
     COLORS,
   };
 })();
