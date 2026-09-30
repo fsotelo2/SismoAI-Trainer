@@ -127,6 +127,8 @@
     return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
   function renderRows() {
+    const continueBtn=document.getElementById('btn-continue-labeling');
+    if(continueBtn) continueBtn.disabled=!windows.some(w=>w.selection_status==='include');
     $('w-count').textContent=windows.length+' ventanas';
     $('w-rows').innerHTML=windows.length?windows.map(w=>{
       const q=w.quality?.status||'accepted', label=q==='accepted'?'Aceptada':q==='review'?'Revisión':'Inválida';
