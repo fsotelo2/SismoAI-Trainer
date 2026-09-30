@@ -1,0 +1,23 @@
+<section class="dataset-view">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Ventanas disponibles</div><button class="btn btn-secondary btn-sm" data-ds-action="refresh">Actualizar</button></div>
+    <p id="ds-summary">Cargando…</p>
+    <div class="table-container"><table class="table"><thead><tr><th>Ventana</th><th>Archivo</th><th>Evento</th><th>Clase</th><th>Estado</th></tr></thead><tbody id="ds-rows"><tr><td colspan="5">Cargando…</td></tr></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">División por evento de origen</div></div>
+    <p class="text-muted">Las ventanas de un mismo evento se mantienen en una sola partición para reducir fuga de información.</p>
+    <div class="dataset-ratios">
+      <label>Train (%) <input id="ds-train" type="number" min="0" max="100" value="70"></label>
+      <label>Validation (%) <input id="ds-val" type="number" min="0" max="100" value="15"></label>
+      <label>Test (%) <input id="ds-test" type="number" min="0" max="100" value="15"></label>
+      <label>Semilla <input id="ds-seed" type="number" value="42"></label>
+    </div>
+    <p id="ds-validation" class="text-muted">Los porcentajes deben sumar 100%.</p>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Integridad y recomendaciones</div></div>
+    <div id="ds-status">Verificando…</div>
+    <button class="btn btn-primary" id="ds-generate" data-ds-action="generate">Generar dataset e ir a Modelos</button>
+  </div>
+</section>
