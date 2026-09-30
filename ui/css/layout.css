@@ -439,7 +439,7 @@ html, body {
 /* Status bar primary action */
 .app-footer{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
 .app-footer > #app-footer-status{align-self:center;line-height:1.2}
-footer.app-footer > button#btn-continue-labeling{position:relative!important;top:-7px!important;right:auto!important;bottom:auto!important;transform:none!important;align-self:center!important;margin:0!important;justify-self:end;line-height:1.2}
+footer.app-footer > button.app-footer-action{position:relative!important;top:-7px!important;right:auto!important;bottom:auto!important;transform:none!important;align-self:center!important;margin:0!important;justify-self:end;line-height:1.2}
 .app-footer-action[hidden]{display:none}
 
 
