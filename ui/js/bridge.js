@@ -53,6 +53,14 @@ const Bridge = (() => {
     selectAnalysisFile: (fileName) => call('select_analysis_file', fileName),
     selectAnalysisEvent: (eventIndex) => call('select_analysis_event', eventIndex),
     getAnalysisEventData: () => call('get_analysis_event_data'),
+
+    // Phase 6 — Windows
+    getWindowContext: () => call('get_window_context'),
+    generateWindows: (params) => call('generate_windows', params),
+    addManualWindow: (params) => call('add_manual_window', params),
+    getWindows: () => call('get_windows'),
+    clearWindows: () => call('clear_windows'),
+    setWindowSelection: (windowId, status) => call('set_window_selection', windowId, status),
     getAnalysisMetrics: () => call('get_analysis_metrics'),
     getStaltaResults: () => call('get_stalta_results'),
     getSpectrumResults: () => call('get_spectrum_results'),
