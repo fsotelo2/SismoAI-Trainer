@@ -38,8 +38,38 @@
       const b=Math.max(a,Math.min(maxT,Number($('w-end')?.value)||0));
       const x1=p.l+a*pw/maxT,x2=p.l+b*pw/maxT;
       c.fillStyle='rgba(16,185,129,.18)';c.fillRect(x1,p.t,x2-x1,ph);
-      c.strokeStyle='#059669';c.lineWidth=1.5;c.strokeRect(x1,p.t,x2-x1,ph);
-    }
+      c.save();c.setLineDash([5,4]);c.strokeStyle='#059669';c.lineWidth=1.5;
+      [x1,x2].forEach(x=>{c.beginPath();c.moveTo(x,p.t+3);c.lineTo(x,p.t+ph);c.stroke();});
+      c.restore();
+      [x1,x2].forEach(x=>{
+        c.fillStyle='#059669';c.beginPath();c.moveTo(x-8,p.t-1);c.lineTo(x+8,p.t-1);c.lineTo(x,p.t+13);c.closePath();c.fill();
+        c.strokeStyle='#ffffff';c.lineWidth=1;c.stroke();
+      });
+      canvas.style.cursor='ew-resize';
+      if(!canvas.dataset.manualHandles){
+        canvas.dataset.manualHandles='1';
+        let activeHandle=null;
+        const coords=e=>{const r=canvas.getBoundingClientRect();return e.clientX-r.left;};
+        const geometry=()=>{const r=canvas.getBoundingClientRect(),width=r.width,plotL=42,plotR=10,plotW=width-plotL-plotR,dt=Math.max(context?.duration_seconds||0,1),start=Number($('w-start').value)||0,end=Number($('w-end').value)||0;return {plotL,plotW,dt,xStart:plotL+start*plotW/dt,xEnd:plotL+end*plotW/dt};};
+        canvas.addEventListener('pointerdown',e=>{
+          const g=geometry(),x=coords(e),d1=Math.abs(x-g.xStart),d2=Math.abs(x-g.xEnd);
+          if(Math.min(d1,d2)>14)return;
+          activeHandle=d1<=d2?'start':'end';canvas.setPointerCapture(e.pointerId);e.preventDefault();
+        });
+        canvas.addEventListener('pointermove',e=>{
+          if(!activeHandle)return;
+          const g=geometry(),x=coords(e),value=Math.max(0,Math.min(g.dt,(x-g.plotL)*g.dt/g.plotW));
+          const start=$('w-start'),end=$('w-end'),ss=$('w-start-slider'),es=$('w-end-slider');
+          if(activeHandle==='start'){const v=Math.min(value,Number(end.value)-0.001);start.value=Math.max(0,v).toFixed(3);if(ss)ss.value=start.value;}
+          else{const v=Math.max(value,Number(start.value)+0.001);end.value=Math.min(g.dt,v).toFixed(3);if(es)es.value=end.value;}
+          if(ss)$('w-start-slider-value').textContent=Number(start.value).toFixed(3)+' s';
+          if(es)$('w-end-slider-value').textContent=Number(end.value).toFixed(3)+' s';
+          renderContext();
+        });
+        const stop=()=>{activeHandle=null;};
+        canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);
+      }
+    }else{canvas.style.cursor='default';}
   }
   function renderContext() {
     const fileSelect=$('w-file-select');
