@@ -1080,6 +1080,7 @@ class ApiBridge:
         )
         record.sample_ranges = ranges
         self._window_records.append(record)
+        self._persist_windows()
         return record.to_dict()
 
     def generate_windows(self, params: dict) -> dict:
@@ -1110,6 +1111,7 @@ class ApiBridge:
             except Exception:
                 self._window_records = previous_records
                 self._window_sequence = previous_sequence
+                self._persist_windows()
                 raise
             return {"success": True, "created": len(created), "windows": created}
         except Exception as exc:
