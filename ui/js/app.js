@@ -811,16 +811,30 @@ const App = (() => {
   function renderSpectrumCharts(state) {
     const geoCanvas = document.getElementById('chart-spectrum-geophone');
     const mpuCanvas = document.getElementById('chart-spectrum-mpu');
+    const geoReadout = document.getElementById('spectrum-readout-geophone');
+    const mpuReadout = document.getElementById('spectrum-readout-mpu');
+    const makeSpectrumHover = (target, unit) => (point) => {
+      if (!target) return;
+      if (!point) {
+        target.textContent = `Espectro (${unit}) · Mueve el cursor para inspeccionar bins.`;
+        return;
+      }
+      const frequency = Number.isFinite(point.frequency) ? point.frequency.toFixed(3) : '—';
+      const amplitude = Number.isFinite(point.amplitude) ? point.amplitude.toFixed(6) : '—';
+      target.textContent = `Bin ${point.index} · f = ${frequency} Hz · Amplitud = ${amplitude} ${unit}`;
+    };
 
     if (geoCanvas && state.geophone_spectrum_freqs && state.geophone_spectrum_amps) {
       Charts.plotSpectrum(geoCanvas, state.geophone_spectrum_freqs, state.geophone_spectrum_amps, {
         color: Charts.COLORS.geophone,
+        onHover: makeSpectrumHover(geoReadout, 'mm/s'),
       });
     }
 
     if (mpuCanvas && state.mpu_spectrum_freqs && state.mpu_spectrum_amps) {
       Charts.plotSpectrum(mpuCanvas, state.mpu_spectrum_freqs, state.mpu_spectrum_amps, {
         color: Charts.COLORS.mpu,
+        onHover: makeSpectrumHover(mpuReadout, 'm/s²'),
       });
     }
 
