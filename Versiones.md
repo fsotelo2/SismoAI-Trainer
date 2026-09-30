@@ -1,5 +1,23 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.1.2] — Limpieza de interacciones en gráficas
+
+**Fecha:** 2026-09-30
+**Rama:** `main`
+**Commits de código:** `66d1f7bd505f65f70253708cda325f0e2ddffbe5`, `68e508b6a86c4f6050cb055ff1b99707026ed742`
+
+**Tipo:** PATCH
+
+**Cambios**
+- **Fixed:** se añadió `Charts.cleanupCanvas()` para cancelar arrastres y liberar la captura del puntero.
+- **Fixed:** se añadió limpieza global de interacciones y grupos de sincronización obsoletos.
+- **Fixed:** la limpieza se ejecuta antes de cambiar de pestaña, archivo o evento en Análisis.
+
+**Verificación**
+- Pruebas automatizadas y validación funcional: no ejecutadas en esta entrega.
+
+---
+
 ## [v0.1.1] — Correcciones de compatibilidad en Datos y Análisis
 
 **Fecha:** 2026-09-30
