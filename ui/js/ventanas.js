@@ -67,6 +67,7 @@
       const option=document.createElement('option');option.value=f.name;option.textContent=f.name;select.appendChild(option);
     });
     if(!select.options.length){const option=document.createElement('option');option.value='';option.textContent='No hay BIN válidos';select.appendChild(option);}
+    return Array.from(select.options).filter(option=>option.value).map(option=>option.value);
   }
   async function waitForAnalysis() {
     for(let i=0;i<40;i++){
@@ -76,7 +77,19 @@
     }
   }
   async function refresh() {
-    await loadFileOptions();
+    const files=await loadFileOptions();
+    let state=await Bridge.getAnalysisState();
+    // The first visible option is not necessarily loaded in Analysis yet.
+    // Bootstrap the engine once when entering Windows without an active event.
+    if(files.length && !state?.has_selection && !state?.loading){
+      const preferred=state?.selected_file_name;
+      const initialFile=files.includes(preferred)?preferred:files[0];
+      const result=await Bridge.selectAnalysisFile(initialFile);
+      if(result?.success) await waitForAnalysis();
+      state=await Bridge.getAnalysisState();
+    } else if(state?.loading){
+      await waitForAnalysis();
+    }
     context=await Bridge.getWindowContext();windows=await Bridge.getWindows();
     renderContext();renderRows();
   }
