@@ -10,6 +10,7 @@
 **Tipo:** PATCH
 
 **Cambios**
+- **Changed:** se implementó la carga paralela de archivos BIN, con progreso incremental y cálculo de hashes en segundo plano.
 - **Fixed:** se añadió el alias `errorText` para mantener compatibilidad con `AnalysisService`.
 - **Fixed:** se añadió el alias `selectedFilePath` para permitir que `AnalysisService` acceda a la ruta seleccionada.
 - Se conserva la compatibilidad de los nombres internos existentes.
