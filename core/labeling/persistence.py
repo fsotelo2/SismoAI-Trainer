@@ -20,6 +20,7 @@ def load(path):
         with open(path, encoding="utf-8") as stream:
             data = json.load(stream)
         if (not isinstance(data, dict) or data.get("schema") != SCHEMA
+                or type(data.get("schema_version")) is not int
                 or data.get("schema_version") != VERSION
                 or not isinstance(data.get("workspace"), dict)
                 or not isinstance(data.get("labels"), dict)):
