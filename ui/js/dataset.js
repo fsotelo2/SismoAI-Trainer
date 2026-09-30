@@ -3,7 +3,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const setText=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
-let items=[],filtered=[];
+let items=[],filtered=[],examplesExpanded=false;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const w=x=>x.window||{}, l=x=>x.label||{};
 const eventKey=x=>String(w(x).source_file||'')+'::'+String(w(x).source_event_id??'');
@@ -15,7 +15,7 @@ function filterRows(){
  renderRows();
 }
 function renderRows(){
- const examples=filtered.slice(0,5).map(x=>{
+ const examples=filtered.slice(0,examplesExpanded?filtered.length:5).map(x=>{
   const win=w(x),lab=l(x),tone=lab.class_code===0?'tremor':lab.class_code===1?'nonseismic':'pending';
   const duration=(Number(win.end_us)-Number(win.start_us))/1000000;
   return '<tr><td>'+esc(win.window_id||'—')+'</td><td><span class="ds-tag '+tone+'">'+classText(x)+'</span></td><td>'+esc(win.source_event_id??'—')+' / '+esc(win.source_file||'—')+'</td><td>'+(Number.isFinite(duration)?duration.toFixed(1)+' s':'—')+'</td><td>'+((win.sensors||[]).length||'—')+'</td></tr>';
@@ -116,7 +116,7 @@ document.addEventListener('click',async e=>{
  if(btn.dataset.dsAction==='generate')await generate();
  if(btn.dataset.dsAction==='labeling')await App.navigateTo('etiquetado');
  if(btn.dataset.dsAction==='toggle-filter')$('ds-filter-panel').hidden=!$('ds-filter-panel').hidden;
- if(btn.dataset.dsAction==='show-all'){$('ds-all-windows').hidden=!$('ds-all-windows').hidden;btn.textContent=$('ds-all-windows').hidden?'Ver más':'Ver menos';}
+ if(btn.dataset.dsAction==='show-all'){examplesExpanded=!examplesExpanded;renderRows();btn.textContent=examplesExpanded?'Ver menos':'Ver más';const table=$('ds-example-table');if(table)table.classList.toggle('is-expanded',examplesExpanded);}
 });
 document.addEventListener('change',e=>{
  if(e.target.id==='ds-filter')filterRows();
