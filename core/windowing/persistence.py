@@ -41,7 +41,7 @@ def save(path, records, sequence):
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as stream:
             json.dump(payload, stream, ensure_ascii=False, indent=2, allow_nan=False)
-            stream.write("\\n")
+            stream.write("")
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary, path)
