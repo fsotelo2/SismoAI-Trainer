@@ -56,3 +56,7 @@
  .ds-check-icon{width:20px;height:20px}
  .ds-check p{display:none}
 }
+
+/* Expand examples in-place; avoid a second table overlapping the cards */
+.ds-example-table{max-height:190px;overflow:auto;transition:max-height .15s ease}
+.ds-example-table.is-expanded{max-height:420px;overflow:auto}
