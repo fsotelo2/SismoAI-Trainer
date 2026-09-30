@@ -60,6 +60,8 @@ const Bridge = (() => {
     addManualWindow: (params) => call('add_manual_window', params),
     getWindows: () => call('get_windows'),
     getLabelingWorkspace: () => call('get_labeling_workspace'),
+    getDatasetWorkspace: () => call('get_dataset_workspace'),
+    generateDataset: (ratios, seed, name) => call('generate_dataset', ratios, seed, name),
     getWindowSignal: (windowId) => call('get_window_signal', windowId),
     saveWindowLabel: (windowId, payload) => call('save_window_label', windowId, payload),
     clearWindows: () => call('clear_windows'),
