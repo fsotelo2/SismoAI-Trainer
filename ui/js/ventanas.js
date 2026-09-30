@@ -1,7 +1,7 @@
 /* Phase 6 — Windows view controller */
 (() => {
   'use strict';
-  let context = null, windows = [], mode = 'fixed', dragStart = null, dragEnd = null;
+  let context = null, windows = [], mode = 'fixed', dragStart = null, dragEnd = null, manualContextKey = null;
   const $ = id => document.getElementById(id);
   const sec = us => (us / 1e6).toFixed(3);
   const sensors = manual => [$(manual ? 'wm-geo' : 'w-geo').checked ? 'GEO' : null,
@@ -83,16 +83,19 @@
     draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',mode==='manual');
     draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',false);
     const duration=Math.max(0.001,Number(context.duration_seconds)||5);
-    const endInput=$('w-end'),startSlider=$('w-start-slider'),endSlider=$('w-end-slider');
-    endInput.value=duration.toFixed(3);
-    if(startSlider&&endSlider){
-      [startSlider,endSlider].forEach(el=>{el.max=duration.toFixed(3);});
-      const start=Math.min(Number($('w-start').value)||0,duration);
-      const end=Math.min(Number(endInput.value)||duration,duration);
-      startSlider.value=String(start);endSlider.value=String(Math.max(start,end));
-      $('w-start-slider-value').textContent=Number(startSlider.value).toFixed(3)+' s';
-      $('w-end-slider-value').textContent=Number(endSlider.value).toFixed(3)+' s';
+    const endInput=$('w-end'),startInput=$('w-start'),startSlider=$('w-start-slider'),endSlider=$('w-end-slider');
+    const key=String(context.file_name||'')+':'+String(context.event_index??'');
+    if(manualContextKey!==key){
+      manualContextKey=key;startInput.value='0.000';endInput.value=duration.toFixed(3);
     }
+    [startSlider,endSlider].filter(Boolean).forEach(el=>{el.max=duration.toFixed(3);});
+    const start=Math.min(Number(startInput.value)||0,duration);
+    const end=Math.min(Math.max(start+0.001,Number(endInput.value)||duration),duration);
+    startInput.value=start.toFixed(3);endInput.value=end.toFixed(3);
+    if(startSlider)startSlider.value=String(start);
+    if(endSlider)endSlider.value=String(end);
+    $('w-start-slider-value').textContent=start.toFixed(3)+' s';
+    $('w-end-slider-value').textContent=end.toFixed(3)+' s';
   }
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
