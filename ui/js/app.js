@@ -288,6 +288,8 @@ const App = (() => {
     if (!container) return;
 
     currentView = viewName;
+    const datasetFooter=document.getElementById('ds-footer-controls');
+    if(datasetFooter) datasetFooter.hidden=viewName!=='dataset';
     const continueLabelingBtn = document.getElementById('btn-continue-labeling');
     if (continueLabelingBtn) continueLabelingBtn.hidden = viewName !== 'ventanas';
     const continueDatasetBtn=document.getElementById('btn-continue-dataset');
