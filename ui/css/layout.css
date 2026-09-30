@@ -441,3 +441,8 @@ html, body {
 .app-footer > #app-footer-status{align-self:center;line-height:1.2}
 footer.app-footer > button#btn-continue-labeling{position:relative!important;top:-7px!important;right:auto!important;bottom:auto!important;transform:none!important;align-self:center!important;margin:0!important;justify-self:end;line-height:1.2}
 .app-footer-action[hidden]{display:none}
+
+
+.topbar-heading{display:flex;align-items:center;gap:var(--spacing-sm)}
+.topbar-heading-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--color-primary);flex-shrink:0}
+.topbar-heading-icon svg{width:28px;height:28px}
