@@ -2088,3 +2088,32 @@ input[type="radio"] {
  #analysis-content .analysis-time-info{flex:0 0 auto;gap:12px;white-space:nowrap}
  #analysis-content .analysis-event-nav{margin-left:auto}
 }
+
+
+/* Panel lateral adaptable: distribuir el alto libre entre las tarjetas visibles
+   según la pestaña activa, sin reservar espacio para tarjetas ocultas. */
+@media (min-width: 993px) {
+  #analysis-content .analysis-sidebar {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    gap: 8px;
+  }
+
+  #analysis-content .analysis-sidebar > .analysis-info-card:not([style*="display: none"]) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  #analysis-content .analysis-sidebar > .analysis-info-card:not([style*="display: none"]) > .analysis-info-body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  #analysis-content .analysis-sidebar > .analysis-info-card:not([style*="display: none"]) .analysis-info-table {
+    height: 100%;
+  }
+}
