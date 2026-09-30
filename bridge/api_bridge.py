@@ -1039,10 +1039,14 @@ class ApiBridge:
         start_us, end_us = seconds_to_us(start_seconds), seconds_to_us(end_seconds)
         from core.windowing import validate_interval
         validate_interval(start_us, end_us, bounds)
-        counts = {}
+        counts, ranges = {}, {}
+        import bisect
         for sensor in chosen:
             times = context["geophone_times"] if sensor == "GEO" else context["mpu_times"]
-            counts[sensor] = self._window_sample_count(times, start_seconds, end_seconds)
+            left = bisect.bisect_left(times, start_seconds)
+            right = bisect.bisect_left(times, end_seconds)
+            counts[sensor] = max(0, right - left)
+            ranges[sensor] = (left, right)
         quality = evaluate_structure(start_us, end_us, bounds, chosen, counts)
         if quality.status == "blocked":
             raise WindowingError("; ".join(quality.findings))
@@ -1052,6 +1056,7 @@ class ApiBridge:
             str(context["event_index"]), mode, start_us, end_us, chosen,
             config, counts, quality,
         )
+        record.sample_ranges = ranges
         self._window_records.append(record)
         return record.to_dict()
 
