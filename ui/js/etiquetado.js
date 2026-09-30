@@ -34,8 +34,11 @@
     $('label-summary').textContent=c.total+' ventanas · '+c.pending+' pendientes · '+c.labeled+' etiquetadas · '+c.review+' en revisión';
   }
   function markDirty(){dirty=true;$('label-dirty').textContent='Cambios sin guardar';}
+  function discardChanges(){if(!dirty)return;const active=items.find(x=>x.window.window_id===selectedId);if(active)active.label=active._savedLabel?JSON.parse(JSON.stringify(active._savedLabel)):null;dirty=false;$('label-dirty').textContent='Sin cambios';}
   function current(){return filtered.find(x=>x.window.window_id===selectedId);}
   function filter(){
+    if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?')){renderEditor();return;}
+    discardChanges();
     const f=$('label-filter').value;
     filtered=items.filter(x=>f==='all'||status(x)===f);
     if(!filtered.some(x=>x.window.window_id===selectedId))selectedId=filtered[0]?.window.window_id||null;
@@ -91,13 +94,13 @@
     draw('label-mpu-chart',$('label-show-mpu').checked?(mpu.times||[]):[],mpu.amplitudes||[],'#7c3aed');
   }
   document.addEventListener('click',async e=>{
-    const select=e.target.closest('[data-label-select]');if(select){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;if(dirty){const active=items.find(x=>x.window.window_id===selectedId);if(active)active.label=active._savedLabel??null;}selectedId=select.dataset.labelSelect;dirty=false;$('label-dirty').textContent='Sin cambios';renderList();renderEditor();return;}
+    const select=e.target.closest('[data-label-select]');if(select){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;discardChanges();selectedId=select.dataset.labelSelect;renderList();renderEditor();return;}
     const cls=e.target.closest('[data-label-class]');if(cls){const code=Number(cls.dataset.labelClass);updateSelected({class_code:code,disturbance:code===1?(current()?.label?.disturbance||''):null});return;}
     const review=e.target.closest('[data-label-review]');if(review){updateSelected({quality_review:review.dataset.labelReview});return;}
     const act=e.target.closest('[data-label-action]')?.dataset.labelAction;if(!act)return;
     if(act==='save')await save(false);
     if(act==='save-next')await save(true);
-    if(act==='prev'||act==='next'){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;const i=filtered.findIndex(x=>x.window.window_id===selectedId),d=act==='next'?1:-1;selectedId=filtered[(i+d+filtered.length)%filtered.length]?.window.window_id||selectedId;dirty=false;renderList();renderEditor();}
+    if(act==='prev'||act==='next'){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;discardChanges();const i=filtered.findIndex(x=>x.window.window_id===selectedId),d=act==='next'?1:-1;selectedId=filtered[(i+d+filtered.length)%filtered.length]?.window.window_id||selectedId;dirty=false;renderList();renderEditor();}
   });
   $('label-filter').addEventListener('change',filter);
   $('label-category').addEventListener('change',e=>updateSelected({disturbance:e.target.value||null}));
