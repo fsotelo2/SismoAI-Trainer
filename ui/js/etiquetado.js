@@ -27,7 +27,8 @@
     $('label-char-count').textContent=($('label-observations').value||'').length;
     $('label-position').textContent='Ventana '+(filtered.findIndex(x=>x.window.window_id===selectedId)+1)+' de '+filtered.length;
     const w=item.window;
-    $('label-window-info').innerHTML='<b>Archivo</b> '+esc(w.source_file)+'　<b>Inicio</b> '+sec(w.start_us)+'　<b>Fin</b> '+sec(w.end_us)+'　<b>Duración</b> '+((w.end_us-w.start_us)/1e6).toFixed(2)+' s　<b>Sensores</b> '+esc((w.sensors||[]).join(' + '))+'　<b>Evento</b> '+esc(w.source_event_id??'—')+'　<b>Calidad</b> '+esc(w.quality?.status||'—');
+    const eventRaw=w.source_event_id;const eventNum=eventRaw!==null&&eventRaw!==undefined&&String(eventRaw).trim()!==''&&Number.isFinite(Number(eventRaw))?String(Number(eventRaw)+1):'—';
+    $('label-window-info').innerHTML='<b>Archivo</b> '+esc(w.source_file)+'　<b>Inicio</b> '+sec(w.start_us)+'　<b>Fin</b> '+sec(w.end_us)+'　<b>Duración</b> '+((w.end_us-w.start_us)/1e6).toFixed(2)+' s　<b>Sensores</b> '+esc((w.sensors||[]).join(' + '))+'　<b>Evento</b> '+esc(eventNum)+'　<b>Calidad</b> '+esc(w.quality?.status||'—');
     document.querySelectorAll('[data-label-action="prev"],[data-label-action="next"]').forEach(b=>b.disabled=filtered.length<2);
     drawSignals(item);
   }
