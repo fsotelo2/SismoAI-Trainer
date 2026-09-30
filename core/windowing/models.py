@@ -47,6 +47,7 @@ class WindowRecord:
     end_us: int
     sensors: Tuple[str, ...]
     samples: Dict[str, int] = field(default_factory=dict)
+    sample_ranges: Dict[str, Tuple[int, int]] = field(default_factory=dict)
     sampling_info: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     quality: WindowQuality = field(default_factory=WindowQuality)
     window_config: Dict[str, Any] = field(default_factory=dict)
