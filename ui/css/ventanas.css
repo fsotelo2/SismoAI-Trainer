@@ -29,3 +29,8 @@
 .status-pill.review{background:var(--color-warning-bg);color:#92400e}
 .status-pill.blocked{background:var(--color-danger-bg);color:#b91c1c}
 @media(max-width:1050px){.windows-charts{grid-template-columns:1fr}.windows-source{margin-left:0}}
+
+.windows-source{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.windows-file-select{min-width:190px;max-width:260px}
+.windows-source .form-select{min-height:34px}
+.windows-source strong{margin:0 4px}
