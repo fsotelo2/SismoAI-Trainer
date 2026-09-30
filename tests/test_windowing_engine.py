@@ -46,6 +46,19 @@ class WindowingEngineTests(unittest.TestCase):
         self.assertEqual(payload["duration_ms"], 1000.0)
         self.assertEqual(payload["samples"]["GEO"], 88)
 
+    def test_structural_quality_blocks_missing_sensor_samples(self):
+        from core.windowing import evaluate_structure
+        result = evaluate_structure(0, 1_000_000, (0, 2_000_000),
+                                    ["GEO", "MPU"], {"GEO": 100, "MPU": 0})
+        self.assertEqual(result.status, "blocked")
+
+    def test_structural_quality_accepts_valid_interval(self):
+        from core.windowing import evaluate_structure
+        result = evaluate_structure(0, 1_000_000, (0, 2_000_000),
+                                    ["GEO"], {"GEO": 100})
+        self.assertEqual(result.status, "accepted")
+        self.assertEqual(result.findings, ())
+
     def test_seconds_round_trip(self):
         self.assertEqual(seconds_to_us(1.234567), 1_234_567)
 
