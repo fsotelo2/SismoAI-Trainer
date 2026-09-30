@@ -36,6 +36,20 @@ class WindowLabelTests(unittest.TestCase):
     def test_null_class_is_a_valid_pending_annotation(self):
         self.assertIsNone(WindowLabel("W-001").validate().class_code)
 
+    def test_boolean_is_not_accepted_as_integer_class(self):
+        with self.assertRaises(LabelingError):
+            WindowLabel("W-001", class_code=True).validate()
+
+    def test_unknown_secondary_category_is_rejected(self):
+        with self.assertRaises(LabelingError):
+            WindowLabel("W-001", class_code=CLASS_NON_SEISMIC,
+                        disturbance="RUIDO").validate()
+
+    def test_category_is_rejected_for_pending_window(self):
+        with self.assertRaises(LabelingError):
+            WindowLabel("W-001", class_code=None,
+                        disturbance=SECONDARY_UNDETERMINED).validate()
+
 
 class LabelingPersistenceTests(unittest.TestCase):
     def test_save_and_restore_label(self):
