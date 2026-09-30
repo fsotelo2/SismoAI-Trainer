@@ -455,6 +455,11 @@ class DataService:
         return self._selected_path
 
     @property
+    def selectedFilePath(self):
+        """Backward-compatible alias used by AnalysisService."""
+        return self._selected_path
+
+    @property
     def selected_file_name(self):
         record = self._selected_record()
         return record.name if record else ""
