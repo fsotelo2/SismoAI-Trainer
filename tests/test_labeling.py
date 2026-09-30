@@ -15,6 +15,10 @@ class WindowLabelTests(unittest.TestCase):
         self.assertEqual(WindowLabel("W-001", class_code=CLASS_TREMOR).validate().class_code, 0)
         self.assertEqual(WindowLabel("W-002", class_code=CLASS_NON_SEISMIC).validate().class_code, 1)
 
+    def test_unsupported_schema_version_is_rejected(self):
+        with self.assertRaises(LabelingError):
+            WindowLabel("W-001", schema_version=2).validate()
+
     def test_third_primary_class_is_rejected(self):
         with self.assertRaises(LabelingError):
             WindowLabel("W-001", class_code=2).validate()
