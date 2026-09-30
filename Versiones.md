@@ -4,7 +4,8 @@
 
 **Fecha:** 2026-09-30
 **Rama:** `main`
-**Commit:** pendiente de asociar
+**Commit de código:** `369f0b7c0f476ede48a7d8bc816458d5c22c882d`
+**Commit del registro:** `1ffe3a2536dc12ab836d5b5459ddb8556a1b445e`
 
 **Tipo:** PATCH
 
