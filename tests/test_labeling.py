@@ -102,5 +102,24 @@ class LabelingServiceBehaviorTests(unittest.TestCase):
             self.assertEqual(windows[0]["window_id"], "W-002")
 
 
+class LabelingRestoreRobustnessTests(unittest.TestCase):
+    def test_invalid_persistence_schema_starts_empty(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "labels.json")
+            with open(path, "w", encoding="utf-8") as stream:
+                stream.write('{"schema":"other","schema_version":1,"workspace":{},"labels":{}}')
+            service = LabelingService(path)
+            self.assertEqual(service.labels, {})
+            self.assertEqual(service.workspace, {})
+
+    def test_malformed_json_starts_empty(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "labels.json")
+            with open(path, "w", encoding="utf-8") as stream:
+                stream.write("{malformed")
+            service = LabelingService(path)
+            self.assertEqual(service.labels, {})
+
+
 if __name__ == "__main__":
     unittest.main()
