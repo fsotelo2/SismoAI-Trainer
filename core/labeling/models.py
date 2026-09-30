@@ -46,6 +46,8 @@ class WindowLabel:
     def validate(self):
         if not isinstance(self.window_id, str) or not self.window_id.strip():
             raise LabelingError("window_id es obligatorio.")
+        if isinstance(self.schema_version, bool) or self.schema_version != 1:
+            raise LabelingError("schema_version no compatible; se requiere versión 1.")
         if self.class_code is not None and (
             isinstance(self.class_code, bool)
             or not isinstance(self.class_code, int)
