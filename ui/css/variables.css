@@ -1,0 +1,72 @@
+/* ===================================================================
+   SismoAI Trainer — Variables de Diseño (Editables por el usuario)
+   Extraídas de Penpot Design System V1.0.0
+   =================================================================== */
+
+:root {
+  /* Tipografía */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-title: 20px;
+
+  /* Fondos y Superficies */
+  --color-bg-app: #F8FAFC;
+  --color-bg-card: #FFFFFF;
+  --color-bg-sidebar: #FFFFFF;
+  --color-bg-hover: #F1F5F9;
+
+  /* Bordes y Separadores */
+  --color-border: #E2E8F0;
+  --color-border-subtle: #CBD5E1;
+
+  /* Textos */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748B;
+
+  /* Colores de Marca y Estados */
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-primary-light: #EFF6FF;
+
+  --color-success: #10B981;
+  --color-success-bg: #DCFCE7;
+
+  --color-warning: #B45309;
+  --color-warning-bg: #FEF3C7;
+
+  --color-danger: #DC2626;
+  --color-danger-bg: #FEE2E2;
+
+  --color-accent-purple: #7C3AED;
+  --color-accent-purple-light: #F3E8FF;
+
+  /* Espaciados */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Bordes */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  /* Layout */
+  --sidebar-width: 240px;
+  --topbar-height: 56px;
+
+  /* Transiciones */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+}
