@@ -228,13 +228,18 @@
       value=Math.min(duration,value);
       end.value=roundRange(value).toFixed(1);
     }
-    // Re-render the complete manual context so both charts use the edited bounds.
-    renderContext();
+    // Draw directly from the current fields; do not depend on a context refresh.
+    const geo=$('w-chart-geo'),mpu=$('w-chart-mpu');
+    draw(geo,context.geophone_times||[],context.geophone_values||[],'#2563eb',true);
+    draw(mpu,context.mpu_times||[],context.mpu_values||[],'#7c3aed',true);
+    if($('w-start-slider'))$('w-start-slider').value=start.value;
+    if($('w-end-slider'))$('w-end-slider').value=end.value;
+    if($('w-start-slider-value'))$('w-start-slider-value').textContent=start.value+' s';
+    if($('w-end-slider-value'))$('w-end-slider-value').textContent=end.value+' s';
   };
   ['w-start','w-end'].forEach(id=>{
     const field=$(id);if(!field)return;
-    field.addEventListener('input',updateManualField);
-    field.addEventListener('change',updateManualField);
+    ['input','change','keyup','blur'].forEach(type=>field.addEventListener(type,updateManualField));
   });
   document.addEventListener('click',action);
   document.addEventListener('change',async e=>{
