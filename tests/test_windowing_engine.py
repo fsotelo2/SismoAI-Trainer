@@ -62,6 +62,20 @@ class WindowingEngineTests(unittest.TestCase):
     def test_seconds_round_trip(self):
         self.assertEqual(seconds_to_us(1.234567), 1_234_567)
 
+    def test_fixed_mode_requires_step_equal_duration(self):
+        with self.assertRaises(WindowingError):
+            WindowSpec(5_000_000, 2_000_000, ORIGIN_FIXED).validate()
+
+    def test_zero_length_source_is_rejected(self):
+        with self.assertRaises(WindowingError):
+            generate_intervals(1_000_000, 1_000_000,
+                               WindowSpec(500_000, mode=ORIGIN_FIXED))
+
+    def test_non_finite_seconds_are_rejected(self):
+        for value in (float("nan"), float("inf"), float("-inf")):
+            with self.assertRaises(WindowingError):
+                seconds_to_us(value)
+
 
 if __name__ == "__main__":
     unittest.main()
