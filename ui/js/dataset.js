@@ -1,31 +1,111 @@
-/* Phase 8 — logical dataset preparation */
+/* Phase 8 — Dataset preparation UI */
 (() => {
- 'use strict';
- const $=id=>document.getElementById(id); let items=[],counts={};
- const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- async function refresh(){
-  const r=await Bridge.getDatasetWorkspace();
-  if(!r?.success){$('ds-summary').textContent=r?.error||'No se pudo cargar';return;}
-  items=r.items||[];counts=r.counts||{};
-  $('ds-summary').textContent=`${counts.total||0} ventanas incluidas · ${counts.labeled||0} confirmadas · ${counts.pending||0} pendientes · ${counts.events||0} eventos`;
-  $('ds-rows').innerHTML=items.length?items.map(x=>{const w=x.window,l=x.label||{},cl=l.class_code===0?'TEMBLOR':l.class_code===1?'NO_SISMICO':'Pendiente';return '<tr><td>'+esc(w.window_id)+'</td><td>'+esc(w.source_file)+'</td><td>'+esc(w.source_event_id??'—')+'</td><td>'+cl+'</td><td>'+esc(l.quality_review||'sin etiqueta')+'</td></tr>'}).join(''):'<tr><td colspan="5">No hay ventanas incluidas.</td></tr>';
-  const msgs=[];if(counts.pending)msgs.push('Hay ventanas sin etiqueta confirmada; la generación está bloqueada.');
-  if(counts.events<10)msgs.push('Pocos eventos independientes: las métricas pueden ser inestables.');
-  if(!counts.total)msgs.push('No hay ventanas para formar el dataset.');
-  $('ds-status').textContent=msgs.join(' ')||'Integridad básica: ventanas disponibles y listas para validar.';
-  $('ds-generate').disabled=!!counts.pending||!counts.total;
- }
- async function action(e){const b=e.target.closest('[data-ds-action]');if(!b)return;
-  if(b.dataset.dsAction==='refresh')await refresh();
-  if(b.dataset.dsAction==='generate'){
-   const vals=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value)/100);
-   if(vals.some(x=>!Number.isFinite(x)||x<0)||Math.abs(vals.reduce((a,b)=>a+b,0)-1)>1e-6){$('ds-validation').textContent='Error: los porcentajes deben sumar 100%.';return;}
-   const seed=Number($('ds-seed').value)||42;b.disabled=true;
-   const r=await Bridge.generateDataset(vals,seed);
-   if(!r?.success){$('ds-validation').textContent=r?.error||'No se pudo generar.';b.disabled=false;return;}
-   await App.navigateTo('modelos');
-  }
- }
- document.addEventListener('click',action);
- window.initDataset=refresh;
+'use strict';
+const $=id=>document.getElementById(id);
+let items=[],filtered=[];
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const w=x=>x.window||{}, l=x=>x.label||{};
+const eventKey=x=>String(w(x).source_file||'')+'::'+String(w(x).source_event_id??'');
+const percent=(n,total)=>total?(100*n/total).toFixed(1).replace(/\.0$/,'')+'%':'0%';
+const classText=x=>l(x).class_code===0?'TEMBLOR':l(x).class_code===1?'NO_SISMICO':'Pendiente';
+function filterRows(){
+ const f=$('ds-filter').value;
+ filtered=items.filter(x=>f==='all'||(f==='confirmed'?l(x).quality_review==='confirmed'&&[0,1].includes(l(x).class_code):f==='pending'?l(x).quality_review!=='confirmed'||![0,1].includes(l(x).class_code):f==='tremor'?l(x).class_code===0:l(x).class_code===1));
+ renderRows();
+}
+function renderRows(){
+ const examples=filtered.slice(0,5).map(x=>{
+  const win=w(x),lab=l(x),tone=lab.class_code===0?'tremor':lab.class_code===1?'nonseismic':'pending';
+  const duration=(Number(win.end_us)-Number(win.start_us))/1000000;
+  return '<tr><td>'+esc(win.window_id||'—')+'</td><td><span class="ds-tag '+tone+'">'+classText(x)+'</span></td><td>'+esc(win.source_event_id??'—')+' / '+esc(win.source_file||'—')+'</td><td>'+(Number.isFinite(duration)?duration.toFixed(1)+' s':'—')+'</td><td>'+((win.sensors||[]).length||'—')+'</td></tr>';
+ }).join('');
+ $('ds-examples').innerHTML=examples||'<tr><td colspan="5">No hay ventanas para mostrar.</td></tr>';
+ $('ds-rows').innerHTML=filtered.map(x=>'<tr><td>'+esc(w(x).window_id||'—')+'</td><td>'+esc(w(x).source_file||'—')+'</td><td>'+esc(w(x).source_event_id??'—')+'</td><td>'+classText(x)+'</td><td>'+esc(l(x).quality_review||'sin etiqueta')+'</td></tr>').join('')||'<tr><td colspan="5">No hay ventanas.</td></tr>';
+}
+function validSplit(){const vals=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value));return vals.every(v=>Number.isFinite(v)&&v>=0&&v<=100)&&vals.reduce((a,b)=>a+b,0)===100;}
+function updateSplit(){
+ const vals=['ds-train','ds-val','ds-test'].map(id=>Math.max(0,Math.min(100,Number($(id).value)||0)));
+ const keys=['train','val','test'], total=items.length, sum=vals.reduce((a,b)=>a+b,0);
+ vals.forEach((v,i)=>{
+  $('ds-'+keys[i]+'-range').value=v;
+  const n=Math.round(total*v/100);
+  $('ds-'+keys[i]+'-count').textContent=n.toLocaleString('es-ES')+' ventanas aprox.';
+  $('ds-bar-'+keys[i]).style.width=(sum?v/sum*100:0)+'%';
+  $('ds-bar-'+keys[i]).textContent=v+'%';
+  $('ds-leg-'+keys[i]).textContent=n.toLocaleString('es-ES');
+ });
+ const ok=validSplit();
+ $('ds-validation').textContent=ok?'Distribución configurada: '+vals.join(' / ')+'%.':'Los porcentajes deben sumar exactamente 100%. Total actual: '+sum+'%.';
+ $('ds-validation').classList.toggle('error',!ok);
+ return ok;
+}
+function check(title,desc,state,tag){
+ const cls=state==='ok'?'ok':state==='warn'?'warn':'';
+ const symbol=state==='ok'?'✓':state==='warn'?'⚠':'•';
+ return '<article class="ds-check '+cls+'"><span class="ds-check-icon">'+symbol+'</span><div><b>'+title+'</b><p>'+desc+'</p></div><span class="ds-pill">'+tag+'</span></article>';
+}
+function renderStatus(){
+ const total=items.length;
+ const pending=items.filter(x=>l(x).quality_review!=='confirmed'||![0,1].includes(l(x).class_code)).length;
+ const events=new Set(items.map(eventKey).filter(k=>!k.endsWith('::'))).size;
+ const confirmed=items.filter(x=>l(x).quality_review==='confirmed'&&[0,1].includes(l(x).class_code));
+ const a=confirmed.filter(x=>l(x).class_code===0).length,b=confirmed.filter(x=>l(x).class_code===1).length;
+ const imbalance=!a||!b||Math.max(a,b)>Math.max(1,Math.min(a,b))*4;
+ const splitOk=updateSplit();
+ $('ds-status').innerHTML=[
+ check('Etiquetas',pending?pending+' ventanas sin confirmar':'Todas las ventanas tienen etiqueta confirmada',pending?'warn':'ok',pending?'Incompleto':'Completo'),
+ check('División de datos','Configuración '+['ds-train','ds-val','ds-test'].map(id=>$(id).value+'%').join(' / '),splitOk?'ok':'warn',splitOk?'Lista':'Revisar'),
+ check('Balance de clases',imbalance?'Distribución desbalanceada':'Ambas clases tienen representación',imbalance?'warn':'ok',imbalance?'Advertencia':'Revisado'),
+ check('Eventos para evaluación',events+' eventos independientes',events<10?'warn':'ok',events<10?'Limitado':'Disponible')
+ ].join('');
+ const validEvents=items.every(x=>w(x).source_event_id!==null&&w(x).source_event_id!==undefined&&String(w(x).source_event_id)!=='');
+ document.querySelectorAll('[data-ds-action="generate"]').forEach(btn=>btn.disabled=!total||pending>0||!splitOk||!validEvents);
+}
+async function refresh(){
+ const r=await Bridge.getDatasetWorkspace();
+ if(!r||!r.success){$('ds-summary').textContent=r?.error||'No se pudo cargar Etiquetado.';return;}
+ items=r.items||[];
+ const conf=items.filter(x=>l(x).quality_review==='confirmed'&&[0,1].includes(l(x).class_code));
+ const a=conf.filter(x=>l(x).class_code===0).length,b=conf.filter(x=>l(x).class_code===1).length;
+ const events=new Set(items.map(eventKey).filter(k=>!k.endsWith('::'))).size;
+ $('ds-m-total').textContent=items.length.toLocaleString('es-ES');
+ $('ds-m-events').textContent=events.toLocaleString('es-ES');
+ $('ds-m-confirmed').textContent=conf.length.toLocaleString('es-ES');
+ $('ds-donut-total').textContent=items.length.toLocaleString('es-ES');
+ $('ds-class-0').textContent=a.toLocaleString('es-ES')+' ('+percent(a,conf.length)+')';
+ $('ds-class-1').textContent=b.toLocaleString('es-ES')+' ('+percent(b,conf.length)+')';
+ const angle=conf.length?100*a/conf.length:50;
+ $('ds-donut').style.background='conic-gradient(#ef4444 0 '+angle+'%, #2563eb '+angle+'% 100%)';
+ $('ds-imbalance').hidden=!(conf.length&&(!a||!b||Math.max(a,b)>Math.max(1,Math.min(a,b))*4));
+ const pending=items.length-conf.length;
+ $('ds-summary').textContent=items.length+' ventanas incluidas · '+conf.length+' confirmadas · '+pending+' pendientes · '+events+' eventos';
+ filterRows();renderStatus();
+}
+async function generate(){
+ if(!updateSplit())return;
+ const name=$('ds-name').value.trim();
+ if(!name){$('ds-validation').textContent='Escribe un nombre para el dataset.';$('ds-validation').classList.add('error');return;}
+ document.querySelectorAll('[data-ds-action="generate"]').forEach(b=>b.disabled=true);
+ const ratios=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value)/100);
+ const result=await Bridge.generateDataset(ratios,42,name);
+ if(!result?.success){$('ds-validation').textContent=result?.error||'No se pudo generar el dataset.';$('ds-validation').classList.add('error');renderStatus();return;}
+ $('ds-version-note').textContent='Dataset guardado: '+name;
+ await App.navigateTo('modelos');
+}
+document.addEventListener('click',async e=>{
+ const btn=e.target.closest('[data-ds-action]');if(!btn)return;
+ if(btn.dataset.dsAction==='refresh')await refresh();
+ if(btn.dataset.dsAction==='generate')await generate();
+ if(btn.dataset.dsAction==='labeling')await App.navigateTo('etiquetado');
+ if(btn.dataset.dsAction==='toggle-filter')$('ds-filter-panel').hidden=!$('ds-filter-panel').hidden;
+ if(btn.dataset.dsAction==='show-all'){$('ds-all-windows').hidden=!$('ds-all-windows').hidden;btn.textContent=$('ds-all-windows').hidden?'Ver más':'Ver menos';}
+});
+document.addEventListener('change',e=>{
+ if(e.target.id==='ds-filter')filterRows();
+ const numbers=['ds-train','ds-val','ds-test'],ranges=['ds-train-range','ds-val-range','ds-test-range'];
+ let i=numbers.indexOf(e.target.id),fromRange=false;
+ if(i<0){i=ranges.indexOf(e.target.id);fromRange=true;}
+ if(i>=0){$(numbers[i]).value=e.target.value;$(ranges[i]).value=e.target.value;renderStatus();}
+});
+window.initDataset=refresh;
 })();
