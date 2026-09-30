@@ -61,9 +61,11 @@
 .ds-example-table{max-height:190px;overflow:auto;transition:max-height .15s ease}
 .ds-example-table.is-expanded{max-height:420px;overflow:auto}
 
-/* When examples expand, grow section 1 in document flow and scroll the workspace */
-.dataset-view.examples-expanded{overflow-y:auto;overflow-x:hidden}
-.dataset-view.examples-expanded>.ds-section:first-child{flex:0 0 auto;overflow:visible;min-height:0}
-.dataset-view.examples-expanded>.ds-section:first-child .ds-overview-grid{flex:0 0 auto;min-height:0}
-.dataset-view.examples-expanded .ds-example-table{max-height:300px;min-height:0;overflow-y:auto;overflow-x:auto}
-.dataset-view.examples-expanded>.ds-section:not(:first-child){flex:0 0 auto}
+
+/* Expand and scroll only the examples table; keep the workspace and other sections fixed */
+.dataset-view{overflow:hidden}
+.dataset-view>.ds-section:first-child{overflow:hidden}
+.dataset-view>.ds-section:first-child .ds-overview-grid{min-height:0}
+.ds-example-table{max-height:190px;overflow-y:auto;overflow-x:auto}
+.ds-example-table.is-expanded{max-height:360px;overflow-y:auto;overflow-x:auto}
+.ds-example-table .table thead th{position:sticky;top:0;z-index:2}
