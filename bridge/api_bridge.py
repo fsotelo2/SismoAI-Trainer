@@ -990,7 +990,6 @@ class ApiBridge:
     # 8. Phase 6 — Windowing
     # ------------------------------------------------------------------
 
-    @staticmethod
     def _restore_windows(self):
         raw_records, sequence = window_persistence.load(self._window_path)
         restored = []
@@ -1010,6 +1009,7 @@ class ApiBridge:
     def _persist_windows(self):
         window_persistence.save(self._window_path, [item.to_dict() for item in self._window_records], self._window_sequence)
 
+    @staticmethod
     def _window_sample_count(times, start_seconds, end_seconds):
         """Count samples in the half-open interval [start, end)."""
         import bisect
