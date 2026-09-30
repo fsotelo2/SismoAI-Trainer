@@ -347,6 +347,9 @@ const App = (() => {
       case 'etiquetado':
         if (window.initLabeling) await window.initLabeling();
         break;
+      case 'dataset':
+        if (window.initDataset) await window.initDataset();
+        break;
       default:
         // Placeholder views
         break;
