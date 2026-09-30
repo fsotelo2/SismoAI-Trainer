@@ -2079,3 +2079,12 @@ input[type="radio"] {
   color: #ffffff !important;
   stroke: currentColor;
 }
+
+/* Análisis: selector, navegación y metadatos en una sola fila */
+@media (min-width: 993px){
+ #analysis-content > .analysis-header{align-items:center}
+ #analysis-content .analysis-header-controls{flex-direction:row;align-items:center;min-width:0;gap:14px}
+ #analysis-content .analysis-header-control-row{flex:1 1 auto;min-width:0;justify-content:flex-start;gap:14px}
+ #analysis-content .analysis-time-info{flex:0 0 auto;gap:12px;white-space:nowrap}
+ #analysis-content .analysis-event-nav{margin-left:auto}
+}
