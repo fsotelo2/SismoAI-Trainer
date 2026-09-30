@@ -2,6 +2,7 @@
 (() => {
 'use strict';
 const $=id=>document.getElementById(id);
+const setText=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
 let items=[],filtered=[];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const w=x=>x.window||{}, l=x=>x.label||{};
@@ -9,7 +10,7 @@ const eventKey=x=>String(w(x).source_file||'')+'::'+String(w(x).source_event_id?
 const percent=(n,total)=>total?(100*n/total).toFixed(1).replace(/\.0$/,'')+'%':'0%';
 const classText=x=>l(x).class_code===0?'TEMBLOR':l(x).class_code===1?'NO_SISMICO':'Pendiente';
 function filterRows(){
- const f=$('ds-filter').value;
+ const f=$('ds-filter')?.value||'all';
  filtered=items.filter(x=>f==='all'||(f==='confirmed'?l(x).quality_review==='confirmed'&&[0,1].includes(l(x).class_code):f==='pending'?l(x).quality_review!=='confirmed'||![0,1].includes(l(x).class_code):f==='tremor'?l(x).class_code===0:l(x).class_code===1));
  renderRows();
 }
@@ -35,8 +36,8 @@ function updateSplit(){
   $('ds-leg-'+keys[i]).textContent=n.toLocaleString('es-ES');
  });
  const ok=validSplit();
- $('ds-validation').textContent=ok?'Distribución configurada: '+vals.join(' / ')+'%.':'Los porcentajes deben sumar exactamente 100%. Total actual: '+sum+'%.';
- $('ds-validation').classList.toggle('error',!ok);
+ setText('ds-validation',ok?'Distribución configurada: '+vals.join(' / ')+'%.':'Los porcentajes deben sumar exactamente 100%. Total actual: '+sum+'%.';
+ if($('ds-validation'))$('ds-validation').classList.toggle('error',!ok);
  return ok;
 }
 function check(title,desc,state,tag){
@@ -63,17 +64,17 @@ function renderStatus(){
 }
 async function refresh(){
  const r=await Bridge.getDatasetWorkspace();
- if(!r||!r.success){$('ds-summary').textContent=r?.error||'No se pudo cargar Etiquetado.';return;}
+ if(!r||!r.success){setText('ds-summary',r?.error||'No se pudo cargar Etiquetado.';return;}
  items=r.items||[];
  const conf=items.filter(x=>l(x).quality_review==='confirmed'&&[0,1].includes(l(x).class_code));
  const a=conf.filter(x=>l(x).class_code===0).length,b=conf.filter(x=>l(x).class_code===1).length;
  const events=new Set(items.map(eventKey).filter(k=>!k.endsWith('::'))).size;
- $('ds-m-total').textContent=items.length.toLocaleString('es-ES');
- $('ds-m-events').textContent=events.toLocaleString('es-ES');
- $('ds-m-confirmed').textContent=conf.length.toLocaleString('es-ES');
- $('ds-donut-total').textContent=items.length.toLocaleString('es-ES');
- $('ds-class-0').textContent=a.toLocaleString('es-ES')+' ('+percent(a,conf.length)+')';
- $('ds-class-1').textContent=b.toLocaleString('es-ES')+' ('+percent(b,conf.length)+')';
+ setText('ds-m-total',items.length.toLocaleString('es-ES');
+ setText('ds-m-events',events.toLocaleString('es-ES');
+ setText('ds-m-confirmed',conf.length.toLocaleString('es-ES');
+ setText('ds-donut-total',items.length.toLocaleString('es-ES');
+ setText('ds-class-0',a.toLocaleString('es-ES')+' ('+percent(a,conf.length)+')';
+ setText('ds-class-1',b.toLocaleString('es-ES')+' ('+percent(b,conf.length)+')';
  // Keep the primary binary classes intact, while subdividing NO_SISMICO by its
  // persisted secondary disturbance category for visualization only.
  const categories=['RUIDO','VIBRACIONES','GOLPES','INDETERMINADO'];
@@ -88,25 +89,25 @@ async function refresh(){
  const slices=[{name:'TEMBLOR',count:a,color:'#ef4444'},...subKeys.map(k=>({name:k==='SIN_SUBCATEGORIA'?'Sin subcategoría':k,count:subCounts[k],color:categoryColors[k]}))].filter(x=>x.count>0);
  let acc=0;
  const stops=slices.map(s=>{const from=acc;acc+=conf.length?100*s.count/conf.length:0;return s.color+' '+from+'% '+acc+'%';});
- $('ds-donut').style.background=slices.length?'conic-gradient('+stops.join(', ')+')':'#e2e8f0';
+ if($('ds-donut'))$('ds-donut').style.background=slices.length?'conic-gradient('+stops.join(', ')+')':'#e2e8f0';
  const subTotal=subKeys.reduce((n,k)=>n+subCounts[k],0);
- $('ds-legend').innerHTML='<div class="ds-legend-primary"><i class="ds-dot tremor"></i><span>TEMBLOR</span><b>'+a.toLocaleString('es-ES')+' ('+percent(a,conf.length)+')</b></div>'+
+ if($('ds-legend'))$('ds-legend').innerHTML='<div class="ds-legend-primary"><i class="ds-dot tremor"></i><span>TEMBLOR</span><b>'+a.toLocaleString('es-ES')+' ('+percent(a,conf.length)+')</b></div>'+
  '<div class="ds-legend-primary"><i class="ds-dot nonseismic"></i><span>NO_SISMICO</span><b>'+b.toLocaleString('es-ES')+' ('+percent(b,conf.length)+')</b></div>'+
  subKeys.map(k=>'<div class="ds-legend-sub"><i class="ds-dot" style="background:'+categoryColors[k]+'"></i><span>'+ (k==='SIN_SUBCATEGORIA'?'Sin subcategoría':k)+'</span><b>'+subCounts[k].toLocaleString('es-ES')+' ('+percent(subCounts[k],conf.length)+')</b></div>').join('');
- $('ds-imbalance').hidden=!(conf.length&&(!a||!b||Math.max(a,b)>Math.max(1,Math.min(a,b))*4));
+ if($('ds-imbalance'))$('ds-imbalance').hidden=!(conf.length&&(!a||!b||Math.max(a,b)>Math.max(1,Math.min(a,b))*4));
  const pending=items.length-conf.length;
- $('ds-summary').textContent=items.length+' ventanas incluidas · '+conf.length+' confirmadas · '+pending+' pendientes · '+events+' eventos';
+ setText('ds-summary',items.length+' ventanas incluidas · '+conf.length+' confirmadas · '+pending+' pendientes · '+events+' eventos';
  filterRows();renderStatus();
 }
 async function generate(){
  if(!updateSplit())return;
  const name=$('ds-name').value.trim();
- if(!name){$('ds-validation').textContent='Escribe un nombre para el dataset.';$('ds-validation').classList.add('error');return;}
+ if(!name){setText('ds-validation','Escribe un nombre para el dataset.';$('ds-validation').classList.add('error');return;}
  document.querySelectorAll('[data-ds-action="generate"]').forEach(b=>b.disabled=true);
  const ratios=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value)/100);
  const result=await Bridge.generateDataset(ratios,42,name);
- if(!result?.success){$('ds-validation').textContent=result?.error||'No se pudo generar el dataset.';$('ds-validation').classList.add('error');renderStatus();return;}
- $('ds-version-note').textContent='Dataset guardado: '+name;
+ if(!result?.success){setText('ds-validation',result?.error||'No se pudo generar el dataset.';$('ds-validation').classList.add('error');renderStatus();return;}
+ setText('ds-version-note','Dataset guardado: '+name;
  await App.navigateTo('modelos');
 }
 document.addEventListener('click',async e=>{
