@@ -1073,14 +1073,22 @@ class ApiBridge:
             spec = WindowSpec(seconds_to_us(duration),
                               seconds_to_us(step), mode, discard_partial=True)
             intervals = generate_intervals(0, seconds_to_us(context["duration_seconds"]), spec)
+            # Keep generation atomic: a rejected interval must not leave a partial batch.
+            previous_records = list(self._window_records)
+            previous_sequence = self._window_sequence
             created = []
-            for start_us, end_us in intervals:
-                created.append(self._add_window(
-                    start_us / 1_000_000.0, end_us / 1_000_000.0,
-                    mode, sensors, {
-                        "mode": mode, "duration_seconds": duration,
-                        "step_seconds": step, "discard_partial": True,
-                    }))
+            try:
+                for start_us, end_us in intervals:
+                    created.append(self._add_window(
+                        start_us / 1_000_000.0, end_us / 1_000_000.0,
+                        mode, sensors, {
+                            "mode": mode, "duration_seconds": duration,
+                            "step_seconds": step, "discard_partial": True,
+                        }))
+            except Exception:
+                self._window_records = previous_records
+                self._window_sequence = previous_sequence
+                raise
             return {"success": True, "created": len(created), "windows": created}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1098,8 +1106,17 @@ class ApiBridge:
             return {"success": False, "error": str(exc)}
 
     def get_windows(self) -> list:
-        """Return current in-memory extracted windows."""
-        return [item.to_dict() for item in self._window_records]
+        """Return windows belonging to the currently selected source event."""
+        context = self.get_window_context()
+        if not context.get("ready"):
+            return []
+        file_name = context.get("file_name")
+        event_id = str(context.get("event_index", -1))
+        return [
+            item.to_dict() for item in self._window_records
+            if item.source_file == file_name
+            and str(item.source_event_id) == event_id
+        ]
 
     def clear_windows(self) -> dict:
         self._window_records = []
