@@ -48,9 +48,19 @@
     $('w-status').textContent=context?.ready?'Evento listo':(context?.message||'Sin contexto');
     $('w-geo-freq').textContent=context?.geophone_frequency_text||'—';$('w-mpu-freq').textContent=context?.mpu_frequency_text||'—';
     if(!context?.ready)return;
-    draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',mode==='manual');
+    draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',false);
     draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',false);
-    $('w-end').value=(context.duration_seconds||5).toFixed(3);
+    const duration=Math.max(0.001,Number(context.duration_seconds)||5);
+    const endInput=$('w-end'),startSlider=$('w-start-slider'),endSlider=$('w-end-slider');
+    endInput.value=duration.toFixed(3);
+    if(startSlider&&endSlider){
+      [startSlider,endSlider].forEach(el=>{el.max=duration.toFixed(3);});
+      const start=Math.min(Number($('w-start').value)||0,duration);
+      const end=Math.min(Number(endInput.value)||duration,duration);
+      startSlider.value=String(start);endSlider.value=String(Math.max(start,end));
+      $('w-start-slider-value').textContent=Number(startSlider.value).toFixed(3)+' s';
+      $('w-end-slider-value').textContent=Number(endSlider.value).toFixed(3)+' s';
+    }
   }
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -125,6 +135,29 @@
       if(!r.success)alert(r.error||'No se pudo añadir la ventana.');await refresh();
     }
   }
+  function syncManualRange(source){
+    const start=$('w-start'),end=$('w-end'),ss=$('w-start-slider'),es=$('w-end-slider');
+    if(!ss||!es)return;
+    const max=Number(ss.max)||5;
+    if(source==='start-slider'){
+      const v=Math.min(Number(ss.value),Number(es.value)-0.001);
+      ss.value=String(Math.max(0,v));start.value=Number(ss.value).toFixed(3);
+    }else if(source==='end-slider'){
+      const v=Math.max(Number(es.value),Number(ss.value)+0.001);
+      es.value=String(Math.min(max,v));end.value=Number(es.value).toFixed(3);
+    }else if(source==='start'){
+      ss.value=String(Math.min(max,Math.max(0,Number(start.value)||0)));
+      if(Number(ss.value)>=Number(es.value)){es.value=String(Math.min(max,Number(ss.value)+0.001));end.value=Number(es.value).toFixed(3);}
+    }else if(source==='end'){
+      es.value=String(Math.min(max,Math.max(Number(ss.value)+0.001,Number(end.value)||0)));
+    }
+    $('w-start-slider-value').textContent=Number(ss.value).toFixed(3)+' s';
+    $('w-end-slider-value').textContent=Number(es.value).toFixed(3)+' s';
+    if(source==='end-slider'||source==='end')end.value=Number(es.value).toFixed(3);
+    if(source==='start-slider'||source==='start')start.value=Number(ss.value).toFixed(3);
+  }
+  ['w-start-slider','w-end-slider'].forEach(id=>$(id)?.addEventListener('input',()=>syncManualRange(id==='w-start-slider'?'start-slider':'end-slider')));
+  ['w-start','w-end'].forEach(id=>$(id)?.addEventListener('input',()=>syncManualRange(id==='w-start'?'start':'end')));
   document.addEventListener('click',action);
   document.addEventListener('change',async e=>{
     if(e.target.id==='w-file-select'){
