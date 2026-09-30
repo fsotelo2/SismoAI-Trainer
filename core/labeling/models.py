@@ -3,14 +3,15 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
+# The primary label is strictly binary. "INDETERMINADO" is a secondary
+# category for NO_SISMICO, never a primary class.
 CLASS_TREMOR = 0
 CLASS_NON_SEISMIC = 1
-CLASS_UNDETERMINED = 2
 OFFICIAL_CLASSES = {
     CLASS_TREMOR: "TEMBLOR",
     CLASS_NON_SEISMIC: "NO_SISMICO",
-    CLASS_UNDETERMINED: "INDETERMINADO",
 }
+SECONDARY_UNDETERMINED = "INDETERMINADO"
 SOURCE_HUMAN = "human"
 SOURCE_AUTOMATIC = "automatic"
 REVIEW_PENDING = "pending"
@@ -28,7 +29,7 @@ def utc_now():
 
 @dataclass
 class WindowLabel:
-    """One primary semantic annotation per window; null class means unlabeled."""
+    """One binary semantic annotation per window; null class means pending."""
     window_id: str
     class_code: Optional[int] = None
     label_source: str = SOURCE_HUMAN
@@ -45,15 +46,30 @@ class WindowLabel:
     def validate(self):
         if not isinstance(self.window_id, str) or not self.window_id.strip():
             raise LabelingError("window_id es obligatorio.")
-        if self.class_code is not None and (isinstance(self.class_code, bool) or not isinstance(self.class_code, int) or self.class_code not in OFFICIAL_CLASSES):
-            raise LabelingError("Código de clase no oficial.")
+        if self.class_code is not None and (
+            isinstance(self.class_code, bool)
+            or not isinstance(self.class_code, int)
+            or self.class_code not in OFFICIAL_CLASSES
+        ):
+            raise LabelingError("La clase principal debe ser 0 (TEMBLOR) o 1 (NO_SISMICO).")
         if self.label_source not in (SOURCE_HUMAN, SOURCE_AUTOMATIC):
             raise LabelingError("label_source debe ser human o automatic.")
         if self.confidence is not None:
-            if isinstance(self.confidence, bool) or not isinstance(self.confidence, (int, float)) or not 0 <= self.confidence <= 1:
+            if (
+                isinstance(self.confidence, bool)
+                or not isinstance(self.confidence, (int, float))
+                or not 0 <= self.confidence <= 1
+            ):
                 raise LabelingError("confidence debe estar entre 0 y 1.")
         if self.quality_review not in (REVIEW_PENDING, REVIEW_CONFIRMED, REVIEW_REJECTED):
             raise LabelingError("Estado de revisión no válido.")
+        if self.disturbance is not None:
+            if not isinstance(self.disturbance, str) or not self.disturbance.strip():
+                raise LabelingError("La categoría secundaria debe ser texto no vacío.")
+            if self.class_code != CLASS_NON_SEISMIC:
+                raise LabelingError("La categoría secundaria solo aplica a NO_SISMICO.")
+        if not isinstance(self.observations, str) or len(self.observations) > 200:
+            raise LabelingError("Las observaciones deben tener como máximo 200 caracteres.")
         if not isinstance(self.sensor_attributes, dict):
             raise LabelingError("sensor_attributes debe ser un objeto.")
         return self
