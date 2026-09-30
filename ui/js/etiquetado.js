@@ -12,7 +12,8 @@
     list.innerHTML=filtered.length?filtered.map((item,i)=>{
       const w=item.window,l=labelOf(item),st=status(item),txt=st==='pending'?'Pendiente':st==='review'?'Revisión':(l.class_code===0?'Sísmico':'No sísmico');
       const secondary=l?.class_code===1&&l?.disturbance?'<small class="label-row-secondary">'+esc(l.disturbance)+'</small>':'';
-      return '<button class="label-window-row '+(w.window_id===selectedId?'active':'')+'" data-label-select="'+esc(w.window_id)+'"><span class="label-row-heading"><b>'+esc(w.window_id)+'</b><span class="label-row-status '+st+'">'+txt+'</span></span>'+secondary+'<small>'+sec(w.start_us)+' – '+sec(w.end_us)+'</small><small>'+esc(w.source_file||'')+'</small></button>';
+      const classTone=l?.class_code===1?'nonsismic':l?.class_code===0?'seismic':'';
+      return '<button class="label-window-row '+(w.window_id===selectedId?'active':'')+'" data-label-select="'+esc(w.window_id)+'"><span class="label-row-heading"><b>'+esc(w.window_id)+'</b><span class="label-row-status '+st+' '+classTone+'">'+txt+'</span></span>'+secondary+'<small>'+sec(w.start_us)+' – '+sec(w.end_us)+'</small><small>'+esc(w.source_file||'')+'</small></button>';
     }).join(''):'<p class="label-empty">No hay ventanas en este filtro.</p>';
   }
   function renderEditor(){
