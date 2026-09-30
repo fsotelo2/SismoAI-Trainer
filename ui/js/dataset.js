@@ -21,7 +21,6 @@ function renderRows(){
   return '<tr><td>'+esc(win.window_id||'—')+'</td><td><span class="ds-tag '+tone+'">'+classText(x)+'</span></td><td>'+esc(win.source_event_id??'—')+' / '+esc(win.source_file||'—')+'</td><td>'+(Number.isFinite(duration)?duration.toFixed(1)+' s':'—')+'</td><td>'+((win.sensors||[]).length||'—')+'</td></tr>';
  }).join('');
  $('ds-examples').innerHTML=examples||'<tr><td colspan="5">No hay ventanas para mostrar.</td></tr>';
- $('ds-rows').innerHTML=filtered.map(x=>'<tr><td>'+esc(w(x).window_id||'—')+'</td><td>'+esc(w(x).source_file||'—')+'</td><td>'+esc(w(x).source_event_id??'—')+'</td><td>'+classText(x)+'</td><td>'+esc(l(x).quality_review||'sin etiqueta')+'</td></tr>').join('')||'<tr><td colspan="5">No hay ventanas.</td></tr>';
 }
 function validSplit(){const vals=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value));return vals.every(v=>Number.isFinite(v)&&v>=0&&v<=100)&&vals.reduce((a,b)=>a+b,0)===100;}
 function updateSplit(){
