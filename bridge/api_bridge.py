@@ -1144,17 +1144,8 @@ class ApiBridge:
             return {"success": False, "error": str(exc)}
 
     def get_windows(self) -> list:
-        """Return windows belonging to the currently selected source event."""
-        context = self.get_window_context()
-        if not context.get("ready"):
-            return []
-        file_name = context.get("file_name")
-        event_id = str(context.get("event_index", -1))
-        return [
-            item.to_dict() for item in self._window_records
-            if item.source_file == file_name
-            and str(item.source_event_id) == event_id
-        ]
+        """Return the complete persisted window registry across files and events."""
+        return [item.to_dict() for item in self._window_records]
 
     def clear_windows(self) -> dict:
         self._window_records = []
