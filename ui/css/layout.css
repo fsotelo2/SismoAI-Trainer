@@ -433,3 +433,9 @@ html, body {
     padding: var(--spacing-sm);
   }
 }
+
+
+/* Status bar primary action */
+.app-footer{justify-content:space-between;gap:12px}
+.app-footer-action{margin-left:auto}
+.app-footer-action[hidden]{display:none}
