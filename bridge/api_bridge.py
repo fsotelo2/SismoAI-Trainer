@@ -1218,12 +1218,15 @@ class ApiBridge:
         return [item.to_dict() for item in self._window_records]
 
     def clear_windows(self) -> dict:
+        # Keep the monotonic sequence so old label IDs can never attach to
+        # newly generated windows after the registry is cleared.
+        previous_records = self._window_records
         self._window_records = []
-        self._window_sequence = 0
         try:
             self._persist_windows()
             return {"success": True}
         except Exception as exc:
+            self._window_records = previous_records
             return {"success": False, "error": str(exc)}
 
     def set_window_selection(self, window_id: str, status: str) -> dict:
