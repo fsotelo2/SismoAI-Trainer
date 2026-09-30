@@ -76,3 +76,8 @@
 .dataset-view>.ds-section:first-child .ds-overview-grid>article.ds-subcard:last-child .ds-example-table.is-expanded{height:320px;max-height:320px!important;flex:0 1 320px;}
 .dataset-view>.ds-section:first-child .ds-overview-grid>article.ds-subcard:last-child .ds-example-table table{width:100%;border-collapse:separate;border-spacing:0}
 .dataset-view>.ds-section:first-child .ds-overview-grid>article.ds-subcard:last-child .ds-example-table thead th{position:sticky;top:0;z-index:2;background:#f1f5f9}
+
+/* Persistent filter control in the Ventanas disponibles heading */
+.ds-filter-inline{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--color-text-primary);white-space:nowrap}
+.ds-filter-inline .form-select{min-width:165px;max-width:220px;padding:7px 10px;background:#fff}
+@media(max-width:720px){.ds-filter-inline{flex:1}.ds-filter-inline .form-select{min-width:0;max-width:none;flex:1}}
