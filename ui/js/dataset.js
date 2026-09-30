@@ -25,15 +25,15 @@ function renderRows(){
 }
 function validSplit(){const vals=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value));return vals.every(v=>Number.isFinite(v)&&v>=0&&v<=100)&&vals.reduce((a,b)=>a+b,0)===100;}
 function updateSplit(){
- const vals=['ds-train','ds-val','ds-test'].map(id=>Math.max(0,Math.min(100,Number($(id).value)||0)));
+ const vals=['ds-train','ds-val','ds-test'].map(id=>Math.max(0,Math.min(100,Number($(id)?.value)||0)));
  const keys=['train','val','test'], total=items.length, sum=vals.reduce((a,b)=>a+b,0);
  vals.forEach((v,i)=>{
-  $('ds-'+keys[i]+'-range').value=v;
+  const range=$('ds-'+keys[i]+'-range');if(range)range.value=v;
   const n=Math.round(total*v/100);
-  $('ds-'+keys[i]+'-count').textContent=n.toLocaleString('es-ES')+' ventanas aprox.';
-  $('ds-bar-'+keys[i]).style.width=(sum?v/sum*100:0)+'%';
-  $('ds-bar-'+keys[i]).textContent=v+'%';
-  $('ds-leg-'+keys[i]).textContent=n.toLocaleString('es-ES');
+  setText('ds-'+keys[i]+'-count',n.toLocaleString('es-ES')+' ventanas aprox.');
+  const bar=$('ds-bar-'+keys[i]);if(bar)bar.style.width=(sum?v/sum*100:0)+'%';
+  setText('ds-bar-'+keys[i],v+'%');
+  setText('ds-leg-'+keys[i],n.toLocaleString('es-ES'));
  });
  const ok=validSplit();
  setText('ds-validation',ok?'Distribución configurada: '+vals.join(' / ')+'%.':'Los porcentajes deben sumar exactamente 100%. Total actual: '+sum+'%.';
