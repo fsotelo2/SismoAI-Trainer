@@ -56,8 +56,10 @@
         canvas.addEventListener('pointerdown',e=>{
           const g=geometry(),x=coords(e),d1=Math.abs(x-g.xStart),d2=Math.abs(x-g.xEnd);
           const lo=Math.min(g.xStart,g.xEnd),hi=Math.max(g.xStart,g.xEnd);
-          if(Math.min(d1,d2)<=16)activeHandle=d1<=d2?'start':'end';
-          else if(x>lo+16&&x<hi-16)activeHandle='move';
+          const width=hi-lo;
+          if(width<=32&&x>lo+4&&x<hi-4)activeHandle='move';
+          else if(Math.min(d1,d2)<=12)activeHandle=d1<=d2?'start':'end';
+          else if(x>lo+8&&x<hi-8)activeHandle='move';
           else return;
           const startValue=Number($('w-start').value)||0,endValue=Number($('w-end').value)||0;
           canvas.dataset.moveStart=String(startValue);canvas.dataset.moveEnd=String(endValue);
