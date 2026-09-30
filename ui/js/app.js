@@ -951,7 +951,14 @@ const App = (() => {
     if (specBandMpu) specBandMpu.textContent = state.spectrogram_dominant_band_text || '—';
   }
 
+  function cleanupAnalysisCharts() {
+    if (typeof Charts !== 'undefined' && Charts.cleanupAllCanvases) {
+      Charts.cleanupAllCanvases();
+    }
+  }
+
   async function selectAnalysisFile(fileName) {
+    cleanupAnalysisCharts();
     console.log(`[App] Selecting analysis file: ${fileName}`);
     const result = await Bridge.selectAnalysisFile(fileName);
     if (result.error || result.success === false) {
@@ -972,6 +979,7 @@ const App = (() => {
   }
 
   async function previousEvent() {
+    cleanupAnalysisCharts();
     const state = await Bridge.getAnalysisState();
     if (!state || !state.has_selection || state.loading) return;
     const currentIndex = Number(state.selected_event_index);
@@ -986,6 +994,7 @@ const App = (() => {
   }
 
   async function nextEvent() {
+    cleanupAnalysisCharts();
     const state = await Bridge.getAnalysisState();
     if (!state || !state.has_selection || state.loading) return;
     const currentIndex = Number(state.selected_event_index);
@@ -1002,6 +1011,7 @@ const App = (() => {
   }
 
   async function selectSubmenu(submenu) {
+    cleanupAnalysisCharts();
     console.log(`[App] Selecting submenu: ${submenu}`);
     await Bridge.selectSubmenu(submenu);
     await refreshAnalysisState();
