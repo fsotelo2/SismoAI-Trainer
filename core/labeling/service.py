@@ -61,15 +61,9 @@ class LabelingService:
         ).validate()
         candidate = dict(self.labels)
         candidate[wid] = label.to_dict()
-        workspace = {
-            "schema_version": 1,
-            "window_ids": sorted({str(w.get("window_id")) for w in windows_if_any([window])}),
-        }
+        workspace = {"schema_version": 1, "updated_at": utc_now()}
         persistence.save(self.path, workspace, candidate)
         self.labels = candidate
         self.workspace = workspace
         return deepcopy(candidate[wid])
 
-
-def windows_if_any(items):
-    return items
