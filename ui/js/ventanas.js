@@ -20,8 +20,9 @@
   function draw(canvas, times, values, color, select) {
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.max(1, rect.width*dpr); canvas.height = Math.max(1, 150*dpr);
-    const c = canvas.getContext('2d'); c.scale(dpr,dpr);
+    const pixelWidth=Math.max(1,Math.round(rect.width*dpr)), pixelHeight=Math.max(1,Math.round(150*dpr));
+    if(canvas.width!==pixelWidth || canvas.height!==pixelHeight){canvas.width=pixelWidth;canvas.height=pixelHeight;}
+    const c = canvas.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
     const w=rect.width,h=150,p={l:42,r:10,t:10,b:25}, pw=w-p.l-p.r,ph=h-p.t-p.b;
     c.clearRect(0,0,w,h); c.strokeStyle='#e2e8f0'; c.lineWidth=1;
     for(let i=0;i<=4;i++){const y=p.t+ph*i/4;c.beginPath();c.moveTo(p.l,y);c.lineTo(w-p.r,y);c.stroke();}
@@ -39,7 +40,9 @@
     }
   }
   function renderContext() {
-    $('w-file').textContent=context?.file_name||'—';$('w-event').textContent=context?.event_counter_text||'—';
+    const fileSelect=$('w-file-select');
+    if(fileSelect && context?.file_name && fileSelect.value!==context.file_name) fileSelect.value=context.file_name;
+    $('w-event').textContent=context?.event_counter_text||'—';
     document.querySelector('[data-w-action="prev-event"]').disabled=!context?.can_select_previous_event;
     document.querySelector('[data-w-action="next-event"]').disabled=!context?.can_select_next_event;
     $('w-status').textContent=context?.ready?'Evento listo':(context?.message||'Sin contexto');
@@ -56,7 +59,24 @@
       return '<tr><td>'+w.window_id+'</td><td>'+sec(w.start_us)+'</td><td>'+sec(w.end_us)+'</td><td>'+((w.end_us-w.start_us)/1e6).toFixed(3)+'</td><td>'+w.sensors.join(' + ')+'</td><td>'+w.origin_mode+'</td><td><span class="status-pill '+q+'">'+label+'</span></td><td><select class="form-select" data-w-action="selection" data-id="'+w.window_id+'"><option value="include" '+(w.selection_status==='include'?'selected':'')+'>Incluir</option><option value="review" '+(w.selection_status==='review'?'selected':'')+'>Revisar</option><option value="exclude" '+(w.selection_status==='exclude'?'selected':'')+'>Excluir</option></select></td></tr>';
     }).join(''):'<tr><td colspan="8" class="text-center">No hay ventanas extraídas.</td></tr>';
   }
+  async function loadFileOptions() {
+    const select=$('w-file-select'); if(!select)return;
+    const files=await Bridge.getAnalysisFiles();
+    select.innerHTML='';
+    (Array.isArray(files)?files:[]).filter(f=>f && f.name).forEach(f=>{
+      const option=document.createElement('option');option.value=f.name;option.textContent=f.name;select.appendChild(option);
+    });
+    if(!select.options.length){const option=document.createElement('option');option.value='';option.textContent='No hay BIN válidos';select.appendChild(option);}
+  }
+  async function waitForAnalysis() {
+    for(let i=0;i<40;i++){
+      const state=await Bridge.getAnalysisState();
+      if(state && !state.loading && (state.has_selection || state.state==='error' || state.state==='unavailable')) return;
+      await new Promise(resolve=>setTimeout(resolve,150));
+    }
+  }
   async function refresh() {
+    await loadFileOptions();
     context=await Bridge.getWindowContext();windows=await Bridge.getWindows();
     renderContext();renderRows();
   }
@@ -89,6 +109,13 @@
   }
   document.addEventListener('click',action);
   document.addEventListener('change',async e=>{
+    if(e.target.id==='w-file-select'){
+      if(!e.target.value)return;
+      const result=await Bridge.selectAnalysisFile(e.target.value);
+      if(!result?.success){alert(result?.error||'No se pudo seleccionar el archivo.');return;}
+      context={ready:false,message:'Cargando archivo BIN…'};
+      renderContext();await waitForAnalysis();await refresh();return;
+    }
     const el=e.target.closest('[data-w-action="selection"]');if(!el)return;
     await Bridge.setWindowSelection(el.dataset.id,el.value);await refresh();
   });
