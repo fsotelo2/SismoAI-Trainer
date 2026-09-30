@@ -267,6 +267,8 @@ const App = (() => {
     if (!container) return;
 
     currentView = viewName;
+    const continueLabelingBtn = document.getElementById('btn-continue-labeling');
+    if (continueLabelingBtn) continueLabelingBtn.hidden = viewName !== 'ventanas';
 
     // Load view HTML
     try {
