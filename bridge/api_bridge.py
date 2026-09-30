@@ -1031,10 +1031,6 @@ class ApiBridge:
             except (TypeError, ValueError):
                 return {"success": False, "error": "La ventana no tiene un índice de evento válido."}
             start, end = window.start_us / 1_000_000.0, window.end_us / 1_000_000.0
-            selected = self._analysis._selected_event()
-            origin_us = self._analysis._origin_us
-            event_start = ((selected.start_us - origin_us) / 1_000_000.0
-                           if selected is not None and origin_us is not None else 0.0)
             result = {}
             for sensor, channel in (("GEO", "velocity"), ("MPU", "magnitude")):
                 if sensor not in window.sensors:
@@ -1045,7 +1041,7 @@ class ApiBridge:
                     result[sensor] = {"times": [], "amplitudes": [], "error": series["error"]}
                     continue
                 pairs = [(t, y) for t, y in zip(series["times"], series["amplitudes"])
-                         if start <= (t - event_start) < end]
+                         if start <= t < end]
                 result[sensor] = {"times": [p[0] for p in pairs],
                                   "amplitudes": [p[1] for p in pairs]}
             return {"success": True, "window_id": window_id, "signals": result}
