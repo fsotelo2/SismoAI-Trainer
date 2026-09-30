@@ -350,6 +350,9 @@ const App = (() => {
       case 'dataset':
         if (window.initDataset) await window.initDataset();
         break;
+      case 'modelos':
+        if (window.initModels) await window.initModels();
+        break;
       default:
         // Placeholder views
         break;
