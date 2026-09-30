@@ -437,7 +437,7 @@ html, body {
 
 
 /* Status bar primary action */
-.app-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.app-footer{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .app-footer > #app-footer-status{display:flex;align-items:center;min-height:0;line-height:1.2}
-.app-footer-action{margin-top:0;margin-bottom:0;margin-left:auto;align-self:center;flex-shrink:0;line-height:1.2}
+.app-footer-action{position:absolute;top:50%;right:var(--spacing-md);transform:translateY(-50%);margin:0;align-self:auto;flex-shrink:0;line-height:1.2}
 .app-footer-action[hidden]{display:none}
