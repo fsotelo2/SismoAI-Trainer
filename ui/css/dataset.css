@@ -69,3 +69,10 @@
 .ds-example-table{max-height:190px;overflow-y:auto;overflow-x:auto}
 .ds-example-table.is-expanded{max-height:360px;overflow-y:auto;overflow-x:auto}
 .ds-example-table .table thead th{position:sticky;top:0;z-index:2}
+
+/* Enforce the examples viewport inside its own card. The table body scrolls here only. */
+.dataset-view>.ds-section:first-child .ds-overview-grid>article.ds-subcard:last-child{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.dataset-view>.ds-section:first-child .ds-overview-grid>article.ds-subcard:last-child .ds-example-table{display:block;flex:0 1 auto;height:auto;max-height:190px!important;min-height:0;overflow-y:auto!important;overflow-x:auto!important;overscroll-behavior:contain;}
+.dataset-view>.ds-section:first-child .ds-overview-grid>article.ds-subcard:last-child .ds-example-table.is-expanded{height:320px;max-height:320px!important;flex:0 1 320px;}
+.dataset-view>.ds-section:first-child .ds-overview-grid>article.ds-subcard:last-child .ds-example-table table{width:100%;border-collapse:separate;border-spacing:0}
+.dataset-view>.ds-section:first-child .ds-overview-grid>article.ds-subcard:last-child .ds-example-table thead th{position:sticky;top:0;z-index:2;background:#f1f5f9}
