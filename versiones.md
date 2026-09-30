@@ -1,5 +1,47 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.3.0] — Etiquetado de ventanas
+
+**Fecha:** 2026-09-30
+**Rama de integración:** `main`
+**Rama de origen:** `feature/fase-7-etiquetado`
+**Integración:** Pull request #2, merge commit `a92188fd911b178fe40112b3fe8289d90b351037`
+
+**Versión anterior:** 0.2.0  
+**Tipo:** MINOR  
+**Justificación:** se incorpora el módulo de Etiquetado como nueva capacidad del flujo de preparación de datos, manteniendo las fases anteriores.
+
+**Cambios**
+
+- **Added:** módulo de Etiquetado con modelos de datos, servicio de dominio y persistencia JSON versionada.
+- **Added:** integración del backend con PyWebView mediante el puente de API para consultar el espacio de trabajo, recuperar señales por ventana y guardar etiquetas.
+- **Added:** vista de Etiquetado integrada en la navegación de la aplicación.
+- **Added:** listado de ventanas incluidas desde Ventanas, con filtros de pendientes, etiquetadas y en revisión.
+- **Added:** visualización de señales GEO (geófono) y MPU (acelerómetro), con controles independientes.
+- **Added:** clasificación principal binaria: `0 = TEMBLOR` y `1 = NO_SISMICO`.
+- **Added:** categorías secundarias iniciales para NO_SISMICO: `RUIDO`, `VIBRACIONES`, `GOLPES` e `INDETERMINADO`; el modelo admite categorías textuales extensibles para futuras opciones configurables.
+- **Added:** estados de anotación, observaciones de hasta 200 caracteres y acciones para guardar o guardar y continuar con la siguiente ventana.
+- **Changed:** presentación de la categoría secundaria en una segunda línea del elemento de ventana cuando aplica.
+- **Changed:** codificación visual de clases: sísmico en verde y no sísmico en naranja.
+- **Fixed:** numeración visible de eventos desde 1, manteniendo los índices internos desde 0.
+- **Fixed:** al limpiar la lista de ventanas, los IDs se reinician desde `W-001` y se eliminan las etiquetas asociadas a los IDs borrados para evitar herencias al reutilizarlos.
+- **Added:** botón «Continuar a Dataset», visible en Etiquetado y habilitado únicamente cuando todas las ventanas tienen una clase principal guardada y confirmada.
+- **Added:** validaciones de clase, categoría secundaria, estado, observaciones y versión del esquema de etiqueta.
+- **Added:** persistencia atómica, restauración de datos compatibles y manejo de cambios sin guardar.
+- **Added:** pruebas unitarias para modelos, servicio y restauración.
+
+**Verificación**
+
+- Fase validada funcionalmente por el usuario en ejecución local.
+- No se declara una nueva ejecución automatizada de pruebas como parte de esta actualización documental.
+
+**Compatibilidad**
+
+- Se conserva el flujo de trabajo de las fases anteriores; Etiquetado consume las ventanas generadas en la fase Ventanas.
+
+---
+
+
 ## [v0.2.0] — Ventaneo y ajustes de interfaz de Análisis
 
 **Fecha:** 2026-09-30
