@@ -1,5 +1,23 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.1.1] — Correcciones de compatibilidad en Datos y Análisis
+
+**Fecha:** 2026-09-30
+**Rama:** `main`
+**Commit:** pendiente de asociar
+
+**Tipo:** PATCH
+
+**Cambios**
+- **Fixed:** se añadió el alias `errorText` para mantener compatibilidad con `AnalysisService`.
+- **Fixed:** se añadió el alias `selectedFilePath` para permitir que `AnalysisService` acceda a la ruta seleccionada.
+- Se conserva la compatibilidad de los nombres internos existentes.
+
+**Verificación**
+- Pruebas automatizadas y validación funcional con archivos BIN: no ejecutadas en esta entrega.
+
+---
+
 ## [v0.1.0] — Shell inicial
 
 **Fecha:** 2026-09-25
