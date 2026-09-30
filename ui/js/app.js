@@ -11,7 +11,7 @@ const App = (() => {
     proyecto: { title: 'Proyecto', subtitle: 'Selecciona una carpeta de datos' },
     datos: { title: 'Datos', subtitle: 'Archivos BIN y métricas de calidad' },
     analisis: { title: 'Análisis', subtitle: 'Visualizador de señales sísmicas' },
-    etiquetas: { title: 'Etiquetas', subtitle: 'Gestión de etiquetas' },
+    etiquetado: { title: 'Etiquetado', subtitle: 'Revisión y clasificación de ventanas de señal' },
     ventanas: { title: 'Ventanas', subtitle: 'Configuración de ventanas' },
     dataset: { title: 'Dataset', subtitle: 'Preparación de dataset' },
     modelo: { title: 'Modelo', subtitle: 'Entrenamiento de modelo' },
@@ -337,6 +337,9 @@ const App = (() => {
         break;
       case 'ventanas':
         if (window.initWindows) await window.initWindows();
+        break;
+      case 'etiquetado':
+        if (window.initLabeling) await window.initLabeling();
         break;
       default:
         // Placeholder views
