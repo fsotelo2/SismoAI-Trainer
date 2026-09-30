@@ -1,5 +1,40 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.2.0] — Ventaneo y ajustes de interfaz de Análisis
+
+**Fecha:** 2026-09-30
+**Rama de integración:** `main`
+**Rama de origen:** `feature/fase-6-ventanas`
+**Commits de interfaz recientes:** `4f2e4a4712f4840abdaa0e6831c927162f009c05`, `f0c381e295992c50efa63964f9d12b0543844764`, `eda723b6b822d4006be5343d8776b9d47e14facc`, `6f2d1ff3e5c173a203b8e8334bd3c8c4997d667d`, `44750a1d250acac4e8c3a65744b041847f9056eb`
+
+**Versión anterior:** 0.1.2  
+**Tipo:** MINOR  
+**Justificación:** se incorpora el módulo de Ventanas como capacidad nueva y compatible, manteniendo las interfaces anteriores.
+
+**Cambios**
+
+- **Added:** módulo de Ventanas con generación de ventanas fijas, deslizantes y selección manual.
+- **Added:** configuración de duración, inicio/fin y solapamiento; ventanas vinculadas al archivo, evento e intervalo temporal de origen.
+- **Added:** sincronización temporal GEO/MPU y conservación de timestamps originales, sin interpolación.
+- **Added:** persistencia JSON versionada de la configuración y resultados de ventaneo, con integración mediante el bridge.
+- **Added:** distinción entre selección de ventana (incluir, revisar, excluir) y calidad de señal (aceptada, revisar, bloqueada), con incidencias visibles.
+- **Changed:** navegación e iconografía del top bar adaptadas al módulo activo.
+- **Changed:** organización de los controles superiores de Análisis en una sola línea cuando el ancho disponible lo permite.
+- **Changed:** panel lateral de Análisis adaptable a la pestaña activa, aprovechando el alto disponible; filas más compactas y tipografía ligeramente mayor.
+- **Fixed:** eliminación de la acción duplicada «Ver en Análisis» dentro de Datos.
+- **Fixed:** ajuste vertical de los botones de la barra inferior a `-7px`.
+
+**Verificación**
+- Validación funcional de Ventanas y persistencia reportada durante la revisión de la fase.
+- Validación visual de los ajustes recientes de Análisis confirmada por el usuario.
+- No se ejecutó una nueva corrida automatizada de pruebas como parte de esta consolidación.
+
+**Compatibilidad**
+- No se identifican cambios incompatibles en las interfaces existentes.
+- Los archivos BIN originales se mantienen intactos; las ventanas son una colección derivada y trazable.
+
+---
+
 ## [v0.1.2] — Limpieza de interacciones en gráficas
 
 **Fecha:** 2026-09-30
