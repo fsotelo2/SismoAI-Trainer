@@ -1027,8 +1027,15 @@ class ApiBridge:
             mpu_times = list(state.get("mpu_times") or [])
             geo_values = list(state.get("geophone_values") or [])
             mpu_values = list(state.get("mpu_values") or [])
-            duration = max(geo_times[-1] if geo_times else 0.0,
-                           mpu_times[-1] if mpu_times else 0.0)
+            selected = self._analysis._selected_event()
+            origin_us = self._analysis._origin_us
+            event_start = ((selected.start_us - origin_us) / 1_000_000.0
+                           if selected is not None and origin_us is not None else 0.0)
+            geo_times = [t - event_start for t in geo_times]
+            mpu_times = [t - event_start for t in mpu_times]
+            event_end = ((selected.end_us - origin_us) / 1_000_000.0
+                         if selected is not None and origin_us is not None else event_start)
+            duration = max(0.0, event_end - event_start)
             available = []
             if geo_times and geo_values:
                 available.append("GEO")
