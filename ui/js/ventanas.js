@@ -209,9 +209,10 @@
     if(source==='end-slider'||source==='end')end.value=Number(es.value).toFixed(1);
     if(source==='start-slider'||source==='start')start.value=Number(ss.value).toFixed(1);
   }
-  ['w-start','w-end'].forEach(id=>$(id)?.addEventListener('input',e=>{
-    if(!context?.ready)return;
-    const duration=Math.max(0.1,Number(context.duration_seconds)||5),start=$('w-start'),end=$('w-end');
+  const updateManualField=e=>{
+    if(!context?.ready||mode!=='manual')return;
+    const duration=Math.max(0.1,Number(context.duration_seconds)||5);
+    const start=$('w-start'),end=$('w-end');
     let value=Number(e.target.value);
     if(!Number.isFinite(value))return;
     value=roundRange(Math.max(0,Math.min(duration,value)));
@@ -222,8 +223,15 @@
       value=Math.max(value,Number(start.value)+RANGE_STEP);
       end.value=Math.min(duration,value).toFixed(1);
     }
-    renderContext();
-  }));
+    // Redraw both sensor plots immediately after a spinner, keyboard, or typed edit.
+    draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',true);
+    draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',true);
+  };
+  ['w-start','w-end'].forEach(id=>{
+    const field=$(id);if(!field)return;
+    field.addEventListener('input',updateManualField);
+    field.addEventListener('change',updateManualField);
+  });
   document.addEventListener('click',action);
   document.addEventListener('change',async e=>{
     if(e.target.id==='w-file-select'){
