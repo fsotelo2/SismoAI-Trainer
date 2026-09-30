@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  let items=[], filtered=[], index=0, selectedId=null, dirty=false, context=null, signalCache={};
+  let items=[], filtered=[], index=0, selectedId=null, dirty=false, context=null, signalCache={}, activeFilter='all';
   const esc = v => String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const sec = us => (Number(us||0)/1e6).toFixed(2)+' s';
   function labelOf(item){return item?.label||null;}
@@ -37,9 +37,9 @@
   function discardChanges(){if(!dirty)return;const active=items.find(x=>x.window.window_id===selectedId);if(active)active.label=active._savedLabel?JSON.parse(JSON.stringify(active._savedLabel)):null;dirty=false;$('label-dirty').textContent='Sin cambios';}
   function current(){return filtered.find(x=>x.window.window_id===selectedId);}
   function filter(){
-    if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?')){renderEditor();return;}
+    if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?')){$('label-filter').value=activeFilter;renderEditor();return;}
     discardChanges();
-    const f=$('label-filter').value;
+    const f=$('label-filter').value;activeFilter=f;
     filtered=items.filter(x=>f==='all'||status(x)===f);
     if(!filtered.some(x=>x.window.window_id===selectedId))selectedId=filtered[0]?.window.window_id||null;
     renderList(); if(selectedId)renderEditor(); else {$('label-position').textContent='Sin ventanas';$('label-window-info').textContent='No hay ventanas para mostrar.';}
