@@ -64,17 +64,17 @@ function renderStatus(){
 }
 async function refresh(){
  const r=await Bridge.getDatasetWorkspace();
- if(!r||!r.success){setText('ds-summary',r?.error||'No se pudo cargar Etiquetado.';return;}
+ if(!r||!r.success){setText('ds-summary',r?.error||'No se pudo cargar Etiquetado.');return;}
  items=r.items||[];
  const conf=items.filter(x=>l(x).quality_review==='confirmed'&&[0,1].includes(l(x).class_code));
  const a=conf.filter(x=>l(x).class_code===0).length,b=conf.filter(x=>l(x).class_code===1).length;
  const events=new Set(items.map(eventKey).filter(k=>!k.endsWith('::'))).size;
- setText('ds-m-total',items.length.toLocaleString('es-ES');
- setText('ds-m-events',events.toLocaleString('es-ES');
- setText('ds-m-confirmed',conf.length.toLocaleString('es-ES');
- setText('ds-donut-total',items.length.toLocaleString('es-ES');
- setText('ds-class-0',a.toLocaleString('es-ES')+' ('+percent(a,conf.length)+')';
- setText('ds-class-1',b.toLocaleString('es-ES')+' ('+percent(b,conf.length)+')';
+ setText('ds-m-total',items.length.toLocaleString('es-ES'));
+ setText('ds-m-events',events.toLocaleString('es-ES'));
+ setText('ds-m-confirmed',conf.length.toLocaleString('es-ES'));
+ setText('ds-donut-total',items.length.toLocaleString('es-ES'));
+ setText('ds-class-0',a.toLocaleString('es-ES')+' ('+percent(a,conf.length)+')');
+ setText('ds-class-1',b.toLocaleString('es-ES')+' ('+percent(b,conf.length)+')');
  // Keep the primary binary classes intact, while subdividing NO_SISMICO by its
  // persisted secondary disturbance category for visualization only.
  const categories=['RUIDO','VIBRACIONES','GOLPES','INDETERMINADO'];
@@ -96,18 +96,18 @@ async function refresh(){
  subKeys.map(k=>'<div class="ds-legend-sub"><i class="ds-dot" style="background:'+categoryColors[k]+'"></i><span>'+ (k==='SIN_SUBCATEGORIA'?'Sin subcategoría':k)+'</span><b>'+subCounts[k].toLocaleString('es-ES')+' ('+percent(subCounts[k],conf.length)+')</b></div>').join('');
  if($('ds-imbalance'))$('ds-imbalance').hidden=!(conf.length&&(!a||!b||Math.max(a,b)>Math.max(1,Math.min(a,b))*4));
  const pending=items.length-conf.length;
- setText('ds-summary',items.length+' ventanas incluidas · '+conf.length+' confirmadas · '+pending+' pendientes · '+events+' eventos';
+ setText('ds-summary',items.length+' ventanas incluidas · '+conf.length+' confirmadas · '+pending+' pendientes · '+events+' eventos');
  filterRows();renderStatus();
 }
 async function generate(){
  if(!updateSplit())return;
  const name=$('ds-name').value.trim();
- if(!name){setText('ds-validation','Escribe un nombre para el dataset.';$('ds-validation').classList.add('error');return;}
+ if(!name){setText('ds-validation','Escribe un nombre para el dataset.');$('ds-validation').classList.add('error');return;}
  document.querySelectorAll('[data-ds-action="generate"]').forEach(b=>b.disabled=true);
  const ratios=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value)/100);
  const result=await Bridge.generateDataset(ratios,42,name);
- if(!result?.success){setText('ds-validation',result?.error||'No se pudo generar el dataset.';$('ds-validation').classList.add('error');renderStatus();return;}
- setText('ds-version-note','Dataset guardado: '+name;
+ if(!result?.success){setText('ds-validation',result?.error||'No se pudo generar el dataset.');$('ds-validation').classList.add('error');renderStatus();return;}
+ setText('ds-version-note','Dataset guardado: '+name);
  await App.navigateTo('modelos');
 }
 document.addEventListener('click',async e=>{
