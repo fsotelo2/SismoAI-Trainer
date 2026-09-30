@@ -4,7 +4,7 @@
     <div class="windows-mode-tabs">
       <button class="btn btn-primary" data-w-action="mode" data-mode="fixed">▦　Segmentación automática</button>
       <button class="btn btn-secondary" data-w-action="mode" data-mode="manual">□　Selección manual</button>
-      <div class="windows-source"><span>Archivo:</span><strong id="w-file">—</strong><span>Evento:</span><button class="btn btn-secondary btn-sm" data-w-action="prev-event" aria-label="Evento anterior" disabled>‹</button><strong id="w-event">—</strong><button class="btn btn-secondary btn-sm" data-w-action="next-event" aria-label="Evento siguiente" disabled>›</button></div>
+      <div class="windows-source"><label for="w-file-select">Archivo BIN:</label><select id="w-file-select" class="form-select windows-file-select"><option value="">Cargando archivos…</option></select><span>Evento:</span><button class="btn btn-secondary btn-sm" data-w-action="prev-event" aria-label="Evento anterior" disabled>‹</button><strong id="w-event">—</strong><button class="btn btn-secondary btn-sm" data-w-action="next-event" aria-label="Evento siguiente" disabled>›</button></div>
     </div>
     <div id="w-auto-controls" class="windows-controls">
       <label>Modo de ventana<select id="w-kind" class="form-select"><option value="fixed">Fijas</option><option value="sliding">Deslizantes</option></select></label>
