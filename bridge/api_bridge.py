@@ -633,6 +633,10 @@ class ApiBridge:
             list of dicts with keys: path, name
         """
         try:
+            # Opening the Windows file list also activates Analysis. This ensures
+            # its default valid BIN/event is loaded even when the user never
+            # visited the Analysis view first.
+            self._analysis.activate()
             sources = self._data.analysis_sources()
             return [{"path": path, "name": name} for path, name in sources]
         except Exception as exc:
@@ -648,6 +652,7 @@ class ApiBridge:
             dict with success status
         """
         try:
+            self._analysis.activate()
             sources = self._data.analysis_sources()
             for path, name in sources:
                 if name == file_name:
