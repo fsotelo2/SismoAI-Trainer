@@ -69,5 +69,38 @@ class LabelingPersistenceTests(unittest.TestCase):
             self.assertEqual(restored["observations"], "Revisado")
 
 
+class LabelingServiceBehaviorTests(unittest.TestCase):
+    def test_invalid_payload_does_not_mutate_service(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "labels.json")
+            service = LabelingService(path)
+            with self.assertRaises(LabelingError):
+                service.save_label({"window_id": "W-001"}, {"class_code": 2})
+            self.assertIsNone(service.get_label("W-001"))
+            self.assertFalse(os.path.exists(path))
+
+    def test_switching_to_tremor_clears_secondary_category(self):
+        with tempfile.TemporaryDirectory() as folder:
+            service = LabelingService(os.path.join(folder, "labels.json"))
+            window = {"window_id": "W-001"}
+            service.save_label(window, {
+                "class_code": CLASS_NON_SEISMIC,
+                "disturbance": SECONDARY_UNDETERMINED,
+            })
+            saved = service.save_label(window, {"class_code": CLASS_TREMOR})
+            self.assertIsNone(saved["disturbance"])
+            self.assertEqual(saved["class_code"], CLASS_TREMOR)
+
+    def test_list_labels_preserves_window_order_and_isolates_data(self):
+        with tempfile.TemporaryDirectory() as folder:
+            service = LabelingService(os.path.join(folder, "labels.json"))
+            windows = [{"window_id": "W-002"}, {"window_id": "W-001"}]
+            rows = service.list_labels(windows)
+            self.assertEqual([r["window"]["window_id"] for r in rows],
+                             ["W-002", "W-001"])
+            rows[0]["window"]["window_id"] = "MUTATED"
+            self.assertEqual(windows[0]["window_id"], "W-002")
+
+
 if __name__ == "__main__":
     unittest.main()
