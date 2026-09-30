@@ -68,8 +68,10 @@ class WindowLabel:
         if self.quality_review not in (REVIEW_PENDING, REVIEW_CONFIRMED, REVIEW_REJECTED):
             raise LabelingError("Estado de revisión no válido.")
         if self.disturbance is not None:
-            if self.disturbance != SECONDARY_UNDETERMINED:
-                raise LabelingError("Categoría secundaria no reconocida; use INDETERMINADO.")
+            if (not isinstance(self.disturbance, str)
+                    or not self.disturbance.strip()
+                    or len(self.disturbance) > 80):
+                raise LabelingError("La categoría secundaria debe ser texto válido de hasta 80 caracteres.")
             if self.class_code != CLASS_NON_SEISMIC:
                 raise LabelingError("La categoría secundaria solo aplica a NO_SISMICO.")
         if not isinstance(self.observations, str) or len(self.observations) > 200:
