@@ -102,6 +102,7 @@
     draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',mode==='manual');
     const duration=Math.max(0.001,Number(context.duration_seconds)||5);
     const endInput=$('w-end'),startInput=$('w-start'),startSlider=$('w-start-slider'),endSlider=$('w-end-slider');
+    startInput.max=duration.toFixed(1);endInput.max=duration.toFixed(1);
     const key=String(context.file_name||'')+':'+String(context.event_index??'');
     if(manualContextKey!==key){
       manualContextKey=key;startInput.value='0.0';endInput.value=duration.toFixed(1);
