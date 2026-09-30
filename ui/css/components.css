@@ -2114,6 +2114,24 @@ input[type="radio"] {
   }
 
   #analysis-content .analysis-sidebar > .analysis-info-card:not([style*="display: none"]) .analysis-info-table {
-    height: 100%;
+    height: auto;
+    flex: 0 0 auto;
+  }
+
+  /* Tipografía ligeramente mayor y filas compactas: el espacio sobrante
+     queda al final de la tarjeta, no se reparte entre cada registro. */
+  #analysis-content .analysis-sidebar .analysis-info-table {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  #analysis-content .analysis-sidebar .analysis-info-table td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    line-height: 1.2;
+  }
+
+  #analysis-content .analysis-sidebar .analysis-info-header h3 {
+    font-size: 14px;
   }
 }
