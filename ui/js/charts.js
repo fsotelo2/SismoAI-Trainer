@@ -330,7 +330,10 @@ const Charts = (() => {
     canvas.dataset.spectrumInteractions = 'true';
     const clear = () => {
       const state = spectrumInteractionState.get(canvas);
-      if (state?.onHover) state.onHover(null);
+      if (!state) return;
+      state.options.cursorFrequency = undefined;
+      if (state.onHover) state.onHover(null);
+      plotSpectrum(canvas, state.freqs, state.mags, state.options);
     };
     canvas.addEventListener('pointermove', (event) => {
       const state = spectrumInteractionState.get(canvas);
@@ -342,7 +345,8 @@ const Charts = (() => {
       const y = (event.clientY - rect.top) * scaleY;
       if (x < state.left || x > state.left + state.plotWidth ||
           y < state.top || y > state.top + state.plotHeight) {
-        if (state.onHover) state.onHover(null);
+        if (state.options.cursorFrequency !== undefined) clear();
+        else if (state.onHover) state.onHover(null);
         return;
       }
       const frequency = state.xMin + ((x - state.left) / state.plotWidth) * (state.xMax - state.xMin);
@@ -351,11 +355,13 @@ const Charts = (() => {
         const distance = Math.abs(Number(state.freqs[i]) - frequency);
         if (distance < bestDistance) { bestDistance = distance; index = i; }
       }
+      state.options.cursorFrequency = Number(state.freqs[index]);
       if (state.onHover) state.onHover({
         frequency: Number(state.freqs[index]),
         amplitude: Number(state.mags[index]),
         index,
       });
+      plotSpectrum(canvas, state.freqs, state.mags, state.options);
     });
     canvas.addEventListener('pointerleave', clear);
   }
@@ -385,7 +391,7 @@ const Charts = (() => {
     spectrumInteractionState.set(canvas, {
       freqs, mags, xMin, xMax, width, height,
       left: plotLeft, top: padding, plotWidth, plotHeight,
-      onHover: options.onHover,
+      onHover: options.onHover, options,
     });
     attachSpectrumInteractions(canvas);
 
@@ -410,6 +416,20 @@ const Charts = (() => {
       const barHeight = plotHeight * (mags[i] / yMax);
       const y = height - padding - barHeight;
       ctx.fillRect(x, y, barWidth, barHeight);
+    }
+
+    // Dashed vertical cursor, aligned with the inspected frequency bin.
+    if (options.cursorFrequency !== undefined &&
+        options.cursorFrequency >= xMin && options.cursorFrequency <= xMax) {
+      const cx = plotLeft + plotWidth * ((options.cursorFrequency - xMin) / (xMax - xMin || 1));
+      ctx.strokeStyle = COLORS.cursor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cx, padding);
+      ctx.lineTo(cx, height - padding);
+      ctx.stroke();
+      ctx.setLineDash([]);
     }
   }
 
