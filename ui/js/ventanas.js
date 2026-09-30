@@ -3,7 +3,9 @@
   'use strict';
   let context = null, windows = [], mode = 'fixed', dragStart = null, dragEnd = null, manualContextKey = null;
   const $ = id => document.getElementById(id);
-  const sec = us => (us / 1e6).toFixed(3);
+  const sec = us => (us / 1e6).toFixed(1);
+  const RANGE_STEP = 0.1;
+  const roundRange = value => Math.round(value / RANGE_STEP) * RANGE_STEP;
   const sensors = manual => [$(manual ? 'wm-geo' : 'w-geo').checked ? 'GEO' : null,
     $(manual ? 'wm-mpu' : 'w-mpu').checked ? 'MPU' : null].filter(Boolean);
   function setMode(next) {
@@ -53,15 +55,21 @@
         const geometry=()=>{const r=canvas.getBoundingClientRect(),width=r.width,plotL=42,plotR=10,plotW=width-plotL-plotR,dt=Math.max(context?.duration_seconds||0,1),start=Number($('w-start').value)||0,end=Number($('w-end').value)||0;return {plotL,plotW,dt,xStart:plotL+start*plotW/dt,xEnd:plotL+end*plotW/dt};};
         canvas.addEventListener('pointerdown',e=>{
           const g=geometry(),x=coords(e),d1=Math.abs(x-g.xStart),d2=Math.abs(x-g.xEnd);
-          if(Math.min(d1,d2)>14)return;
-          activeHandle=d1<=d2?'start':'end';canvas.setPointerCapture(e.pointerId);e.preventDefault();
+          const lo=Math.min(g.xStart,g.xEnd),hi=Math.max(g.xStart,g.xEnd);
+          if(Math.min(d1,d2)<=16)activeHandle=d1<=d2?'start':'end';
+          else if(x>=lo+8&&x<=hi-8)activeHandle='move';
+          else return;
+          const startValue=Number($('w-start').value)||0,endValue=Number($('w-end').value)||0;
+          canvas.dataset.moveStart=String(startValue);canvas.dataset.moveEnd=String(endValue);
+          canvas.dataset.movePointer=String((x-g.plotL)*g.dt/g.plotW);
+          canvas.setPointerCapture(e.pointerId);e.preventDefault();
         });
         canvas.addEventListener('pointermove',e=>{
           if(!activeHandle)return;
           const g=geometry(),x=coords(e),value=Math.max(0,Math.min(g.dt,(x-g.plotL)*g.dt/g.plotW));
           const start=$('w-start'),end=$('w-end'),ss=$('w-start-slider'),es=$('w-end-slider');
-          if(activeHandle==='start'){const v=Math.min(value,Number(end.value)-0.001);start.value=Math.max(0,v).toFixed(3);if(ss)ss.value=start.value;}
-          else{const v=Math.max(value,Number(start.value)+0.001);end.value=Math.min(g.dt,v).toFixed(3);if(es)es.value=end.value;}
+          if(activeHandle==='start'){const v=Math.min(value,Number(end.value)-0.001);start.value=roundRange(Math.max(0,v)).toFixed(1);if(ss)ss.value=start.value;}
+          else{const v=Math.max(value,Number(start.value)+0.001);end.value=roundRange(Math.min(g.dt,v)).toFixed(1);if(es)es.value=end.value;}
           if(ss)$('w-start-slider-value').textContent=Number(start.value).toFixed(3)+' s';
           if(es)$('w-end-slider-value').textContent=Number(end.value).toFixed(3)+' s';
           renderContext();
@@ -81,17 +89,17 @@
     $('w-geo-freq').textContent=context?.geophone_frequency_text||'—';$('w-mpu-freq').textContent=context?.mpu_frequency_text||'—';
     if(!context?.ready)return;
     draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',mode==='manual');
-    draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',false);
+    draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',mode==='manual');
     const duration=Math.max(0.001,Number(context.duration_seconds)||5);
     const endInput=$('w-end'),startInput=$('w-start'),startSlider=$('w-start-slider'),endSlider=$('w-end-slider');
     const key=String(context.file_name||'')+':'+String(context.event_index??'');
     if(manualContextKey!==key){
-      manualContextKey=key;startInput.value='0.000';endInput.value=duration.toFixed(3);
+      manualContextKey=key;startInput.value='0.0';endInput.value=duration.toFixed(1);
     }
     [startSlider,endSlider].filter(Boolean).forEach(el=>{el.max=duration.toFixed(3);});
     const start=Math.min(Number(startInput.value)||0,duration);
     const end=Math.min(Math.max(start+0.001,Number(endInput.value)||duration),duration);
-    startInput.value=start.toFixed(3);endInput.value=end.toFixed(3);
+    startInput.value=roundRange(start).toFixed(1);endInput.value=roundRange(end).toFixed(1);
     if(startSlider)startSlider.value=String(start);
     if(endSlider)endSlider.value=String(end);
     if($('w-start-slider-value'))$('w-start-slider-value').textContent=start.toFixed(3)+' s';
