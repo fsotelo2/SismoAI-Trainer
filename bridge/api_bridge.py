@@ -27,6 +27,8 @@ from core.windowing import (
 )
 from core.windowing.models import ORIGIN_FIXED, ORIGIN_SLIDING, ORIGIN_MANUAL, WindowRecord, WindowQuality
 from core.windowing import persistence as window_persistence
+from core.labeling.service import LabelingService
+from core.labeling.models import LabelingError
 
 
 def _sanitize_nan(obj):
@@ -51,6 +53,7 @@ class ApiBridge:
         self._window_records = []
         self._window_sequence = 0
         self._restore_windows()
+        self._labeling = LabelingService()
 
         # Wire callbacks for potential future async notifications
         self._project.add_changed_callback(self._on_project_changed)
@@ -995,6 +998,70 @@ class ApiBridge:
     # 8. Phase 6 — Windowing
     # ------------------------------------------------------------------
 
+    # ------------------------------------------------------------------
+    # 7. Human window labeling
+    # ------------------------------------------------------------------
+
+    def get_labeling_workspace(self) -> dict:
+        """Return windows with their current labels and aggregate counts."""
+        try:
+            windows = [item.to_dict() for item in self._window_records
+                       if item.selection_status == "include"]
+            items = self._labeling.list_labels(windows)
+            counts = {"total": len(items), "pending": 0, "labeled": 0, "review": 0}
+            for item in items:
+                label = item.get("label")
+                if not label or label.get("class_code") is None:
+                    counts["pending"] += 1
+                else:
+                    counts["labeled"] += 1
+                if label and label.get("quality_review") == "pending" and label.get("class_code") is not None:
+                    counts["review"] += 1
+            return {"success": True, "items": items, "counts": counts}
+        except Exception as exc:
+            return {"success": False, "error": str(exc), "items": [], "counts": {}}
+
+    def get_window_signal(self, window_id: str) -> dict:
+        """Load the source event channels and crop them to one window interval."""
+        try:
+            window = next((w for w in self._window_records if w.window_id == window_id), None)
+            if window is None:
+                return {"success": False, "error": "Ventana no encontrada."}
+            try:
+                event_index = int(window.source_event_id)
+            except (TypeError, ValueError):
+                return {"success": False, "error": "La ventana no tiene un índice de evento válido."}
+            start, end = window.start_us / 1_000_000.0, window.end_us / 1_000_000.0
+            result = {}
+            for sensor, channel in (("GEO", "velocity"), ("MPU", "magnitude")):
+                if sensor not in window.sensors:
+                    result[sensor] = {"times": [], "amplitudes": []}
+                    continue
+                series = self.get_channel_series(window.source_file, event_index, channel)
+                if "error" in series:
+                    result[sensor] = {"times": [], "amplitudes": [], "error": series["error"]}
+                    continue
+                pairs = [(t, y) for t, y in zip(series["times"], series["amplitudes"])
+                         if start <= t < end]
+                result[sensor] = {"times": [p[0] for p in pairs],
+                                  "amplitudes": [p[1] for p in pairs]}
+            return {"success": True, "window_id": window_id, "signals": result}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def save_window_label(self, window_id: str, payload: dict) -> dict:
+        """Validate and persist one annotation without modifying the source window."""
+        try:
+            window = next((w.to_dict() for w in self._window_records if w.window_id == window_id), None)
+            if window is None:
+                return {"success": False, "error": "Ventana no encontrada."}
+            label = self._labeling.save_label(window, payload)
+            return {"success": True, "label": label}
+        except (LabelingError, TypeError, ValueError) as exc:
+            return {"success": False, "error": str(exc)}
+        except Exception as exc:
+            return {"success": False, "error": "No se pudo guardar la etiqueta: " + str(exc)}
+
     def _restore_windows(self):
         raw_records, sequence = window_persistence.load(self._window_path)
         restored = []
@@ -1148,12 +1215,25 @@ class ApiBridge:
         return [item.to_dict() for item in self._window_records]
 
     def clear_windows(self) -> dict:
+        """Clear extracted windows and restart their visible IDs from W-001."""
+        previous_records = self._window_records
+        previous_sequence = self._window_sequence
+        cleared_ids = [item.window_id for item in previous_records]
         self._window_records = []
         self._window_sequence = 0
         try:
             self._persist_windows()
+            # Remove annotations for cleared IDs so reused IDs cannot inherit
+            # labels from the previous set of extracted windows.
+            self._labeling.remove_labels(cleared_ids)
             return {"success": True}
         except Exception as exc:
+            self._window_records = previous_records
+            self._window_sequence = previous_sequence
+            try:
+                self._persist_windows()
+            except Exception:
+                pass
             return {"success": False, "error": str(exc)}
 
     def set_window_selection(self, window_id: str, status: str) -> dict:

@@ -11,7 +11,7 @@ const App = (() => {
     proyecto: { title: 'Proyecto', subtitle: 'Selecciona una carpeta de datos' },
     datos: { title: 'Datos', subtitle: 'Archivos BIN y métricas de calidad' },
     analisis: { title: 'Análisis', subtitle: 'Visualizador de señales sísmicas' },
-    etiquetas: { title: 'Etiquetas', subtitle: 'Gestión de etiquetas' },
+    etiquetado: { title: 'Etiquetado', subtitle: 'Revisión y clasificación de ventanas de señal' },
     ventanas: { title: 'Ventanas', subtitle: 'Configuración de ventanas' },
     dataset: { title: 'Dataset', subtitle: 'Preparación de dataset' },
     modelo: { title: 'Modelo', subtitle: 'Entrenamiento de modelo' },
@@ -115,6 +115,10 @@ const App = (() => {
     if (action === 'footer-analyze') { const fileName=target.getAttribute('data-file'); if(fileName) await analyzeFile(fileName); return; }
 
     if (action === 'footer-windows') { await navigateTo('ventanas'); return; }
+
+    if (action === 'footer-continue-labeling') { await navigateTo('etiquetado'); return; }
+
+    if (action === 'footer-continue-dataset') { await navigateTo('dataset'); return; }
 
     if (action === 'analyze-file') {
       const fileName = target.getAttribute('data-file');
@@ -286,6 +290,8 @@ const App = (() => {
     currentView = viewName;
     const continueLabelingBtn = document.getElementById('btn-continue-labeling');
     if (continueLabelingBtn) continueLabelingBtn.hidden = viewName !== 'ventanas';
+    const continueDatasetBtn=document.getElementById('btn-continue-dataset');
+    if(continueDatasetBtn) continueDatasetBtn.hidden=viewName!=='etiquetado';
     const footerAnalysis=document.getElementById('btn-footer-analysis');
     const footerWindows=document.getElementById('btn-footer-windows');
     if(footerAnalysis) footerAnalysis.hidden=viewName!=='datos';
@@ -337,6 +343,9 @@ const App = (() => {
         break;
       case 'ventanas':
         if (window.initWindows) await window.initWindows();
+        break;
+      case 'etiquetado':
+        if (window.initLabeling) await window.initLabeling();
         break;
       default:
         // Placeholder views

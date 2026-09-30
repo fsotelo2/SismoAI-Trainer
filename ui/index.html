@@ -6,7 +6,9 @@
   <title>SismoAI Trainer</title>
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/components.css">\n  <link rel="stylesheet" href="css/ventanas.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/ventanas.css">
+  <link rel="stylesheet" href="css/etiquetado.css">
 </head>
 <body>
   <div class="app-container">
@@ -140,7 +142,7 @@
       <!-- Footer -->
       <footer class="app-footer">
         <span id="app-footer-status">Sistema listo</span>
-        <button class="btn btn-primary app-footer-action" id="btn-continue-labeling" type="button" hidden>Continuar a Etiquetado →</button><button class="btn btn-primary app-footer-action" id="btn-footer-analysis" data-action="footer-analyze" type="button" hidden>Ver análisis →</button><button class="btn btn-primary app-footer-action" id="btn-footer-windows" data-action="footer-windows" type="button" hidden>Ir a Ventanas →</button>
+        <button class="btn btn-primary app-footer-action" id="btn-continue-labeling" data-action="footer-continue-labeling" type="button" hidden>Continuar a Etiquetado →</button><button class="btn btn-primary app-footer-action" id="btn-continue-dataset" data-action="footer-continue-dataset" type="button" hidden disabled>Continuar a Dataset →</button><button class="btn btn-primary app-footer-action" id="btn-footer-analysis" data-action="footer-analyze" type="button" hidden>Ver análisis →</button><button class="btn btn-primary app-footer-action" id="btn-footer-windows" data-action="footer-windows" type="button" hidden>Ir a Ventanas →</button>
       </footer>
     </main>
   </div>
@@ -150,5 +152,6 @@
   <script src="js/charts.js"></script>
   <script src="js/app.js"></script>
   <script src="js/ventanas.js"></script>
+  <script src="js/etiquetado.js"></script>
 </body>
 </html>
