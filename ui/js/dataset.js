@@ -114,7 +114,6 @@ document.addEventListener('click',async e=>{
  if(btn.dataset.dsAction==='refresh')await refresh();
  if(btn.dataset.dsAction==='generate')await generate();
  if(btn.dataset.dsAction==='labeling')await App.navigateTo('etiquetado');
- if(btn.dataset.dsAction==='toggle-filter')$('ds-filter-panel').hidden=!$('ds-filter-panel').hidden;
  if(btn.dataset.dsAction==='show-all'){examplesExpanded=!examplesExpanded;renderRows();btn.textContent=examplesExpanded?'Ver menos':'Ver más';const table=$('ds-example-table');if(table)table.classList.toggle('is-expanded',examplesExpanded);}
 });
 document.addEventListener('change',e=>{
