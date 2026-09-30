@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  let items=[], filtered=[], index=0, selectedId=null, dirty=false, context=null;
+  let items=[], filtered=[], index=0, selectedId=null, dirty=false, context=null, signalCache={};
   const esc = v => String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const sec = us => (Number(us||0)/1e6).toFixed(2)+' s';
   function labelOf(item){return item?.label||null;}
@@ -75,13 +75,20 @@
     c.strokeStyle=color;c.lineWidth=1;c.beginPath();const stride=Math.max(1,Math.floor(n/2200));
     for(let i=0;i<n;i+=stride){const x=p.l+(ts[i]-t0)/(t1-t0||1)*pw,y=p.t+(1-(ys[i]-min)/span)*ph;if(i===0)c.moveTo(x,y);else c.lineTo(x,y);}c.stroke();
   }
-  function drawSignals(item){
-    const w=item.window, matches=context?.ready&&context.file_name===w.source_file&&String(context.event_index)===String(w.source_event_id);
-    $('label-signal-note').textContent=matches?'Se muestra el contexto del evento seleccionado; la señal de ventanas de otros eventos se habilitará con el extractor por ventana.':'Para visualizar la señal, selecciona en Análisis el mismo archivo y evento de esta ventana.';
-    const geo=matches?context.geophone_times.map((t,i)=>({t,y:context.geophone_values[i]})).filter(p=>p.t*1e6>=w.start_us&&p.t*1e6<w.end_us):[];
-    const mpu=matches?context.mpu_times.map((t,i)=>({t,y:context.mpu_values[i]})).filter(p=>p.t*1e6>=w.start_us&&p.t*1e6<w.end_us):[];
-    draw('label-geo-chart',$('label-show-geo').checked?geo.map(p=>p.t):[],geo.map(p=>p.y),'#2563eb');
-    draw('label-mpu-chart',$('label-show-mpu').checked?mpu.map(p=>p.t):[],mpu.map(p=>p.y),'#7c3aed');
+  async function drawSignals(item){
+    const id=item.window.window_id;
+    let data=signalCache[id];
+    if(!data){
+      $('label-signal-note').textContent='Cargando señal de la ventana…';
+      data=await Bridge.getWindowSignal(id);
+      if(selectedId!==id)return;
+      signalCache[id]=data;
+    }
+    const signals=data?.signals||{};
+    const geo=signals.GEO||{},mpu=signals.MPU||{};
+    $('label-signal-note').textContent=data?.success?'Señales recortadas al intervalo de la ventana.':(data?.error||'Señal no disponible.');
+    draw('label-geo-chart',$('label-show-geo').checked?(geo.times||[]):[],geo.amplitudes||[],'#2563eb');
+    draw('label-mpu-chart',$('label-show-mpu').checked?(mpu.times||[]):[],mpu.amplitudes||[],'#7c3aed');
   }
   document.addEventListener('click',async e=>{
     const select=e.target.closest('[data-label-select]');if(select){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;selectedId=select.dataset.labelSelect;dirty=false;renderList();renderEditor();return;}
