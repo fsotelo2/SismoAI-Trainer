@@ -1,2 +1,58 @@
 .dataset-view{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto;padding:0 2px 90px}.dataset-view .card{margin:0;padding:14px 16px;border-radius:8px}.ds-identity{display:flex;align-items:center;gap:16px;min-height:76px}.ds-identity-icon{font-size:34px;color:#64748b;width:48px;text-align:center}.ds-identity-copy{flex:1}.ds-identity-copy h2{font-size:18px;font-weight:650}.ds-identity-copy h2 span{font-size:14px;color:#64748b}.ds-identity-copy p,.ds-section-heading p{font-size:13px;color:var(--color-text-muted);margin-top:3px}.ds-identity-actions,.ds-actions{display:flex;gap:8px}.ds-section-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:12px}.ds-section-heading h2{font-size:19px;font-weight:650}.ds-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#f8fafc;border:1px solid var(--color-border);border-radius:7px;margin-bottom:12px;padding:8px 0}.ds-metric{display:flex;align-items:center;gap:10px;padding:0 12px;border-right:1px solid var(--color-border);min-width:0}.ds-metric:last-child{border:0}.ds-metric>span{font-size:25px;color:#64748b}.ds-metric strong{display:block;font-size:19px}.ds-metric small{display:block;color:var(--color-text-secondary);font-size:12px}.ds-overview-grid{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(400px,1.15fr);gap:12px}.ds-subcard{border:1px solid var(--color-border);border-radius:7px;padding:10px 12px;min-width:0}.ds-subcard h3{font-size:14px;margin-bottom:8px}.ds-class-layout{display:flex;align-items:center;justify-content:space-around;gap:16px;min-height:126px}.ds-donut{width:126px;height:126px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#ef4444 0 50%,#2563eb 50%);position:relative;flex:none}.ds-donut:before{content:"";position:absolute;width:78px;height:78px;border-radius:50%;background:white}.ds-donut>div{z-index:1;text-align:center}.ds-donut strong{display:block;font-size:17px}.ds-donut small{font-size:12px;color:#64748b}.ds-legend{display:grid;gap:12px;min-width:135px}.ds-legend>div{display:grid;grid-template-columns:12px 1fr;column-gap:7px;align-items:center;font-size:12px}.ds-legend b{grid-column:2;font-size:12px;color:#64748b;font-weight:500}.ds-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#94a3b8}.ds-dot.tremor{background:#ef4444}.ds-dot.nonseismic{background:#2563eb}.ds-alert{margin-top:10px;padding:8px 10px;background:#fff1f2;border:1px solid #fecdd3;border-radius:6px;color:#b91c1c;font-size:12px}.ds-alert p{color:#7f1d1d;margin-top:3px}.ds-subheading{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.ds-subheading h3{margin:0}.ds-example-table{max-height:190px;overflow:auto}.ds-example-table .table{font-size:12px}.ds-example-table .table th,.ds-example-table .table td{padding:6px 8px;text-transform:none;letter-spacing:0}.ds-example-table .table th{font-size:11px;position:sticky;top:0}.ds-tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px}.ds-tag.tremor{background:#fee2e2;color:#991b1b}.ds-tag.nonseismic{background:#dbeafe;color:#1e40af}.ds-tag.pending{background:#f1f5f9;color:#475569}.ds-all-windows{margin-top:10px}.ds-full-table{max-height:250px;overflow:auto}.ds-full-table .table th{position:sticky;top:0}.ds-summary{font-size:12px;color:#64748b;margin-top:8px}.ds-filter-panel{margin:-2px 0 10px;padding:8px;background:#f8fafc;border-radius:6px}.ds-filter-panel label{display:flex;align-items:center;gap:8px;font-size:13px}.ds-filter-panel .form-select{max-width:220px;padding:6px}.ds-criteria{display:flex;align-items:center;gap:14px;border:1px solid var(--color-border);border-radius:6px;padding:7px 12px}.ds-criteria legend{font-size:12px;font-weight:600;padding:0 4px}.ds-criteria label{font-size:12px;white-space:nowrap}.ds-criteria input{accent-color:#2563eb}.ds-criteria .muted{color:#94a3b8}.ds-split-controls{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--color-border);border-radius:7px;background:#f8fafc}.ds-split{padding:9px 12px;border-right:1px solid var(--color-border)}.ds-split:last-child{border:0}.ds-split-head{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600}.ds-split-head input{width:48px;text-align:center;padding:4px;border:1px solid var(--color-border);border-radius:5px;background:white;font:inherit}.ds-range{width:100%;margin:7px 0 2px;accent-color:#2563eb}.ds-split.validation .ds-range{accent-color:#10b981}.ds-split.test .ds-range{accent-color:#f59e0b}.ds-split p{font-size:11px;color:#475569}.ds-split-bar{display:flex;height:22px;margin-top:8px;border-radius:5px;overflow:hidden;background:#e2e8f0}.ds-split-bar span{display:grid;place-items:center;color:white;font-size:11px;font-weight:600;border-right:1px solid white;min-width:0}.ds-split-bar span:nth-child(1){background:#2563eb}.ds-split-bar span:nth-child(2){background:#10b981}.ds-split-bar span:nth-child(3){background:#f59e0b;border:0}.ds-split-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:7px;font-size:11px;color:#475569}.ds-validation{font-size:12px;color:#64748b;margin-top:7px}.ds-validation.error{color:#b91c1c;font-weight:600}.ds-checks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.ds-check{display:flex;align-items:center;gap:8px;border:1px solid var(--color-border);border-radius:7px;padding:9px;min-width:0}.ds-check-icon{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#e2e8f0;color:#64748b;flex:none}.ds-check.ok .ds-check-icon{background:#d1fae5;color:#059669}.ds-check.warn .ds-check-icon{background:#fef3c7;color:#d97706}.ds-check>div{flex:1;min-width:0}.ds-check b{font-size:12px}.ds-check p{font-size:11px;color:#64748b;margin-top:3px}.ds-pill{font-size:11px;padding:4px 7px;border-radius:6px;background:#e0f2fe;color:#0369a1;white-space:nowrap}.ds-check.ok .ds-pill{background:#d1fae5;color:#047857}.ds-check.warn .ds-pill{background:#fef3c7;color:#b45309}.ds-bottom-bar{position:sticky;bottom:-1px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--color-border);border-radius:7px;padding:8px 10px;z-index:3;box-shadow:0 -3px 12px #0f172a0d}.ds-bottom-bar label{font-size:12px;font-weight:600;white-space:nowrap}.ds-bottom-bar input{width:230px;padding:7px 9px;border:1px solid var(--color-border);border-radius:5px;font:inherit}.ds-bottom-bar span{flex:1;text-align:right;color:#64748b;font-size:11px}.ds-bottom-bar .btn{min-width:165px}@media(max-width:1100px){.ds-metrics{grid-template-columns:repeat(3,1fr)}.ds-overview-grid{grid-template-columns:1fr}.ds-checks{grid-template-columns:repeat(2,1fr)}.ds-section-heading{flex-wrap:wrap}}@media(max-width:720px){.ds-identity{flex-wrap:wrap}.ds-identity-actions{width:100%;justify-content:flex-end}.ds-metrics{grid-template-columns:repeat(2,1fr)}.ds-split-controls{grid-template-columns:1fr}.ds-split{border-right:0;border-bottom:1px solid var(--color-border)}.ds-checks{grid-template-columns:1fr}.ds-bottom-bar{flex-wrap:wrap}.ds-bottom-bar span{order:3;width:100%;text-align:left}.ds-criteria{flex-wrap:wrap}}
 .ds-footer-controls{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0}.ds-footer-controls[hidden]{display:none}.ds-footer-controls label{font-size:12px;font-weight:600;white-space:nowrap;color:var(--color-text-primary)}.ds-footer-controls input{width:230px;max-width:24vw;padding:7px 9px;border:1px solid var(--color-border);border-radius:5px;background:#fff;font:inherit;color:var(--color-text-primary)}.ds-footer-controls span{color:var(--color-text-muted);font-size:11px;white-space:nowrap}.ds-footer-controls .btn{white-space:nowrap}@media(max-width:900px){.ds-footer-controls span{display:none}.ds-footer-controls input{width:160px}}@media(max-width:650px){.ds-footer-controls label{display:none}.ds-footer-controls input{width:120px}}
+/* Dataset workspace: fit all three sections inside the available viewport */
+.dataset-view{flex:1;min-height:0;overflow:hidden;padding-bottom:0;gap:10px}
+.dataset-view>.ds-section{flex:0 0 auto;min-height:0}
+.dataset-view>.ds-section:first-child{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.dataset-view>.ds-section:first-child .ds-overview-grid{flex:1 1 auto;min-height:0}
+.dataset-view>.ds-section:first-child .ds-subcard{min-height:0}
+.dataset-view>.ds-section:first-child .ds-class-layout{min-height:0}
+.dataset-view>.ds-section:first-child .ds-example-table{max-height:none;min-height:0}
+.dataset-view>.ds-section:first-child .ds-summary{flex:none}
+.dataset-view>.ds-section:nth-child(2),.dataset-view>.ds-section:nth-child(3){flex-shrink:0}
+@media(max-height:900px){
+ .dataset-view{gap:7px}
+ .dataset-view .card{padding:9px 12px}
+ .ds-section-heading{margin-bottom:7px;gap:8px}
+ .ds-section-heading h2{font-size:17px}
+ .ds-section-heading p{font-size:11px;margin-top:1px}
+ .ds-metrics{margin-bottom:7px;padding:5px 0}
+ .ds-metric{gap:7px;padding:0 8px}
+ .ds-metric>span{font-size:20px}
+ .ds-metric strong{font-size:16px}
+ .ds-metric small{font-size:10px}
+ .ds-overview-grid{gap:8px}
+ .ds-subcard{padding:7px 9px}
+ .ds-subcard h3{font-size:12px;margin-bottom:5px}
+ .ds-class-layout{gap:10px}
+ .ds-donut{width:92px;height:92px}
+ .ds-donut:before{width:58px;height:58px}
+ .ds-donut strong{font-size:14px}
+ .ds-donut small{font-size:10px}
+ .ds-legend{gap:6px;min-width:110px}
+ .ds-legend>div,.ds-legend b{font-size:10px}
+ .ds-example-table .table th,.ds-example-table .table td{padding:4px 6px}
+ .ds-example-table .table{font-size:10px}
+ .ds-split-controls{font-size:11px}
+ .ds-split{padding:6px 9px}
+ .ds-split-head{font-size:11px}
+ .ds-range{margin:4px 0 1px}
+ .ds-split p,.ds-split-legend{font-size:10px}
+ .ds-split-bar{height:18px;margin-top:5px}
+ .ds-validation{font-size:10px;margin-top:4px}
+ .ds-checks{gap:6px}
+ .ds-check{padding:6px;gap:6px}
+ .ds-check-icon{width:23px;height:23px}
+ .ds-check b{font-size:10px}
+ .ds-check p,.ds-pill{font-size:9px}
+}
+@media(max-height:760px){
+ .dataset-view{gap:5px}
+ .dataset-view .card{padding:7px 9px}
+ .ds-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}
+ .ds-metric small{font-size:9px}
+ .ds-section-heading h2{font-size:15px}
+ .ds-section-heading p{font-size:10px}
+ .ds-check-icon{width:20px;height:20px}
+ .ds-check p{display:none}
+}
