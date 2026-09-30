@@ -1,6 +1,8 @@
 """Data workflow: BIN summaries, filtering, selection, and validation (no Qt)."""
 
 import datetime
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import os
 from dataclasses import replace
@@ -11,7 +13,7 @@ from dataengine.analysis import aggregate_observed_frequency
 from dataengine.session import FileEntry
 
 from .models import BinFileTableModel, EventTableModel
-from .records import BinFileRow, EventRow
+from .records import BinFileRow, EventRow, SHA256_PENDING
 
 
 SENSOR_MPU = 1
@@ -194,6 +196,118 @@ def _build_file_row(entry, result):
     )
 
 
+def _build_file_row_fast(entry, result):
+    quality = entry.quality
+    status_code, status_text = _status_for_file(entry)
+    try:
+        stat = os.stat(entry.path)
+        size = stat.st_size
+        modified = datetime.datetime.fromtimestamp(stat.st_mtime).astimezone()
+        modified_text = modified.strftime("%Y-%m-%d %H:%M:%S")
+        size_text = "%.1f MB" % (size / (1024 * 1024))
+        size_detail = "%.1f MB (%s bytes)" % (
+            size / (1024 * 1024), format(size, ","))
+    except OSError:
+        size = None
+        modified_text = "—"
+        size_text = size_detail = "—"
+    try:
+        digest_text = SHA256_PENDING
+    except OSError:
+        digest_text = "—"
+
+    metadata = result.metadata if result is not None else None
+    container = result.container if result is not None else None
+    events = result.events if result is not None else []
+    capture_text = _date_text(metadata.inicio_unix_us, with_seconds=True) \
+        if metadata is not None else "—"
+    capture_short = _date_text(metadata.inicio_unix_us) \
+        if metadata is not None else "—"
+
+    intervals = [
+        _duration_seconds(event.inicio_us, event.fin_us)
+        for event in events
+    ]
+    intervals = [value for value in intervals if value is not None]
+    if events and intervals:
+        file_duration = max(event.fin_us for event in events) - min(
+            event.inicio_us for event in events)
+        file_duration = max(0, file_duration) / 1_000_000.0
+        duration_text = _seconds_text(file_duration)
+    else:
+        duration_text = "—"
+
+    event_rows = []
+    origin_us = min((event.inicio_us for event in events), default=None)
+    for index, event in enumerate(events):
+        event_quality = (
+            quality.events[index]
+            if quality is not None and index < len(quality.events) else None
+        )
+        if event_quality is None:
+            geo_text = mpu_text = "—"
+            event_status, event_status_text = "error", "Error"
+        else:
+            geo_text = _frequency_text(
+                event_quality.frequency.get(SENSOR_GEOFONO), suffix="")
+            mpu_text = _frequency_text(
+                event_quality.frequency.get(SENSOR_MPU), suffix="")
+            event_status, event_status_text = _status_for_event(event_quality)
+        start = (
+            (event.inicio_us - origin_us) / 1_000_000.0
+            if origin_us is not None else None
+        )
+        event_rows.append(EventRow(
+            number=index + 1,
+            sequence=event.secuencia,
+            start_text=_seconds_text(start, suffix="", decimals=3),
+            duration_text=_seconds_text(
+                _duration_seconds(event.inicio_us, event.fin_us),
+                suffix="", decimals=2),
+            geophone_hz_text=geo_text,
+            mpu_hz_text=mpu_text,
+            status_code=event_status,
+            status_text=event_status_text,
+        ))
+
+    geo_frequency = _file_frequency_text(quality, SENSOR_GEOFONO)
+    mpu_frequency = _file_frequency_text(quality, SENSOR_MPU)
+    errors = []
+    if quality is not None:
+        errors.extend(quality.razones)
+    if result is not None:
+        errors.extend(reason for event in result.events for reason in event.razones)
+    if entry.error:
+        errors.append(entry.error)
+    return BinFileRow(
+        path=entry.path,
+        name=os.path.basename(entry.path),
+        sequence=entry.sequence,
+        capture_date_text=capture_short,
+        event_count_text=(str(quality.event_count) if quality is not None else "—"),
+        duration_text=duration_text,
+        size_text=size_text,
+        size_detail_text=size_detail,
+        status_code=status_code,
+        status_text=status_text,
+        format_version_text=(str(container.version) if container is not None else "—"),
+        capture_detail_text=capture_text,
+        geophone_frequency_text=geo_frequency,
+        mpu_frequency_text=mpu_frequency,
+        sha256_text=digest_text,
+        modified_text=modified_text,
+        errors=list(dict.fromkeys(error for error in errors if error)),
+        events=event_rows,
+    )
+
+
+def _read_entry_fast(entry):
+    if entry.status != "ok":
+        return _build_file_row_fast(entry, None)
+    result = parse_file(entry.path)
+    return _build_file_row_fast(entry, result)
+
+
 def _read_entry(entry):
     if entry.status != "ok":
         return _build_file_row(entry, None)
@@ -225,6 +339,7 @@ class DataService:
         self._page_size = 50
         self._page = 0
         self._request_id = 0
+        self._lock = threading.Lock()
         
         # Callbacks for UI updates
         self._changed_callbacks: List[Callable] = []
@@ -485,31 +600,78 @@ class DataService:
         self._error = ""
         self._state = self.LOADING
         self._refresh_models()
-        # In web version, load synchronously for simplicity
-        # For large datasets, could use threading
-        self._load_files_sync(request_id, summary.files)
+        thread = threading.Thread(target=self._load_files_async, args=(request_id, summary.files), daemon=True)
+        thread.start()
 
-    def _load_files_sync(self, request_id, entries):
-        rows = []
+    def _load_files_async(self, request_id, entries):
+        batch_size = 10
+        rows = [None] * len(entries)
+        completed = 0
         try:
-            for entry in entries:
-                try:
-                    rows.append(_read_entry(entry))
-                except Exception as exc:
-                    failed = replace(
-                        entry, status="error",
-                        error="No se pudo leer: %s" % exc,
-                    )
-                    rows.append(_build_file_row(failed, None))
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                futures = {pool.submit(_read_entry_fast, entry): i
+                           for i, entry in enumerate(entries)}
+                for future in as_completed(futures):
+                    with self._lock:
+                        if request_id != self._request_id:
+                            return
+                    idx = futures[future]
+                    try:
+                        rows[idx] = future.result()
+                    except Exception as exc:
+                        failed = replace(entries[idx], status="error",
+                                         error="No se pudo leer: %s" % exc)
+                        rows[idx] = _build_file_row_fast(failed, None)
+                    completed += 1
+                    if completed % batch_size == 0 or completed == len(entries):
+                        with self._lock:
+                            if request_id != self._request_id:
+                                return
+                            self._records = [row for row in rows if row is not None]
+                        self._refresh_models()
         except Exception as exc:
-            self._records = []
-            self._error = "No se pudieron cargar los archivos BIN: %s" % exc
-            self._state = self.ERROR
-        else:
+            with self._lock:
+                if request_id != self._request_id:
+                    return
+                self._records = []
+                self._error = "No se pudieron cargar los archivos BIN: %s" % exc
+                self._state = self.ERROR
+            self._refresh_models()
+            return
+        with self._lock:
+            if request_id != self._request_id:
+                return
             self._records = list(rows)
             self._state = self.READY
             self._error = ""
-        self._page = 0
+            self._page = 0
+        self._refresh_models()
+        threading.Thread(target=self._compute_hashes_async, args=(request_id,),
+                         daemon=True).start()
+
+    def _compute_hashes_async(self, request_id):
+        with self._lock:
+            pending = [(i, row.path) for i, row in enumerate(self._records)
+                       if row.sha256_text == SHA256_PENDING]
+        for i, path in pending:
+            with self._lock:
+                if request_id != self._request_id:
+                    return
+            try:
+                digest = _sha256(path)
+            except OSError:
+                digest = "—"
+            with self._lock:
+                if request_id != self._request_id:
+                    return
+                if i < len(self._records) and self._records[i].path == path:
+                    self._records[i] = replace(self._records[i], sha256_text=digest)
+                selected = self._selected_path
+            if selected == path:
+                self._refresh_models()
+        with self._lock:
+            if request_id != self._request_id:
+                return
         self._refresh_models()
 
     # -- Python-owned search, filters, paging, and selection ------------
@@ -540,6 +702,15 @@ class DataService:
     def select_file(self, path):
         if not any(row.path == path for row in self._records):
             return
+        with self._lock:
+            for i, row in enumerate(self._records):
+                if row.path == path and row.sha256_text == SHA256_PENDING:
+                    try:
+                        digest = _sha256(path)
+                    except OSError:
+                        digest = "—"
+                    self._records[i] = replace(row, sha256_text=digest)
+                    break
         self._selected_path = path
         self._file_model.set_selected_path(path)
         self._refresh_models()
