@@ -436,6 +436,6 @@ html, body {
 
 
 /* Status bar primary action */
-.app-footer{justify-content:space-between;gap:12px}
-.app-footer-action{margin-left:auto}
+.app-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.app-footer-action{margin-left:auto;align-self:center;flex-shrink:0}
 .app-footer-action[hidden]{display:none}
