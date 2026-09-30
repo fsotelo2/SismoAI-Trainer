@@ -211,21 +211,24 @@
   }
   const updateManualField=e=>{
     if(!context?.ready||mode!=='manual')return;
-    const duration=Math.max(0.1,Number(context.duration_seconds)||5);
+    const duration=Math.max(0,Number(context.duration_seconds)||0);
     const start=$('w-start'),end=$('w-end');
+    start.max=duration.toFixed(1);
+    end.max=duration.toFixed(1);
     let value=Number(e.target.value);
-    if(!Number.isFinite(value))return;
+    if(e.target.value.trim()===''||!Number.isFinite(value))return;
     value=roundRange(Math.max(0,Math.min(duration,value)));
+    const startValue=Number(start.value)||0,endValue=Number(end.value)||duration;
     if(e.target===start){
-      value=Math.min(value,Math.max(0,Number(end.value)-RANGE_STEP));
+      value=Math.min(value,Math.max(0,endValue-RANGE_STEP));
       start.value=value.toFixed(1);
     }else{
-      value=Math.max(value,Number(start.value)+RANGE_STEP);
-      end.value=Math.min(duration,value).toFixed(1);
+      value=Math.max(value,startValue+RANGE_STEP);
+      value=Math.min(duration,value);
+      end.value=roundRange(value).toFixed(1);
     }
-    // Redraw both sensor plots immediately after a spinner, keyboard, or typed edit.
-    draw($('w-chart-geo'),context.geophone_times||[],context.geophone_values||[],'#2563eb',true);
-    draw($('w-chart-mpu'),context.mpu_times||[],context.mpu_values||[],'#7c3aed',true);
+    // Re-render the complete manual context so both charts use the edited bounds.
+    renderContext();
   };
   ['w-start','w-end'].forEach(id=>{
     const field=$(id);if(!field)return;
