@@ -1,11 +1,11 @@
 <section class="windows-page">
-  <div class="windows-mode-tabs">
-    <button class="btn btn-primary" data-w-action="mode" data-mode="fixed">▦　Segmentación automática</button>
-    <button class="btn btn-secondary" data-w-action="mode" data-mode="manual">□　Selección manual</button>
-    <div class="windows-source"><span>Archivo:</span><strong id="w-file">—</strong><span>Evento:</span><strong id="w-event">—</strong></div>
-  </div>
   <div class="windows-config panel">
     <div class="windows-config-head"><div><h2 id="w-mode-title">Configuración de segmentación</h2><p id="w-mode-subtitle">Genera ventanas sobre el evento seleccionado en Análisis.</p></div><span class="status-pill" id="w-status">Sin contexto</span></div>
+    <div class="windows-mode-tabs">
+      <button class="btn btn-primary" data-w-action="mode" data-mode="fixed">▦　Segmentación automática</button>
+      <button class="btn btn-secondary" data-w-action="mode" data-mode="manual">□　Selección manual</button>
+      <div class="windows-source"><span>Archivo:</span><strong id="w-file">—</strong><span>Evento:</span><strong id="w-event">—</strong></div>
+    </div>
     <div id="w-auto-controls" class="windows-controls">
       <label>Modo de ventana<select id="w-kind" class="form-select"><option value="fixed">Fijas</option><option value="sliding">Deslizantes</option></select></label>
       <label>Duración (s)<input id="w-duration" class="form-input" type="number" min="0.001" step="0.1" value="5"></label>
