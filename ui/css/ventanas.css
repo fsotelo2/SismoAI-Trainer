@@ -1,7 +1,7 @@
 /* Phase 6 — Windows view styles, aligned with the existing design tokens */
 .windows-page{display:flex;flex-direction:column;gap:12px;padding:4px 0 16px}
-.windows-mode-tabs{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.windows-source{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
+.windows-mode-tabs{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:10px;min-width:0}
+.windows-source{margin-left:0;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:nowrap;white-space:nowrap;min-width:0;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
 .windows-source strong{color:var(--color-text-primary);margin-right:12px}
 .windows-config,.windows-charts .panel,.windows-list-panel{background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow-sm)}
 .windows-config-head,.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
@@ -28,9 +28,11 @@
 .status-pill.accepted{background:var(--color-success-bg);color:#047857}
 .status-pill.review{background:var(--color-warning-bg);color:#92400e}
 .status-pill.blocked{background:var(--color-danger-bg);color:#b91c1c}
-@media(max-width:1050px){.windows-charts{grid-template-columns:1fr}.windows-source{margin-left:0}}
+@media(max-width:1250px){.windows-mode-tabs{grid-template-columns:auto auto;}.windows-source{grid-column:1/-1;justify-content:flex-start}}
+@media(max-width:1050px){.windows-charts{grid-template-columns:1fr}}
 
 .windows-source{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.windows-file-select{min-width:190px;max-width:260px}
+.windows-file-select{width:clamp(190px,18vw,300px);min-width:190px;max-width:300px;flex:0 1 auto}
 .windows-source .form-select{min-height:34px}
-.windows-source strong{margin:0 4px}
+.windows-source strong{margin:0 4px;white-space:nowrap}
+.windows-source button{flex:0 0 auto}
