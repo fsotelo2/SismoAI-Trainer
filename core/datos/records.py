@@ -4,6 +4,9 @@ from dataclasses import dataclass, field
 from typing import List
 
 
+SHA256_PENDING = "Calculando…"
+
+
 @dataclass(frozen=True)
 class EventRow:
     number: int
