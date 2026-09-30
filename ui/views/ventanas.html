@@ -8,14 +8,14 @@
     </div>
     <div id="w-auto-controls" class="windows-controls">
       <label>Modo de ventana<select id="w-kind" class="form-select"><option value="fixed">Fijas</option><option value="sliding">Deslizantes</option></select></label>
-      <label>Duración (s)<input id="w-duration" class="form-input" type="number" min="0.001" step="0.1" value="5"></label>
-      <label>Paso (s)<input id="w-step" class="form-input" type="number" min="0.001" step="0.1" value="5"></label>
+      <label>Duración (s)<input id="w-duration" class="form-input" type="number" min="0.001" step="0.1" value="5.0"></label>
+      <label>Paso (s)<input id="w-step" class="form-input" type="number" min="0.001" step="0.1" value="5.0"></label>
       <fieldset><legend>Sensores</legend><label><input type="checkbox" id="w-geo" checked> Geófono</label><label><input type="checkbox" id="w-mpu" checked> MPU</label></fieldset>
       <button class="btn btn-primary" data-w-action="generate">⚙ Generar ventanas</button>
     </div>
     <div id="w-manual-controls" class="windows-controls" style="display:none">
-      <label>Inicio (s)<input id="w-start" class="form-input" type="number" min="0" step="0.001" value="0"></label>
-      <label>Fin (s)<input id="w-end" class="form-input" type="number" min="0" step="0.001" value="5"></label>
+      <label>Inicio (s)<input id="w-start" class="form-input" type="number" min="0" step="0.1" value="0.0"></label>
+      <label>Fin (s)<input id="w-end" class="form-input" type="number" min="0" step="0.1" value="5.0"></label>
       <fieldset><legend>Sensores</legend><label><input type="checkbox" id="wm-geo" checked> Geófono</label><label><input type="checkbox" id="wm-mpu" checked> MPU</label></fieldset>
       <button class="btn btn-primary" data-w-action="add-manual">＋ Añadir ventana</button>
       <p class="windows-hint">Ajusta los límites con los controles deslizables o introduce los tiempos exactos.</p>
