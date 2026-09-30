@@ -247,10 +247,10 @@
     if($('w-start-slider-value'))$('w-start-slider-value').textContent=start.value+' s';
     if($('w-end-slider-value'))$('w-end-slider-value').textContent=end.value+' s';
   };
-  ['w-start','w-end'].forEach(id=>{
-    const field=$(id);if(!field)return;
-    ['input','change','keyup','blur'].forEach(type=>field.addEventListener(type,updateManualField));
-  });
+  // The Windows view is injected dynamically, so bind through document delegation.
+  ['input','change','keyup'].forEach(type=>document.addEventListener(type,e=>{
+    if(e.target?.id==='w-start'||e.target?.id==='w-end')updateManualField(e);
+  }));
   document.addEventListener('click',action);
   document.addEventListener('change',async e=>{
     if(e.target.id==='w-file-select'){
