@@ -1039,13 +1039,15 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": [], "counts": {}}
 
-    def generate_dataset(self, ratios=None, seed=42) -> dict:
+    def generate_dataset(self, ratios=None, seed=42, name=None) -> dict:
         try:
             workspace = self.get_dataset_workspace()
             if not workspace.get("success"):
                 raise DatasetError(workspace.get("error", "No se pudo leer Etiquetado."))
             ratios = ratios or [0.70, 0.15, 0.15]
             manifest = build_manifest(workspace["items"], tuple(ratios), seed)
+            if name is not None:
+                manifest["name"] = str(name).strip()[:80] or "Dataset_sin_nombre"
             save_manifest(self._dataset_path, manifest)
             self._active_dataset = manifest
             return {"success": True, "dataset": manifest}
