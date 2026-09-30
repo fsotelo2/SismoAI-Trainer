@@ -391,6 +391,11 @@ class DataService:
         return self._error
 
     @property
+    def errorText(self):
+        """Backward-compatible camelCase alias used by AnalysisService."""
+        return self._error
+
+    @property
     def empty_text(self):
         if self._state == self.LOADING:
             return "Cargando y validando archivos BIN…"
