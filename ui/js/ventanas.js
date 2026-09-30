@@ -94,8 +94,8 @@
     startInput.value=start.toFixed(3);endInput.value=end.toFixed(3);
     if(startSlider)startSlider.value=String(start);
     if(endSlider)endSlider.value=String(end);
-    $('w-start-slider-value').textContent=start.toFixed(3)+' s';
-    $('w-end-slider-value').textContent=end.toFixed(3)+' s';
+    if($('w-start-slider-value'))$('w-start-slider-value').textContent=start.toFixed(3)+' s';
+    if($('w-end-slider-value'))$('w-end-slider-value').textContent=end.toFixed(3)+' s';
   }
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -191,8 +191,7 @@
     if(source==='end-slider'||source==='end')end.value=Number(es.value).toFixed(3);
     if(source==='start-slider'||source==='start')start.value=Number(ss.value).toFixed(3);
   }
-  ['w-start-slider','w-end-slider'].forEach(id=>$(id)?.addEventListener('input',()=>{syncManualRange(id==='w-start-slider'?'start-slider':'end-slider');if(context?.ready)renderContext();}));
-  ['w-start','w-end'].forEach(id=>$(id)?.addEventListener('input',()=>{syncManualRange(id==='w-start'?'start':'end');if(context?.ready)renderContext();}));
+  ['w-start','w-end'].forEach(id=>$(id)?.addEventListener('input',()=>{if(context?.ready)renderContext();}));
   document.addEventListener('click',action);
   document.addEventListener('change',async e=>{
     if(e.target.id==='w-file-select'){
