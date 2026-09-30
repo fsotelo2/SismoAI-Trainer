@@ -1005,7 +1005,8 @@ class ApiBridge:
     def get_labeling_workspace(self) -> dict:
         """Return windows with their current labels and aggregate counts."""
         try:
-            windows = [item.to_dict() for item in self._window_records]
+            windows = [item.to_dict() for item in self._window_records
+                       if item.selection_status == "include"]
             items = self._labeling.list_labels(windows)
             counts = {"total": len(items), "pending": 0, "labeled": 0, "review": 0}
             for item in items:
