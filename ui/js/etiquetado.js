@@ -43,7 +43,7 @@
   }
   function updateSelected(patch){
     const item=current();if(!item)return;
-    item.label={...(item.label||{window_id:selectedId,class_code:null,quality_review:'pending',observations:''}),...patch,window_id:selectedId};
+    item.label={...(item.label||{window_id:selectedId,class_code:null,quality_review:'confirmed',observations:''}),...patch,window_id:selectedId};
     markDirty();renderList();renderEditor();
   }
   async function save(next=false){
@@ -100,7 +100,7 @@
     if(act==='prev'||act==='next'){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;const i=filtered.findIndex(x=>x.window.window_id===selectedId),d=act==='next'?1:-1;selectedId=filtered[(i+d+filtered.length)%filtered.length]?.window.window_id||selectedId;dirty=false;renderList();renderEditor();}
   });
   $('label-filter').addEventListener('change',filter);
-  $('label-observations').addEventListener('input',e=>updateSelected({observations:e.target.value.slice(0,200)}));
+  $('label-observations').addEventListener('input',e=>{const item=current();if(!item)return;item.label={...(item.label||{window_id:selectedId,class_code:null,quality_review:'confirmed'}),observations:e.target.value.slice(0,200)};markDirty();$('label-char-count').textContent=e.target.value.length;});
   $('label-show-geo').addEventListener('change',()=>current()&&drawSignals(current()));
   $('label-show-mpu').addEventListener('change',()=>current()&&drawSignals(current()));
   window.initLabeling=async()=>{context=await Bridge.getWindowContext();await load();};
