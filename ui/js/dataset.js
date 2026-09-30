@@ -3,7 +3,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const setText=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
-let items=[],filtered=[];
+let items=[],filtered=[],examplesExpanded=false;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const w=x=>x.window||{}, l=x=>x.label||{};
 const eventKey=x=>String(w(x).source_file||'')+'::'+String(w(x).source_event_id??'');
@@ -15,25 +15,24 @@ function filterRows(){
  renderRows();
 }
 function renderRows(){
- const examples=filtered.slice(0,5).map(x=>{
+ const examples=filtered.slice(0,examplesExpanded?filtered.length:5).map(x=>{
   const win=w(x),lab=l(x),tone=lab.class_code===0?'tremor':lab.class_code===1?'nonseismic':'pending';
   const duration=(Number(win.end_us)-Number(win.start_us))/1000000;
   return '<tr><td>'+esc(win.window_id||'—')+'</td><td><span class="ds-tag '+tone+'">'+classText(x)+'</span></td><td>'+esc(win.source_event_id??'—')+' / '+esc(win.source_file||'—')+'</td><td>'+(Number.isFinite(duration)?duration.toFixed(1)+' s':'—')+'</td><td>'+((win.sensors||[]).length||'—')+'</td></tr>';
  }).join('');
  $('ds-examples').innerHTML=examples||'<tr><td colspan="5">No hay ventanas para mostrar.</td></tr>';
- $('ds-rows').innerHTML=filtered.map(x=>'<tr><td>'+esc(w(x).window_id||'—')+'</td><td>'+esc(w(x).source_file||'—')+'</td><td>'+esc(w(x).source_event_id??'—')+'</td><td>'+classText(x)+'</td><td>'+esc(l(x).quality_review||'sin etiqueta')+'</td></tr>').join('')||'<tr><td colspan="5">No hay ventanas.</td></tr>';
 }
 function validSplit(){const vals=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value));return vals.every(v=>Number.isFinite(v)&&v>=0&&v<=100)&&vals.reduce((a,b)=>a+b,0)===100;}
 function updateSplit(){
- const vals=['ds-train','ds-val','ds-test'].map(id=>Math.max(0,Math.min(100,Number($(id).value)||0)));
+ const vals=['ds-train','ds-val','ds-test'].map(id=>Math.max(0,Math.min(100,Number($(id)?.value)||0)));
  const keys=['train','val','test'], total=items.length, sum=vals.reduce((a,b)=>a+b,0);
  vals.forEach((v,i)=>{
-  $('ds-'+keys[i]+'-range').value=v;
+  const range=$('ds-'+keys[i]+'-range');if(range)range.value=v;
   const n=Math.round(total*v/100);
-  $('ds-'+keys[i]+'-count').textContent=n.toLocaleString('es-ES')+' ventanas aprox.';
-  $('ds-bar-'+keys[i]).style.width=(sum?v/sum*100:0)+'%';
-  $('ds-bar-'+keys[i]).textContent=v+'%';
-  $('ds-leg-'+keys[i]).textContent=n.toLocaleString('es-ES');
+  setText('ds-'+keys[i]+'-count',n.toLocaleString('es-ES')+' ventanas aprox.');
+  const bar=$('ds-bar-'+keys[i]);if(bar)bar.style.width=(sum?v/sum*100:0)+'%';
+  setText('ds-bar-'+keys[i],v+'%');
+  setText('ds-leg-'+keys[i],n.toLocaleString('es-ES'));
  });
  const ok=validSplit();
  setText('ds-validation',ok?'Distribución configurada: '+vals.join(' / ')+'%.':'Los porcentajes deben sumar exactamente 100%. Total actual: '+sum+'%.');
@@ -64,7 +63,7 @@ function renderStatus(){
 }
 async function refresh(){
  const r=await Bridge.getDatasetWorkspace();
- if(!r||!r.success){setText('ds-summary',r?.error||'No se pudo cargar Etiquetado.';return;}
+ if(!r||!r.success){setText('ds-summary',r?.error||'No se pudo cargar Etiquetado.');return;}
  items=r.items||[];
  const conf=items.filter(x=>l(x).quality_review==='confirmed'&&[0,1].includes(l(x).class_code));
  const a=conf.filter(x=>l(x).class_code===0).length,b=conf.filter(x=>l(x).class_code===1).length;
@@ -102,11 +101,11 @@ async function refresh(){
 async function generate(){
  if(!updateSplit())return;
  const name=$('ds-name').value.trim();
- if(!name){setText('ds-validation','Escribe un nombre para el dataset.';$('ds-validation').classList.add('error');return;}
+ if(!name){setText('ds-validation','Escribe un nombre para el dataset.');$('ds-validation').classList.add('error');return;}
  document.querySelectorAll('[data-ds-action="generate"]').forEach(b=>b.disabled=true);
  const ratios=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value)/100);
  const result=await Bridge.generateDataset(ratios,42,name);
- if(!result?.success){setText('ds-validation',result?.error||'No se pudo generar el dataset.';$('ds-validation').classList.add('error');renderStatus();return;}
+ if(!result?.success){setText('ds-validation',result?.error||'No se pudo generar el dataset.');$('ds-validation').classList.add('error');renderStatus();return;}
  setText('ds-version-note','Dataset guardado: '+name);
  await App.navigateTo('modelos');
 }
@@ -115,8 +114,7 @@ document.addEventListener('click',async e=>{
  if(btn.dataset.dsAction==='refresh')await refresh();
  if(btn.dataset.dsAction==='generate')await generate();
  if(btn.dataset.dsAction==='labeling')await App.navigateTo('etiquetado');
- if(btn.dataset.dsAction==='toggle-filter')$('ds-filter-panel').hidden=!$('ds-filter-panel').hidden;
- if(btn.dataset.dsAction==='show-all'){$('ds-all-windows').hidden=!$('ds-all-windows').hidden;btn.textContent=$('ds-all-windows').hidden?'Ver más':'Ver menos';}
+ if(btn.dataset.dsAction==='show-all'){examplesExpanded=!examplesExpanded;renderRows();btn.textContent=examplesExpanded?'Ver menos':'Ver más';const table=$('ds-example-table');if(table)table.classList.toggle('is-expanded',examplesExpanded);}
 });
 document.addEventListener('change',e=>{
  if(e.target.id==='ds-filter')filterRows();

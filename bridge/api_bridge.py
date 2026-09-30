@@ -29,6 +29,7 @@ from core.windowing.models import ORIGIN_FIXED, ORIGIN_SLIDING, ORIGIN_MANUAL, W
 from core.windowing import persistence as window_persistence
 from core.labeling.service import LabelingService
 from core.labeling.models import LabelingError
+from core.dataset.service import build_manifest, save_manifest, DatasetError
 
 
 def _sanitize_nan(obj):
@@ -54,6 +55,9 @@ class ApiBridge:
         self._window_sequence = 0
         self._restore_windows()
         self._labeling = LabelingService()
+        self._dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
+        self._active_dataset = None
+        self._restore_dataset()
 
         # Wire callbacks for potential future async notifications
         self._project.add_changed_callback(self._on_project_changed)
@@ -1001,6 +1005,54 @@ class ApiBridge:
     # ------------------------------------------------------------------
     # 7. Human window labeling
     # ------------------------------------------------------------------
+
+    def _restore_dataset(self):
+        try:
+            with open(self._dataset_path, encoding="utf-8") as stream:
+                data = json.load(stream)
+            if data.get("schema") == "sismoai-dataset" and data.get("schema_version") == 1:
+                self._active_dataset = data
+        except (OSError, ValueError, TypeError):
+            self._active_dataset = None
+
+    def get_dataset_workspace(self) -> dict:
+        try:
+            items = self._labeling.list_labels([
+                item.to_dict() for item in self._window_records
+                if item.selection_status == "include"
+            ])
+            counts = {"total": len(items), "labeled": 0, "pending": 0, "classes": {"0": 0, "1": 0}, "events": 0}
+            events = set()
+            for item in items:
+                label = item.get("label") or {}
+                code = label.get("class_code")
+                if code in (0, 1) and label.get("quality_review") == "confirmed":
+                    counts["labeled"] += 1
+                    counts["classes"][str(code)] += 1
+                else:
+                    counts["pending"] += 1
+                w = item["window"]
+                if w.get("source_event_id") is not None:
+                    events.add((w.get("source_file"), str(w.get("source_event_id"))))
+            counts["events"] = len(events)
+            return {"success": True, "items": items, "counts": counts, "active_dataset": self._active_dataset}
+        except Exception as exc:
+            return {"success": False, "error": str(exc), "items": [], "counts": {}}
+
+    def generate_dataset(self, ratios=None, seed=42, name=None) -> dict:
+        try:
+            workspace = self.get_dataset_workspace()
+            if not workspace.get("success"):
+                raise DatasetError(workspace.get("error", "No se pudo leer Etiquetado."))
+            ratios = ratios or [0.70, 0.15, 0.15]
+            manifest = build_manifest(workspace["items"], tuple(ratios), seed)
+            if name is not None:
+                manifest["name"] = str(name).strip()[:80] or "Dataset_sin_nombre"
+            save_manifest(self._dataset_path, manifest)
+            self._active_dataset = manifest
+            return {"success": True, "dataset": manifest}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
 
     def get_labeling_workspace(self) -> dict:
         """Return windows with their current labels and aggregate counts."""
