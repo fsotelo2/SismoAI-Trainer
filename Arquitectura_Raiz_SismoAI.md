@@ -265,31 +265,87 @@ entrenamiento y prueba. Exponer registros y resúmenes desde Python.
 
 **Entregable:** dataset reproducible.
 
-### Fase 9 --- Modelos
+### Fase 9 --- Modelos (objetivo inicial: ESP32-S3)
 
-Implementar en orden: 1. Baseline de reglas/características. 2.
-Clasificador de características. 3. 1D-CNN. 4. Comparación. 5.
-Evaluación. 6. Matriz de confusión. 7. Precisión, recall y F1. 8. Falsos
-positivos y falsos negativos.
+**Propósito:** diseñar, entrenar, optimizar, evaluar y versionar modelos
+de clasificación sísmica destinados inicialmente a ejecutarse en
+ESP32-S3. Esta fase se desarrolla en el entorno de PC; no realiza aún
+la validación física en la placa, que corresponde a la Fase 11.
 
-Python controla entrenamiento, configuraciones, resultados y versiones
-de modelos.
+**Alcance funcional, en orden:**
 
-**Entregable:** modelos evaluados y versionados.
+1. **Perfil de destino ESP32-S3:** fijar el objetivo de despliegue y las
+   restricciones relevantes de memoria, operadores y runtime. Mantener
+   el diseño extensible mediante perfiles futuros para otras placas,
+   sin implementar esos perfiles en esta fase.
+2. **Catálogo de modelos:** baseline de reglas/características,
+   clasificador de características y 1D-CNN. Registrar para cada
+   arquitectura sus entradas, salidas, preprocesamiento y operaciones
+   requeridas. La selección final queda condicionada a la compatibilidad
+   documentada de ESP-DL.
+3. **Configuración del experimento:** seleccionar dataset y versión de
+   la Fase 8; definir particiones, semilla, hiperparámetros, métricas y
+   configuración de entrenamiento. Conservar la referencia inmutable
+   al dataset utilizado.
+4. **Entrenamiento en PC:** ejecutar y registrar entrenamientos,
+   configuraciones, logs, duración y artefactos. Python es responsable
+   del estado, ejecución, validaciones y persistencia.
+5. **Conversión y cuantización:** exportar el modelo entrenado a ONNX
+   cuando corresponda y utilizar ESP-PPQ para calibración y cuantización
+   conforme a la ruta soportada por Espressif. Contemplar esquemas
+   como w8a8 y otros únicamente si la versión integrada los admite.
+6. **Compatibilidad y recursos:** verificar operadores soportados,
+   dimensiones de entrada, formato, tamaño de pesos y estimaciones de
+   memoria. Mostrar advertencias o bloquear la preparación cuando haya
+   incompatibilidades conocidas; no declarar aptitud de ejecución real
+   solo por superar estas verificaciones.
+7. **Evaluación y comparación:** calcular métricas sobre los conjuntos
+   definidos, incluyendo precisión, recall, F1, matriz de confusión,
+   falsos positivos y falsos negativos. Comparar el modelo de referencia
+   con el cuantizado y registrar la variación de desempeño.
+8. **Biblioteca y versionado:** conservar modelo fuente, configuración,
+   versión de herramientas, dataset de origen, métricas y artefactos
+   generados, incluyendo el modelo cuantizado y los archivos auxiliares
+   disponibles (por ejemplo, .espdl, .info y .json).
+
+**Límites:** no modificar BIN originales ni redefinir el dataset; no
+entrenar en el ESP32-S3; no afirmar rendimiento de RAM, Flash o latencia
+medido en placa; no implementar todavía soporte para otras placas; no
+duplicar el empaquetado final que pertenece a la Fase 10.
+
+**Integración con fases vecinas:**
+- **Entrada desde Fase 8:** identificador/versión del dataset,
+  particiones train/validation/test, etiquetas, forma de las señales y
+  preprocesamiento. Evitar fuga de datos y preservar la separación por
+  evento/sesión establecida en Dataset.
+- **Salida hacia Fase 10:** versión seleccionada, modelo fuente y
+  cuantizado, configuración, metadatos, clases, preprocesamiento,
+  métricas, procedencia y archivos auxiliares. La Fase 10 se encarga del
+  empaquetado y la generación del paquete de despliegue.
+- **Relación con Fase 11:** la compatibilidad estática se revisa aquí;
+  RAM/Flash/PSRAM, latencia, inferencia, estabilidad y pérdida de
+  muestras se miden posteriormente en el dispositivo.
+
+**Entregable:** modelos para ESP32-S3 evaluados, trazables y versionados,
+con artefactos preparados para el empaquetado de la Fase 10.
 
 ### Fase 10 --- Exportación
 
--   TensorFlow Lite.
--   Cuantización INT8.
--   Metadata y preprocesamiento.
--   Definiciones de clases.
--   Hash del modelo.
--   Archivos de despliegue ESP32-S3.
+-   Recibir una versión de modelo seleccionada desde la biblioteca de
+    la Fase 9.
+-   Empaquetar el artefacto compatible con la ruta de despliegue
+    ESP32-S3 definida por Espressif (inicialmente ESP-DL / formato
+    .espdl, sujeto a la compatibilidad real del modelo y herramientas).
+-   Incluir metadata, preprocesamiento, definiciones de clases,
+    configuración de cuantización, versiones de herramientas y hash.
+-   Validar integridad del paquete y documentar instrucciones de uso.
 
-Mantener adaptables los backends; no fijar prematuramente ESP-DL o
-TFLite Micro.
+La implementación inicial debe seguir la documentación de Espressif
+para ESP-DL y ESP-PPQ. Mantener una frontera de backend/perfil de destino
+que permita incorporar otras placas más adelante, sin asumir que sus
+formatos, operadores o restricciones son intercambiables.
 
-**Entregable:** paquete de despliegue reproducible.
+**Entregable:** paquete de despliegue reproducible para ESP32-S3.
 
 ### Fase 11 --- Validación ESP32-S3
 
