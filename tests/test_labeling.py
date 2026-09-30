@@ -65,6 +65,7 @@ class LabelingPersistenceTests(unittest.TestCase):
             })
             restored = LabelingService(path).get_label("W-001")
             self.assertEqual(saved["class_code"], 1)
+            self.assertEqual(restored["created_at"], saved["created_at"])
             self.assertEqual(restored["disturbance"], SECONDARY_UNDETERMINED)
             self.assertEqual(restored["observations"], "Revisado")
 
