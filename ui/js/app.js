@@ -14,7 +14,7 @@ const App = (() => {
     etiquetado: { title: 'Etiquetado', subtitle: 'Revisión y clasificación de ventanas de señal' },
     ventanas: { title: 'Ventanas', subtitle: 'Configuración de ventanas' },
     dataset: { title: 'Dataset', subtitle: 'Preparación de dataset' },
-    modelo: { title: 'Modelo', subtitle: 'Entrenamiento de modelo' },
+    modelos: { title: 'Modelos', subtitle: 'Entrenamiento de modelo' },
     exportar: { title: 'Exportar', subtitle: 'Exportar resultados' },
     ajustes: { title: 'Ajustes', subtitle: 'Configuración de la aplicación' },
   };
