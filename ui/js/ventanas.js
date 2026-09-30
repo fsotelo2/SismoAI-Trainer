@@ -40,6 +40,8 @@
   }
   function renderContext() {
     $('w-file').textContent=context?.file_name||'—';$('w-event').textContent=context?.event_counter_text||'—';
+    document.querySelector('[data-w-action="prev-event"]').disabled=!context?.can_select_previous_event;
+    document.querySelector('[data-w-action="next-event"]').disabled=!context?.can_select_next_event;
     $('w-status').textContent=context?.ready?'Evento listo':(context?.message||'Sin contexto');
     $('w-geo-freq').textContent=context?.geophone_frequency_text||'—';$('w-mpu-freq').textContent=context?.mpu_frequency_text||'—';
     if(!context?.ready)return;
@@ -63,6 +65,14 @@
     const a=b.dataset.wAction;
     if(a==='mode'){setMode(b.dataset.mode);renderContext();}
     if(a==='refresh')await refresh();
+    if(a==='prev-event' || a==='next-event'){
+      const index=Number(context?.event_index);
+      if(Number.isInteger(index) && index>=0){
+        const r=await Bridge.selectAnalysisEvent(index+(a==='next-event'?1:-1));
+        if(r?.success)await refresh();
+        else if(r?.error)alert(r.error);
+      }
+    }
     if(a==='clear'){const r=await Bridge.clearWindows();if(r.success)await refresh();}
     if(a==='generate'){
       const d=Number($('w-duration').value),s=Number($('w-step').value);
