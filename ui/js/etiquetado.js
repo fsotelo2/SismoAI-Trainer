@@ -60,6 +60,7 @@
     await load();
   }
   async function load(){
+    $('label-window-list').innerHTML='<p class="label-empty">Cargando ventanas…</p>';
     const r=await Bridge.getLabelingWorkspace();
     if(!r?.success){$('label-window-list').innerHTML='<p class="label-empty">'+esc(r?.error||'No se pudo cargar.')+'</p>';return;}
     items=r.items||[];items.forEach(x=>{x._savedLabel=x.label?JSON.parse(JSON.stringify(x.label)):null;});renderCounts(r.counts);filter();
@@ -107,6 +108,6 @@
   $('label-observations').addEventListener('input',e=>{const item=current();if(!item)return;item.label={...(item.label||{window_id:selectedId,class_code:null,quality_review:'confirmed'}),observations:e.target.value.slice(0,200)};markDirty();$('label-char-count').textContent=e.target.value.length;});
   $('label-show-geo').addEventListener('change',()=>current()&&drawSignals(current()));
   $('label-show-mpu').addEventListener('change',()=>current()&&drawSignals(current()));
-  window.initLabeling=async()=>{context=await Bridge.getWindowContext();await load();};
+  window.initLabeling=async()=>{try{context=null;await load();}catch(err){console.error('[Etiquetado] Error de inicialización:',err);const list=$('label-window-list');if(list)list.innerHTML='<p class="label-empty">Error al cargar ventanas: '+esc(err?.message||err)+'</p>';const summary=$('label-summary');if(summary)summary.textContent='No se pudo cargar el espacio de etiquetado.';}};
   window.addEventListener('resize',()=>current()&&drawSignals(current()));
 })();
