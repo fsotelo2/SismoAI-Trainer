@@ -115,7 +115,7 @@ document.addEventListener('click',async e=>{
  if(btn.dataset.dsAction==='generate')await generate();
  if(btn.dataset.dsAction==='labeling')await App.navigateTo('etiquetado');
  if(btn.dataset.dsAction==='toggle-filter')$('ds-filter-panel').hidden=!$('ds-filter-panel').hidden;
- if(btn.dataset.dsAction==='show-all'){examplesExpanded=!examplesExpanded;renderRows();btn.textContent=examplesExpanded?'Ver menos':'Ver más';const table=$('ds-example-table');if(table)table.classList.toggle('is-expanded',examplesExpanded);}
+ if(btn.dataset.dsAction==='show-all'){examplesExpanded=!examplesExpanded;renderRows();btn.textContent=examplesExpanded?'Ver menos':'Ver más';const table=$('ds-example-table');if(table)table.classList.toggle('is-expanded',examplesExpanded);const view=document.querySelector('.dataset-view');if(view)view.classList.toggle('examples-expanded',examplesExpanded);}
 });
 document.addEventListener('change',e=>{
  if(e.target.id==='ds-filter')filterRows();
