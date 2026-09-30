@@ -33,6 +33,17 @@ class LabelingService:
             result.append({"window": deepcopy(window), "label": deepcopy(label)})
         return result
 
+    def remove_labels(self, window_ids):
+        """Remove persisted annotations for a set of window IDs."""
+        ids = set(window_ids or ())
+        if not ids:
+            return
+        candidate = {key: value for key, value in self.labels.items() if key not in ids}
+        workspace = {"schema_version": 1, "updated_at": utc_now()}
+        persistence.save(self.path, workspace, candidate)
+        self.labels = candidate
+        self.workspace = workspace
+
     def get_label(self, window_id):
         return deepcopy(self.labels.get(window_id))
 
