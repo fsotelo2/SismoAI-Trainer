@@ -1,9 +1,10 @@
 /* Phase 6 — Windows view styles, aligned with the existing design tokens */
-.windows-page{display:flex;flex-direction:column;gap:12px;padding:4px 0 16px}
+.windows-page{display:flex;flex:1;flex-direction:column;gap:12px;padding:4px 0 4px;min-height:0;overflow:hidden}
 .windows-mode-tabs{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:10px;min-width:0}
 .windows-source{margin-left:0;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:nowrap;white-space:nowrap;min-width:0;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
 .windows-source strong{color:var(--color-text-primary);margin-right:12px}
 .windows-config,.windows-charts .panel,.windows-list-panel{background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow-sm)}
+.windows-config,.windows-charts{flex-shrink:0}
 .windows-config-head,.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .windows-config-head h2{font-size:16px;margin:0;color:var(--color-text-primary)}
 .windows-config-head p{margin:4px 0 0;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
@@ -20,7 +21,9 @@
 .panel-heading span{font-size:12px;color:var(--color-text-muted);font-weight:400}
 .windows-canvas{display:block;width:100%;height:150px;touch-action:none}
 .windows-list-panel .panel-heading>div{display:flex;align-items:center;gap:6px}
-.windows-list-panel .table-responsive{max-height:240px;overflow-y:auto;overflow-x:auto;direction:rtl;scrollbar-gutter:stable}
+.windows-list-panel{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.windows-list-panel .table-responsive{flex:1;min-height:0;max-height:none;overflow-y:auto;overflow-x:auto;direction:rtl;scrollbar-gutter:stable}
+.windows-list-panel .panel-heading{flex-shrink:0}
 .windows-list-panel .table-responsive table{direction:ltr}
 .windows-list-panel table{width:100%;border-collapse:collapse;font-size:12px}
 .windows-list-panel th,.windows-list-panel td{padding:3px 7px;line-height:1.1;border-bottom:1px solid var(--color-border);text-align:left;white-space:nowrap}
