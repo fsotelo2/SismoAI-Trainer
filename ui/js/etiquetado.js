@@ -11,7 +11,8 @@
     const list=$('label-window-list');$('label-count').textContent=filtered.length;
     list.innerHTML=filtered.length?filtered.map((item,i)=>{
       const w=item.window,l=labelOf(item),st=status(item),txt=st==='pending'?'Pendiente':st==='review'?'Revisión':(l.class_code===0?'Sísmico':'No sísmico');
-      return '<button class="label-window-row '+(w.window_id===selectedId?'active':'')+'" data-label-select="'+esc(w.window_id)+'"><b>'+esc(w.window_id)+'</b><span class="label-row-status '+st+'">'+txt+'</span><small>'+sec(w.start_us)+' – '+sec(w.end_us)+'</small><small>'+esc(w.source_file||'')+'</small></button>';
+      const secondary=l?.class_code===1&&l?.disturbance?'<small class="label-row-secondary">'+esc(l.disturbance)+'</small>':'';
+      return '<button class="label-window-row '+(w.window_id===selectedId?'active':'')+'" data-label-select="'+esc(w.window_id)+'"><span class="label-row-heading"><b>'+esc(w.window_id)+'</b><span class="label-row-status '+st+'">'+txt+'</span></span>'+secondary+'<small>'+sec(w.start_us)+' – '+sec(w.end_us)+'</small><small>'+esc(w.source_file||'')+'</small></button>';
     }).join(''):'<p class="label-empty">No hay ventanas en este filtro.</p>';
   }
   function renderEditor(){
