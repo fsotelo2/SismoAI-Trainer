@@ -1303,3 +1303,73 @@ class ApiBridge:
                 except Exception as exc:
                     return {"success": False, "error": str(exc)}
         return {"success": False, "error": "Ventana no encontrada."}
+
+
+    # ------------------------------------------------------------------
+    # 8. Model experiments — configuration registry (training not yet wired)
+    # ------------------------------------------------------------------
+
+    def _models_registry_path(self):
+        return os.path.join(os.path.dirname(self._dataset_path), "model_experiments.json")
+
+    def get_model_experiments(self) -> dict:
+        """Return saved experiment configurations; does not imply trained models."""
+        try:
+            path = self._models_registry_path()
+            if not os.path.isfile(path):
+                return {"success": True, "experiments": []}
+            with open(path, "r", encoding="utf-8") as stream:
+                data = json.load(stream)
+            return {"success": True, "experiments": data if isinstance(data, list) else []}
+        except Exception as exc:
+            return {"success": False, "experiments": [], "error": str(exc)}
+
+    def save_model_experiment(self, config: dict, dataset_id: str, dataset_name: str) -> dict:
+        """Validate and persist a reproducible experiment configuration."""
+        try:
+            if not isinstance(config, dict):
+                raise ValueError("La configuración debe ser un objeto.")
+            name = str(config.get("name", "")).strip()
+            if not name or len(name) > 80:
+                raise ValueError("El nombre es obligatorio y debe tener máximo 80 caracteres.")
+            if not self._active_dataset or str(self._active_dataset.get("dataset_id", "")) != str(dataset_id):
+                raise ValueError("El dataset activo cambió. Actualiza la vista y vuelve a intentar.")
+            training = config.get("training") or {}
+            epochs = int(training.get("epochs", 0))
+            batch_size = int(training.get("batch_size", 0))
+            learning_rate = float(training.get("learning_rate", 0))
+            seed = int(training.get("seed", -1))
+            if not 1 <= epochs <= 10000:
+                raise ValueError("Épocas fuera del rango permitido (1–10000).")
+            if not 1 <= batch_size <= 4096:
+                raise ValueError("Batch size fuera del rango permitido (1–4096).")
+            if not 0 < learning_rate <= 1:
+                raise ValueError("Learning rate fuera del rango permitido (0–1].")
+            if seed < 0:
+                raise ValueError("La semilla debe ser no negativa.")
+            allowed_arch = {"1d_cnn", "feature_classifier", "baseline"}
+            if config.get("architecture") not in allowed_arch:
+                raise ValueError("Arquitectura no reconocida.")
+            if config.get("target") != "esp32s3":
+                raise ValueError("El destino inicial soportado es ESP32-S3.")
+            registry = self.get_model_experiments().get("experiments", [])
+            import uuid
+            from datetime import datetime
+            record = {
+                "experiment_id": str(uuid.uuid4()),
+                "created_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+                "status": "configuration",
+                "dataset_id": str(dataset_id),
+                "dataset_name": str(dataset_name),
+                "config": config,
+            }
+            registry.append(record)
+            path = self._models_registry_path()
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            temp_path = path + ".tmp"
+            with open(temp_path, "w", encoding="utf-8") as stream:
+                json.dump(registry, stream, ensure_ascii=False, indent=2)
+            os.replace(temp_path, path)
+            return {"success": True, "experiment_id": record["experiment_id"]}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
