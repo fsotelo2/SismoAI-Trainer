@@ -65,6 +65,8 @@ const Bridge = (() => {
     saveModelExperiment: (config, datasetId, datasetName) => call('save_model_experiment', config, datasetId, datasetName),
     startModelTraining: (config, datasetId) => call('start_model_training', config, datasetId),
     getModelTrainingState: () => call('get_model_training_state'),
+    startModelTraining: (config, datasetId) => call('start_model_training', config, datasetId),
+    getModelTrainingState: () => call('get_model_training_state'),
     generateDataset: (ratios, seed, name) => call('generate_dataset', ratios, seed, name),
     getWindowSignal: (windowId) => call('get_window_signal', windowId),
     saveWindowLabel: (windowId, payload) => call('save_window_label', windowId, payload),
