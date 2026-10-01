@@ -17,6 +17,17 @@
 - Pruebas unitarias para métricas, formas de salida y ejecución sintética.
 - Workflow de GitHub Actions para ejecutar las pruebas en push/PR.
 
+## Correcciones derivadas de CI
+
+Se corrigieron los siguientes problemas detectados por la ejecución de GitHub Actions:
+
+- Error de sintaxis en `core/models/trainer.py` causado por secuencias `\\n` literales.
+- Pruebas de `test_labeling_models.py` migradas de pytest a `unittest` para ajustarse al comando de CI y a la dependencia declarada.
+- Pruebas de etiquetado alineadas con el contrato vigente: dos clases principales; la taxonomía secundaria sigue abierta hasta su aprobación.
+- `WindowRecord.to_dict()` ahora incluye `duration_ms`, campo requerido por la prueba de forma común del registro.
+
+La suite debe volver a ejecutarse en GitHub Actions después de estos commits. Estas correcciones aún no se consideran aprobadas hasta ver el resultado del nuevo workflow.
+
 ## Límites explícitos
 
 La ejecución de entrenamiento es PC-only. El entrenamiento correcto no demuestra compatibilidad con ESP32-S3.
