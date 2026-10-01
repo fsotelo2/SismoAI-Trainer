@@ -1334,11 +1334,26 @@ class ApiBridge:
                 raise ValueError("El nombre es obligatorio y debe tener máximo 80 caracteres.")
             if not self._active_dataset or str(self._active_dataset.get("dataset_id", "")) != str(dataset_id):
                 raise ValueError("El dataset activo cambió. Actualiza la vista y vuelve a intentar.")
-            training = config.get("training") or {}
-            epochs = int(training.get("epochs", 0))
-            batch_size = int(training.get("batch_size", 0))
-            learning_rate = float(training.get("learning_rate", 0))
-            seed = int(training.get("seed", -1))
+            training = config.get("training")
+            if not isinstance(training, dict):
+                raise ValueError("La configuración de entrenamiento no es válida.")
+            epochs_raw = training.get("epochs", 0)
+            batch_raw = training.get("batch_size", 0)
+            seed_raw = training.get("seed", -1)
+            lr_raw = training.get("learning_rate", 0)
+            if any(isinstance(v, bool) or not isinstance(v, int) for v in (epochs_raw, batch_raw, seed_raw)):
+                raise ValueError("Épocas, batch size y semilla deben ser enteros.")
+            epochs, batch_size, seed = epochs_raw, batch_raw, seed_raw
+            try:
+                learning_rate = float(lr_raw)
+            except (TypeError, ValueError):
+                raise ValueError("Learning rate no válido.")
+            if not math.isfinite(learning_rate):
+                raise ValueError("Learning rate debe ser finito.")
+            if training.get("optimizer", "adam") not in ("adam", "adamw", "sgd"):
+                raise ValueError("Optimizador no reconocido.")
+            if training.get("loss", "cross_entropy") != "cross_entropy":
+                raise ValueError("La única función de pérdida implementada es cross_entropy.")
             if not 1 <= epochs <= 10000:
                 raise ValueError("Épocas fuera del rango permitido (1–10000).")
             if not 1 <= batch_size <= 4096:
