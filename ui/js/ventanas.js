@@ -126,6 +126,23 @@
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
+  async function saveSelection(){
+    const name=$('win-selection-name')?.value?.trim();
+    if(!name){if($('win-version-note'))$('win-version-note').textContent='Escribe un nombre para guardar.';return null;}
+    const btn=document.querySelector('[data-w-action="save-selection"]');
+    if(btn)btn.disabled=true;
+    try{
+      const r=await Bridge.createWindowSelection(name);
+      if(!r?.success){if($('win-version-note'))$('win-version-note').textContent=r?.error||'No se pudo guardar.';return null;}
+      if($('win-version-note'))$('win-version-note').textContent='Guardado: '+r.selection.name+' · ID '+r.selection.id.slice(0,8);
+      return r;
+    }finally{if(btn)btn.disabled=false;}
+  }
+  window.saveWindowSelectionAndContinue=async function(){
+    if(!windows.some(w=>w.selection_status==='include')){if($('win-version-note'))$('win-version-note').textContent='Incluye al menos una ventana.';return;}
+    const r=await saveSelection();
+    if(r?.success)await App.navigateTo('etiquetado');
+  };
   function renderRows() {
     const continueBtn=document.getElementById('btn-continue-labeling');
     if(continueBtn) continueBtn.disabled=!windows.some(w=>w.selection_status==='include');
@@ -253,7 +270,11 @@
   ['input','change','keyup'].forEach(type=>document.addEventListener(type,e=>{
     if(e.target?.id==='w-start'||e.target?.id==='w-end')updateManualField(e);
   }));
-  document.addEventListener('click',action);
+  document.addEventListener('click',e=>{
+    const save=e.target.closest('[data-w-action="save-selection"]');
+    if(save){saveSelection();return;}
+    action(e);
+  });
   document.addEventListener('change',async e=>{
     if(e.target.id==='w-file-select'){
       if(!e.target.value)return;
