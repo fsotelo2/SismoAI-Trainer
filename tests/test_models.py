@@ -1,8 +1,16 @@
 """Tests for Phase 9 model training utilities."""
 import json
+import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+_project_root = Path(__file__).resolve().parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+if str(_project_root / "core") not in sys.path:
+    sys.path.insert(0, str(_project_root / "core"))
 
 import numpy as np
 
@@ -63,5 +71,76 @@ class ModelTrainingTests(unittest.TestCase):
             self.assertIn("loss", saved["metrics"]["validation"])
 
 
+class ModelDatasetCatalogTests(unittest.TestCase):
+    def test_modelos_js_has_valid_syntax(self):
+        js_path = Path(__file__).resolve().parent.parent / "ui" / "js" / "modelos.js"
+        self.assertTrue(js_path.is_file(), "ui/js/modelos.js must exist")
+        content = js_path.read_text(encoding="utf-8")
+        self.assertNotIn("1d_cnn:", content, "1d_cnn must be quoted in object literals to avoid SyntaxError")
+        try:
+            import subprocess
+            res = subprocess.run(["node", "-c", str(js_path)], capture_output=True, text=True)
+            self.assertEqual(res.returncode, 0, f"Syntax error in modelos.js: {res.stderr}")
+        except FileNotFoundError:
+            pass
+
+    def test_catalog_detection_and_selection_in_dataset_folder(self):
+        from bridge.api_bridge import ApiBridge
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            dataset_dir = Path(tmp_dir) / "Dataset"
+            dataset_dir.mkdir(parents=True, exist_ok=True)
+            manifest_payload = {
+                "schema": "sismoai-dataset",
+                "schema_version": 1,
+                "dataset_id": "test-dataset-uuid-1234",
+                "name": "Dataset_Prueba_01",
+                "created_at": "2026-09-30T21:00:00Z",
+                "splits": {
+                    "train": [{"window_id": "W-001", "class_code": 0}],
+                    "validation": [{"window_id": "W-002", "class_code": 1}],
+                    "test": [{"window_id": "W-003", "class_code": 0}],
+                },
+                "summary": {
+                    "all": {"windows": 3, "classes": {"0": 2, "1": 1}},
+                    "train": {"windows": 1},
+                    "validation": {"windows": 1},
+                    "test": {"windows": 1},
+                },
+            }
+            manifest_file = dataset_dir / "Dataset_Prueba_01.json"
+            manifest_file.write_text(json.dumps(manifest_payload), encoding="utf-8")
+
+            bridge = ApiBridge()
+            bridge._dataset_dir = str(dataset_dir)
+            bridge._dataset_path = str(manifest_file)
+            bridge._restore_dataset()
+
+            catalog = bridge.get_dataset_catalog()
+            self.assertTrue(catalog["success"])
+            self.assertEqual(len(catalog["datasets"]), 1)
+            self.assertEqual(catalog["datasets"][0]["filename"], "Dataset_Prueba_01.json")
+            self.assertEqual(catalog["datasets"][0]["dataset_id"], "test-dataset-uuid-1234")
+            self.assertEqual(catalog["active_dataset"]["name"], "Dataset_Prueba_01")
+
+            selected = bridge.select_dataset("Dataset_Prueba_01.json")
+            self.assertTrue(selected["success"])
+            self.assertEqual(selected["active_dataset"]["dataset_id"], "test-dataset-uuid-1234")
+
+    def test_reject_invalid_manifest(self):
+        from bridge.api_bridge import ApiBridge
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            dataset_dir = Path(tmp_dir) / "Dataset"
+            dataset_dir.mkdir(parents=True, exist_ok=True)
+            bad_file = dataset_dir / "corrupt.json"
+            bad_file.write_text(json.dumps({"schema": "unknown"}), encoding="utf-8")
+
+            bridge = ApiBridge()
+            bridge._dataset_dir = str(dataset_dir)
+            res = bridge.select_dataset("corrupt.json")
+            self.assertFalse(res["success"])
+            self.assertIn("no contiene un manifiesto", res["error"])
+
+
 if __name__ == "__main__":
     unittest.main()
+
