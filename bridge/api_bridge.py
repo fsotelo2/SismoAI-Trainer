@@ -1337,25 +1337,44 @@ class ApiBridge:
 
     def create_window_selection(self, name):
         try:
+            display_name = str(name or "").strip()
+            if not display_name or len(display_name) > 80:
+                raise ValueError("El nombre es obligatorio y debe tener hasta 80 caracteres.")
+            if display_name.lower().endswith(".json"):
+                display_name = display_name[:-5].rstrip()
+            if not display_name or display_name in (".", "..") or re.search(r'[<>:"/\\|?*]', display_name):
+                raise ValueError("El nombre contiene caracteres no permitidos.")
             records = [item.to_dict() for item in self._window_records
                        if item.selection_status == "include"]
-            manifest_id = None
-            # IDs are local to the immutable selection; the composite ref is globally unique.
+            if not records:
+                raise ValueError("Incluye al menos una ventana para guardar.")
+            folder = os.path.abspath(self._window_selection_dir)
+            filename = display_name + ".json"
+            os.makedirs(folder, exist_ok=True)
+            existing = {entry.casefold() for entry in os.listdir(folder)}
+            if filename.casefold() in existing:
+                return {"success": False,
+                        "error": "Ya existe una selección con ese nombre. Elige otro nombre."}
             for record in records:
                 record["window_ref"] = None
-            manifest, path = pipeline_manifests.create_manifest(
-                self._window_selection_dir, "windows", name, records)
+            manifest, generated_path = pipeline_manifests.create_manifest(
+                folder, "windows", display_name, records)
             for record in manifest["records"]:
                 record["selection_id"] = manifest["id"]
                 record["window_ref"] = manifest["id"] + "::" + str(record.get("window_id"))
-            # Persist the refs in the saved file after UUID creation.
             from core.pipeline.manifests import _atomic_json
-            _atomic_json(path, manifest)
+            _atomic_json(generated_path, manifest)
+            target_path = os.path.join(folder, filename)
+            if os.path.exists(target_path):
+                os.remove(generated_path)
+                return {"success": False,
+                        "error": "Ya existe una selección con ese nombre. Elige otro nombre."}
+            os.rename(generated_path, target_path)
             self._active_window_selection = manifest
-            self._active_window_selection_filename = os.path.basename(path)
+            self._active_window_selection_filename = filename
             self._active_label_batch = None
             self._active_label_items = [{"window": dict(w), "label": None} for w in manifest["records"]]
-            return {"success": True, "selection": manifest, "filename": os.path.basename(path)}
+            return {"success": True, "selection": manifest, "filename": filename}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
