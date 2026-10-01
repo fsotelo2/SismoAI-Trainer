@@ -99,6 +99,34 @@ def _metrics(y_true, y_pred, class_count=2):
             "per_class": per_class, "confusion_matrix": cm, "samples": total}
 
 
+
+def _validate_arrays(arrays: dict) -> None:
+    """Fail fast on malformed, non-finite, or out-of-contract split tensors."""
+    required = ("train", "validation", "test")
+    shapes = []
+    for split in required:
+        if split not in arrays or not isinstance(arrays[split], (tuple, list)) or len(arrays[split]) != 2:
+            raise ValueError("Cada partición debe contener (X, y): " + split)
+        x, y = arrays[split]
+        x = np.asarray(x)
+        y = np.asarray(y)
+        if x.ndim != 3:
+            raise ValueError("X debe tener forma (muestras, canales, puntos): " + split)
+        if y.ndim != 1 or len(x) != len(y):
+            raise ValueError("X e y no están alineados en la partición: " + split)
+        if x.shape[1] < 1 or x.shape[2] < 2:
+            raise ValueError("Se requiere al menos un canal y dos puntos por muestra.")
+        if not np.issubdtype(y.dtype, np.integer) or np.issubdtype(y.dtype, np.bool_):
+            raise ValueError("Las etiquetas deben ser enteros 0/1: " + split)
+        if len(y) and not np.isin(y, (0, 1)).all():
+            raise ValueError("Se encontraron códigos de clase fuera de 0/1: " + split)
+        if not np.isfinite(x).all():
+            raise ValueError("La señal contiene NaN o infinito en: " + split)
+        shapes.append(x.shape[1:])
+    if len(set(shapes)) != 1:
+        raise ValueError("Las particiones deben compartir canales y longitud de entrada.")
+
+
 def train_experiment(config: dict, arrays: dict, output_dir: str,
                      progress: Callable[[dict], None] | None = None) -> dict:
     torch, nn = _torch()
@@ -106,11 +134,23 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     seed = int(training["seed"])
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
     torch.set_num_threads(max(1, min(4, os.cpu_count() or 1)))
+    _validate_arrays(arrays)
     x_train, y_train = arrays["train"]
     x_val, y_val = arrays["validation"]
     x_test, y_test = arrays["test"]
     if len(x_train) == 0 or len(x_val) == 0:
         raise ValueError("Train y Validation deben contener muestras.")
+    if not isinstance(training, dict):
+        raise ValueError("La configuración de entrenamiento no es válida.")
+    epochs = int(training.get("epochs", 0))
+    batch_size = int(training.get("batch_size", 0))
+    learning_rate = float(training.get("learning_rate", 0))
+    if epochs < 1 or batch_size < 1 or not np.isfinite(learning_rate) or learning_rate <= 0:
+        raise ValueError("Épocas, batch size y learning rate deben ser positivos.")
+    if config.get("architecture") not in ("1d_cnn", "feature_classifier", "baseline"):
+        raise ValueError("Arquitectura no soportada.")
+    if training.get("optimizer", "adam").lower() not in ("adam", "adamw", "sgd"):
+        raise ValueError("Optimizador no soportado.")
     if len(set(map(int, y_train))) < 2:
         raise ValueError("Train debe contener ambas clases para entrenar clasificación binaria.")
     if len(set(map(int, y_val))) < 2:
@@ -141,8 +181,6 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     best_loss = float("inf")
     best_state = None
     stale = 0
-    epochs = int(training["epochs"])
-    batch_size = int(training["batch_size"])
     start = time.time()
     for epoch in range(epochs):
         model.train()
