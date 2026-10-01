@@ -1221,6 +1221,39 @@ class ApiBridge:
                 manifest["name"] = str(name).strip()[:80] or "Dataset_sin_nombre"
             else:
                 manifest["name"] = "Dataset_sin_nombre"
+            # Persist an immutable physical snapshot of every included window's signals.
+            import numpy as np
+            snapshot_dirname = "dataset_" + str(manifest["dataset_id"]) + "_data"
+            snapshot_dir = os.path.join(self._dataset_dir, snapshot_dirname)
+            os.makedirs(snapshot_dir, exist_ok=False)
+            items_by_id = {str((x.get("window") or {}).get("window_id")): x
+                           for x in workspace["items"]}
+            try:
+                for split_name, rows in manifest["splits"].items():
+                    for row_index, row in enumerate(rows):
+                        wid = str(row["window_id"])
+                        signal = self.get_window_signal(wid)
+                        if not signal.get("success"):
+                            raise DatasetError("No se pudo capturar la ventana " + wid + ": " +
+                                               str(signal.get("error", "error desconocido")))
+                        payload = {}
+                        for sensor in ("GEO", "MPU"):
+                            channel = (signal.get("signals") or {}).get(sensor) or {}
+                            times = channel.get("times") or []
+                            amplitudes = channel.get("amplitudes") or []
+                            if sensor in (row.get("sensors") or []) and (len(times) < 2 or len(times) != len(amplitudes)):
+                                raise DatasetError("La ventana " + wid + " no tiene señales válidas para " + sensor + ".")
+                            payload[sensor + "_times"] = np.asarray(times, dtype=np.float64)
+                            payload[sensor + "_amplitudes"] = np.asarray(amplitudes, dtype=np.float32)
+                        snapshot_name = split_name + "_" + str(row_index).zfill(5) + ".npz"
+                        np.savez_compressed(os.path.join(snapshot_dir, snapshot_name), **payload)
+                        row["snapshot"] = os.path.join(snapshot_dirname, snapshot_name)
+                manifest["snapshot"] = {"format": "npz_per_window", "version": 1,
+                                         "immutable": True, "window_count": sum(len(v) for v in manifest["splits"].values())}
+            except Exception:
+                import shutil
+                shutil.rmtree(snapshot_dir, ignore_errors=True)
+                raise
             # Source locator and reconstruction semantics for consumers of this manifest.
             manifest["source"] = {
                 "root_path": os.path.abspath(self._project.folder_path) if self._project.folder_path else None,
@@ -1726,19 +1759,28 @@ class ApiBridge:
                             xs, ys = [], []
                             for item in rows:
                                 wid = item.get("window_id")
-                                window = window_by_id.get(wid)
-                                if window is None:
-                                    raise ValueError("No se encontró la ventana del dataset: " + str(wid))
-                                signal = self.get_window_signal(wid)
-                                if not signal.get("success"):
-                                    raise ValueError(signal.get("error", "No se pudo leer una ventana."))
-                                channels = []
-                                for sensor in sensors:
-                                    channel = (signal.get("signals") or {}).get(sensor) or {}
-                                    if channel.get("error") or len(channel.get("amplitudes") or []) < 2:
-                                        raise ValueError("La ventana " + str(wid) + " no tiene muestras válidas de " + sensor + ".")
-                                    values = np.asarray(channel["amplitudes"], dtype=np.float32)
-                                    times = np.asarray(channel["times"], dtype=np.float64)
+                                snapshot_rel = item.get("snapshot")
+                                if not snapshot_rel:
+                                    raise ValueError("El Dataset no contiene una copia física de la ventana " + str(wid) +
+                                                     ". Genere nuevamente el Dataset desde Etiquetado.")
+                                snapshot_path = os.path.abspath(os.path.join(os.path.dirname(self._dataset_path), snapshot_rel))
+                                snapshot_root = os.path.abspath(os.path.join(os.path.dirname(self._dataset_path),
+                                    str((manifest.get("snapshot") or {}).get("directory", "")))) if (manifest.get("snapshot") or {}).get("directory") else os.path.abspath(os.path.dirname(self._dataset_path))
+                                if os.path.commonpath([os.path.abspath(os.path.dirname(self._dataset_path)), snapshot_path]) != os.path.abspath(os.path.dirname(self._dataset_path)):
+                                    raise ValueError("Ruta de snapshot inválida para la ventana " + str(wid))
+                                if not os.path.isfile(snapshot_path):
+                                    raise ValueError("No se encontró el archivo físico de la ventana " + str(wid) +
+                                                     ": " + snapshot_path)
+                                with np.load(snapshot_path, allow_pickle=False) as stored:
+                                    channels = []
+                                    for sensor in sensors:
+                                        values_key, times_key = sensor + "_amplitudes", sensor + "_times"
+                                        if values_key not in stored or times_key not in stored:
+                                            raise ValueError("El snapshot de " + str(wid) + " no contiene " + sensor + ".")
+                                        values = np.asarray(stored[values_key], dtype=np.float32)
+                                        times = np.asarray(stored[times_key], dtype=np.float64)
+                                        if len(values) < 2 or len(times) != len(values):
+                                            raise ValueError("La ventana " + str(wid) + " no tiene muestras válidas de " + sensor + ".")
                                     if (not np.all(np.isfinite(values)) or not np.all(np.isfinite(times))
                                             or len(times) != len(values)):
                                         raise ValueError("Datos no finitos o desalineados en ventana " + str(wid) + ".")
