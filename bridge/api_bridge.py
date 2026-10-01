@@ -1465,6 +1465,16 @@ class ApiBridge:
     # ------------------------------------------------------------------
 
     def _models_registry_path(self):
+        """Store model experiment configurations in the project's Modelos folder."""
+        project_root = self._project.folder_path
+        if project_root:
+            root = os.path.abspath(os.path.expanduser(project_root))
+        else:
+            root = os.path.dirname(self._window_path)
+        return os.path.join(root, "Modelos", "model_experiments.json")
+
+    def _legacy_models_registry_path(self):
+        """Previous registry location, kept for one-time migration."""
         return os.path.join(os.path.dirname(self._dataset_path), "model_experiments.json")
 
     def get_model_experiments(self) -> dict:
@@ -1472,7 +1482,19 @@ class ApiBridge:
         try:
             path = self._models_registry_path()
             if not os.path.isfile(path):
-                return {"success": True, "experiments": []}
+                legacy_path = self._legacy_models_registry_path()
+                if not os.path.isfile(legacy_path):
+                    return {"success": True, "experiments": []}
+                # Migrate existing records so changing the location does not hide them.
+                with open(legacy_path, "r", encoding="utf-8") as stream:
+                    data = json.load(stream)
+                data = data if isinstance(data, list) else []
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                temp_path = path + ".tmp"
+                with open(temp_path, "w", encoding="utf-8") as stream:
+                    json.dump(data, stream, ensure_ascii=False, indent=2)
+                os.replace(temp_path, path)
+                return {"success": True, "experiments": data}
             with open(path, "r", encoding="utf-8") as stream:
                 data = json.load(stream)
             return {"success": True, "experiments": data if isinstance(data, list) else []}
