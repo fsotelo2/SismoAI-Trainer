@@ -103,16 +103,6 @@
     if(feedback)feedback.textContent='Etiquetado guardado correctamente: '+r.filename;
     await refreshLabelBatches();
   };
-  async function refreshWindowSelections(){
-    const body=$('label-window-selection-rows');if(!body)return;
-    const r=await Bridge.getWindowSelections(),list=r?.items||[];
-    if(!r?.success){body.innerHTML='<tr><td colspan="4">No se pudieron cargar las selecciones.</td></tr>';return;}
-    const active=r.active_filename||window.__activeWindowSelectionFilename||'';
-    body.innerHTML=list.length?list.map(x=>{
-      const isActive=x.filename===active;
-      return '<tr><td>'+esc(x.name)+(isActive?' <strong>(Activa)</strong>':'')+'</td><td><code>'+esc(x.id)+'</code></td><td>'+esc(x.count)+'</td><td><button class="btn btn-secondary btn-sm" data-label-action="delete-window-selection" data-filename="'+esc(x.filename)+'">Eliminar</button></td></tr>';
-    }).join(''):'<tr><td colspan="4">No hay selecciones guardadas.</td></tr>';
-  }
   async function refreshLabelBatches(){
     const body=$('label-batch-rows');if(!body)return;
     const r=await Bridge.getLabelBatches(),list=r?.items||[];
@@ -129,7 +119,7 @@
     }
     const r=await Bridge.getLabelingWorkspace();
     if(!r?.success){$('label-window-list').innerHTML='<p class="label-empty">'+esc(r?.error||'No se pudo cargar.')+'</p>';return;}
-    items=r.items||[];updateDatasetButton();items.forEach(x=>{x._savedLabel=x.label?JSON.parse(JSON.stringify(x.label)):null;});renderCounts(r.counts);filter();await refreshWindowSelections();await refreshLabelBatches();
+    items=r.items||[];updateDatasetButton();items.forEach(x=>{x._savedLabel=x.label?JSON.parse(JSON.stringify(x.label)):null;});renderCounts(r.counts);filter();await refreshLabelBatches();
   }
   function draw(canvasId,ts,ys,color){
     const canvas=$(canvasId);if(!canvas)return;
@@ -170,16 +160,7 @@
     if(act==='save-batch'){await window.saveLabelBatch();}
     if(act==='save-next')await save(true);
     if(act==='refresh-batches')await refreshLabelBatches();
-    if(act==='refresh-window-selections')await refreshWindowSelections();
-    if(act==='delete-window-selection'){
-      const filename=e.target.closest('[data-label-action]')?.dataset.filename;
-      if(!filename||!confirm('¿Eliminar la selección guardada "'+filename+'"? Esta acción no se puede deshacer.'))return;
-      const result=await Bridge.deleteWindowSelection(filename);
-      if(!result?.success){$('label-message').textContent=result?.error||'No se pudo eliminar la selección.';return;}
-      $('label-message').textContent='Selección eliminada: '+filename;
-      await refreshWindowSelections();
-      await load();
-    }
+
     if(act==='delete-batch'){
       const filename=e.target.closest('[data-label-action]')?.dataset.filename;
       if(!filename||!confirm('¿Eliminar el etiquetado guardado "'+filename+'"? Esta acción no se puede deshacer.'))return;
