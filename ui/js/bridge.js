@@ -63,6 +63,7 @@ const Bridge = (() => {
     getLabelingWorkspace: () => call('get_labeling_workspace'),
     createWindowSelection: (name) => call('create_window_selection', name),
     getWindowSelections: () => call('get_window_selections'),
+    deleteWindowSelection: (filename) => call('delete_window_selection', filename),
     selectWindowSelection: (filename) => call('select_window_selection', filename),
     createLabelBatch: (name) => call('create_label_batch', name),
     getLabelBatches: () => call('get_label_batches'),
