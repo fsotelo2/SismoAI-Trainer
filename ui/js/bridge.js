@@ -61,6 +61,7 @@ const Bridge = (() => {
     getWindows: () => call('get_windows'),
     getLabelingWorkspace: () => call('get_labeling_workspace'),
     getDatasetWorkspace: () => call('get_dataset_workspace'),
+    getDatasetCatalog: () => call('get_dataset_catalog'),
     selectDataset: (filename) => call('select_dataset', filename),
     getModelExperiments: () => call('get_model_experiments'),
     saveModelExperiment: (config, datasetId, datasetName) => call('save_model_experiment', config, datasetId, datasetName),
