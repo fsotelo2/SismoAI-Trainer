@@ -116,7 +116,7 @@ const App = (() => {
 
     if (action === 'footer-windows') { await navigateTo('ventanas'); return; }
 
-    if (action === 'footer-continue-labeling') { await navigateTo('etiquetado'); return; }
+    if (action === 'footer-continue-labeling') { if(window.saveWindowSelectionAndContinue) await window.saveWindowSelectionAndContinue(); return; }
 
     if (action === 'footer-continue-dataset') { await navigateTo('dataset'); return; }
 
@@ -290,6 +290,8 @@ const App = (() => {
     currentView = viewName;
     const datasetFooter=document.getElementById('ds-footer-controls');
     if(datasetFooter) datasetFooter.hidden=viewName!=='dataset';
+    const windowsFooter=document.getElementById('win-footer-controls');
+    if(windowsFooter) windowsFooter.hidden=viewName!=='ventanas';
     const continueLabelingBtn = document.getElementById('btn-continue-labeling');
     if (continueLabelingBtn) continueLabelingBtn.hidden = viewName !== 'ventanas';
     const continueDatasetBtn=document.getElementById('btn-continue-dataset');
