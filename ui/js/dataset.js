@@ -104,9 +104,12 @@ async function generate(){
  if(!name){setText('ds-validation','Escribe un nombre para el dataset.');$('ds-validation').classList.add('error');return;}
  document.querySelectorAll('[data-ds-action="generate"]').forEach(b=>b.disabled=true);
  const ratios=['ds-train','ds-val','ds-test'].map(id=>Number($(id).value)/100);
- const result=await Bridge.generateDataset(ratios,42,name);
- if(!result?.success){setText('ds-validation',result?.error||'No se pudo generar el dataset.');$('ds-validation').classList.add('error');renderStatus();return;}
+ let result;
+ try{result=await Bridge.generateDataset(ratios,42,name)}catch(e){result={success:false,error:e?.message||String(e)}}
+ if(!result?.success){setText('ds-validation',result?.error||result?.error_text||'No se pudo generar el dataset.');$('ds-validation').classList.add('error');document.querySelectorAll('[data-ds-action="generate"]').forEach(b=>b.disabled=false);renderStatus();return;}
  setText('ds-version-note','Dataset guardado: '+name);
+ // Pass the just-created manifest directly to Models; do not depend on a second bridge read.
+ window.__pendingModelsDataset=result.dataset||null;
  await App.navigateTo('modelos');
 }
 document.addEventListener('click',async e=>{
