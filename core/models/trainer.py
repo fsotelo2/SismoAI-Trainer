@@ -150,8 +150,13 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
         raise ValueError("Épocas, batch size y learning rate deben ser positivos.")
     if config.get("architecture") not in ("1d_cnn", "feature_classifier", "baseline"):
         raise ValueError("Arquitectura no soportada.")
-    if training.get("optimizer", "adam").lower() not in ("adam", "adamw", "sgd"):
+    optimizer_value = training.get("optimizer", "adam")
+    if not isinstance(optimizer_value, str) or optimizer_value.lower() not in ("adam", "adamw", "sgd"):
         raise ValueError("Optimizador no soportado.")
+    if training.get("loss", "cross_entropy") != "cross_entropy":
+        raise ValueError("La única función de pérdida implementada es cross_entropy.")
+    if isinstance(training.get("seed", 42), bool) or seed < 0:
+        raise ValueError("La semilla debe ser un entero no negativo.")
     if len(set(map(int, y_train))) < 2:
         raise ValueError("Train debe contener ambas clases para entrenar clasificación binaria.")
     if len(set(map(int, y_val))) < 2:
