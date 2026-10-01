@@ -116,7 +116,10 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     if len(set(map(int, y_val))) < 2:
         # Still score available class distribution; do not fabricate missing labels.
         pass
-    original_shape = list(x_train.shape[1:])\n    if config["architecture"] == "feature_classifier":\n        x_train, x_val, x_test = (_extract_features(x) for x in (x_train, x_val, x_test))\n    model = build_network(config["architecture"], x_train.shape[1], 6 if config["architecture"] == "feature_classifier" else x_train.shape[2])
+    original_shape = list(x_train.shape[1:])
+    if config["architecture"] == "feature_classifier":
+        x_train, x_val, x_test = (_extract_features(x) for x in (x_train, x_val, x_test))
+    model = build_network(config["architecture"], x_train.shape[1], 6 if config["architecture"] == "feature_classifier" else x_train.shape[2])
     optimizer_name = training.get("optimizer", "adam").lower()
     if optimizer_name == "sgd":
         optimizer = torch.optim.SGD(model.parameters(), lr=float(training["learning_rate"]))
