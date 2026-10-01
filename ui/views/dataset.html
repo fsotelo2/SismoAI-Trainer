@@ -187,6 +187,31 @@
     </div>
     <div class="ds-checks" id="ds-status">Verificando…</div>
   </section>
+  <section class="ds-section card ds-saved-region">
+    <div class="ds-section-heading">
+      <div><h2>Datasets guardados</h2></div>
+      <button class="btn btn-secondary btn-sm" data-ds-action="refresh-saved">
+        Actualizar
+      </button>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>ID único</th>
+            <th>Ventanas</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="ds-saved-rows">
+          <tr>
+            <td colspan="4">Cargando datasets…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
   <div class="workspace-inline-actions dataset-inline-actions">
     <div class="ds-footer-controls" id="ds-footer-controls">
       <label for="ds-name">Nombre del dataset</label>

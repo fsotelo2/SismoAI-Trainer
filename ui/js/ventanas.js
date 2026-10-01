@@ -7,6 +7,7 @@
     dragStart = null,
     dragEnd = null,
     manualContextKey = null;
+  let hasSavedSelections = false;
   const manualRanges = new Map();
   const $ = (id) => document.getElementById(id);
   const sec = (us) => (us / 1e6).toFixed(1);
@@ -314,11 +315,6 @@
     }
   }
   window.saveWindowSelectionAndContinue = async function () {
-    if (!windows.some((w) => w.selection_status === "include")) {
-      if ($("win-version-note"))
-        $("win-version-note").textContent = "Incluye al menos una ventana.";
-      return;
-    }
     const saved = await Bridge.getWindowSelections();
     if (!saved?.active_filename) {
       if ($("win-version-note"))
@@ -330,10 +326,7 @@
   };
   function renderRows() {
     const continueBtn = document.getElementById("btn-continue-labeling");
-    if (continueBtn)
-      continueBtn.disabled = !windows.some(
-        (w) => w.selection_status === "include",
-      );
+    if (continueBtn) continueBtn.disabled = !hasSavedSelections;
     $("w-count").textContent = windows.length + " ventanas";
     $("w-rows").innerHTML = windows.length
       ? windows
@@ -427,10 +420,14 @@
     const r = await Bridge.getWindowSelections(),
       items = r?.items || [];
     if (!r?.success) {
+      hasSavedSelections = false;
+      renderRows();
       body.innerHTML =
         '<tr><td colspan="4">No se pudieron cargar las selecciones.</td></tr>';
       return;
     }
+    hasSavedSelections = items.length > 0;
+    renderRows();
     body.innerHTML = items.length
       ? items
           .map(

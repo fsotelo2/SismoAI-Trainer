@@ -8,7 +8,8 @@
   };
   let items = [],
     filtered = [],
-    examplesExpanded = false;
+    examplesExpanded = false,
+    hasSavedDatasets = false;
   const esc = (v) =>
     String(v ?? "").replace(
       /[&<>"']/g,
@@ -33,6 +34,52 @@
       : l(x).class_code === 1
         ? "NO_SISMICO"
         : "Pendiente";
+  function renderSavedDatasets(list, error) {
+    const body = $("ds-saved-rows");
+    if (!body) return;
+    if (error) {
+      body.innerHTML =
+        '<tr><td colspan="4">' + esc(error) + "</td></tr>";
+      return;
+    }
+    body.innerHTML = list.length
+      ? list
+          .map(
+            (x) =>
+              "<tr><td>" +
+              esc(x.name) +
+              "</td><td><code>" +
+              esc(x.dataset_id) +
+              "</code></td><td>" +
+              esc(x.windows) +
+              '</td><td><button class="btn btn-secondary btn-sm" data-ds-action="delete-saved" data-filename="' +
+              esc(x.filename) +
+              '">Eliminar</button></td></tr>',
+          )
+          .join("")
+      : '<tr><td colspan="4">No hay datasets guardados.</td></tr>';
+  }
+  async function refreshSavedDatasets() {
+    const result = await Bridge.getDatasetCatalog();
+    if (!result?.success) {
+      hasSavedDatasets = false;
+      renderSavedDatasets([], result?.error || "No se pudieron cargar los datasets.");
+      updateContinueButton();
+      return;
+    }
+    const datasets = result.datasets || [];
+    hasSavedDatasets = datasets.length > 0;
+    renderSavedDatasets(datasets);
+    updateContinueButton();
+  }
+  function updateContinueButton() {
+    const button = $("btn-continue-models");
+    if (!button) return;
+    button.disabled = !hasSavedDatasets;
+    button.title = hasSavedDatasets
+      ? "Hay datasets guardados disponibles"
+      : "Guarda un dataset antes de continuar a Modelos";
+  }
   function filterRows() {
     const f = $("ds-filter")?.value || "all";
     filtered = items.filter(
@@ -396,15 +443,30 @@
       return;
     }
     setText("ds-version-note", "Dataset guardado: " + name);
+    await refreshSavedDatasets();
     // Pass the just-created manifest directly to Models; do not depend on a second bridge read.
     window.__pendingModelsDataset = result.dataset || null;
-    const continueButton = $("btn-continue-models");
-    if (continueButton) continueButton.disabled = false;
   }
   document.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-ds-action]");
     if (!btn) return;
     if (btn.dataset.dsAction === "refresh") await refresh();
+    if (btn.dataset.dsAction === "refresh-saved") await refreshSavedDatasets();
+    if (btn.dataset.dsAction === "delete-saved") {
+      const filename = btn.dataset.filename;
+      if (!filename) return;
+      if (!confirm("¿Eliminar este Dataset guardado?")) return;
+      btn.disabled = true;
+      try {
+        const result = await Bridge.deleteDataset(filename);
+        if (!result?.success)
+          throw new Error(result?.error || "No se pudo eliminar el Dataset.");
+        await refreshSavedDatasets();
+      } catch (error) {
+        alert(error?.message || String(error));
+        btn.disabled = false;
+      }
+    }
     if (btn.dataset.dsAction === "generate") await generate();
     if (btn.dataset.dsAction === "labeling") await App.navigateTo("etiquetado");
     if (btn.dataset.dsAction === "show-all") {
@@ -437,5 +499,8 @@
       renderStatus();
     }
   });
-  window.initDataset = refresh;
+  window.initDataset = async () => {
+    await refresh();
+    await refreshSavedDatasets();
+  };
 })();

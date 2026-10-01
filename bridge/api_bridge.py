@@ -66,6 +66,7 @@ class ApiBridge:
         self._dataset_dir = ""
         self._dataset_path = ""
         self._legacy_dataset_path = ""
+        self._export_dir = ""
         self._active_dataset = None
         self._configure_dataset_paths()
         self._restore_dataset()
@@ -111,6 +112,11 @@ class ApiBridge:
 
             self._project.select_folder(folder)
             self._configure_dataset_paths()
+            self._restore_windows()
+            self._active_window_selection = None
+            self._active_window_selection_filename = ""
+            self._active_label_batch = None
+            self._active_label_items = []
             self._active_dataset = None
             self._restore_dataset()
 
@@ -1022,17 +1028,26 @@ class ApiBridge:
     # ------------------------------------------------------------------
 
     def _configure_dataset_paths(self):
-        """Use the selected project folder as root; manifests are named after datasets."""
+        """Configure isolated persistence folders for the selected project."""
         project_root = self._project.folder_path
         if project_root:
             root = os.path.abspath(os.path.expanduser(project_root))
+            windows_dir = os.path.join(root, "Ventanas")
+            labels_dir = os.path.join(root, "Etiquetados")
             self._dataset_dir = os.path.join(root, "Dataset")
-            self._window_selection_dir = os.path.join(root, "Ventanas")
+            models_dir = os.path.join(root, "Modelos")
+            self._export_dir = os.path.join(root, "Exportar")
+            for folder in (windows_dir, labels_dir, self._dataset_dir, models_dir, self._export_dir):
+                os.makedirs(folder, exist_ok=True)
+            self._window_path = os.path.join(windows_dir, "windows.json")
+            self._window_selection_dir = windows_dir
+            self._labeling = LabelingService(os.path.join(labels_dir, "labels.json"))
             self._legacy_dataset_path = os.path.join(root, "dataset.json")
         else:
             base = os.path.dirname(self._window_path)
             self._dataset_dir = os.path.join(base, "Dataset")
             self._window_selection_dir = os.path.join(base, "Ventanas")
+            self._export_dir = os.path.join(base, "Exportar")
             self._legacy_dataset_path = os.path.join(base, "dataset.json")
         self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
 
@@ -1784,27 +1799,80 @@ class ApiBridge:
         """Previous registry location, kept for one-time migration."""
         return os.path.join(os.path.dirname(self._dataset_path), "model_experiments.json")
 
-    def get_model_experiments(self) -> dict:
-        """Return saved experiment configurations; does not imply trained models."""
+    def _experiment_filename(self, name):
+        value = str(name or "").strip()[:80]
+        value = "".join(
+            "_" if char in '<>:"/\\|?*' or ord(char) < 32 else char
+            for char in value
+        ).rstrip(" .")
+        return (value or "Experimento_sin_nombre") + ".json"
+
+    def _experiment_paths(self):
+        folder = os.path.dirname(self._models_registry_path())
         try:
-            path = self._models_registry_path()
-            if not os.path.isfile(path):
+            return [
+                os.path.join(folder, filename)
+                for filename in os.listdir(folder)
+                if filename.lower().endswith(".json")
+                and filename.casefold() != "model_experiments.json"
+            ]
+        except OSError:
+            return []
+
+    @staticmethod
+    def _write_experiment(path, record):
+        folder = os.path.dirname(path)
+        os.makedirs(folder, exist_ok=True)
+        temporary = path + ".tmp"
+        with open(temporary, "w", encoding="utf-8") as stream:
+            json.dump(record, stream, ensure_ascii=False, indent=2, allow_nan=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+
+    @staticmethod
+    def _read_experiment_id(path):
+        try:
+            with open(path, encoding="utf-8") as stream:
+                return str((json.load(stream) or {}).get("experiment_id", ""))
+        except (OSError, ValueError, TypeError):
+            return ""
+
+    def get_model_experiments(self) -> dict:
+        """Return saved experiment manifests from the project's Modelos folder."""
+        try:
+            experiments = []
+            for path in self._experiment_paths():
+                try:
+                    with open(path, encoding="utf-8") as stream:
+                        record = json.load(stream)
+                    if isinstance(record, dict) and record.get("experiment_id"):
+                        experiments.append(record)
+                except (OSError, ValueError, TypeError):
+                    continue
+            if experiments:
+                experiments.sort(key=lambda item: str(item.get("created_at", "")))
+                return {"success": True, "experiments": experiments}
+
+            legacy_path = self._models_registry_path()
+            if not os.path.isfile(legacy_path):
                 legacy_path = self._legacy_models_registry_path()
-                if not os.path.isfile(legacy_path):
-                    return {"success": True, "experiments": []}
-                # Migrate existing records so changing the location does not hide them.
-                with open(legacy_path, "r", encoding="utf-8") as stream:
-                    data = json.load(stream)
-                data = data if isinstance(data, list) else []
-                os.makedirs(os.path.dirname(path), exist_ok=True)
-                temp_path = path + ".tmp"
-                with open(temp_path, "w", encoding="utf-8") as stream:
-                    json.dump(data, stream, ensure_ascii=False, indent=2)
-                os.replace(temp_path, path)
-                return {"success": True, "experiments": data}
-            with open(path, "r", encoding="utf-8") as stream:
-                data = json.load(stream)
-            return {"success": True, "experiments": data if isinstance(data, list) else []}
+            if not os.path.isfile(legacy_path):
+                return {"success": True, "experiments": []}
+            with open(legacy_path, "r", encoding="utf-8") as stream:
+                legacy = json.load(stream)
+            legacy = legacy if isinstance(legacy, list) else []
+            for record in legacy:
+                if not isinstance(record, dict) or not record.get("experiment_id"):
+                    continue
+                name = (record.get("config") or {}).get("name")
+                self._write_experiment(
+                    os.path.join(os.path.dirname(self._models_registry_path()),
+                                 self._experiment_filename(name)),
+                    record,
+                )
+            os.remove(legacy_path)
+            return {"success": True, "experiments": legacy}
         except Exception as exc:
             return {"success": False, "experiments": [], "error": str(exc)}
 
@@ -1871,13 +1939,13 @@ class ApiBridge:
                 "config": config,
                 "runs": [],
             }
-            registry.append(record)
-            path = self._models_registry_path()
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            temp_path = path + ".tmp"
-            with open(temp_path, "w", encoding="utf-8") as stream:
-                json.dump(registry, stream, ensure_ascii=False, indent=2)
-            os.replace(temp_path, path)
+            path = os.path.join(
+                os.path.dirname(self._models_registry_path()),
+                self._experiment_filename(name),
+            )
+            if os.path.exists(path):
+                raise ValueError("Ya existe un experimento con ese nombre. Usa otro nombre.")
+            self._write_experiment(path, record)
             return {"success": True, "experiment_id": record["experiment_id"]}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1903,18 +1971,42 @@ class ApiBridge:
                 if not result.get("success"):
                     raise ValueError("No se pudo leer el registro: " + result.get("error", "error desconocido"))
                 registry = result.get("experiments", [])
-                updated = [item for item in registry
-                           if not isinstance(item, dict) or item.get("experiment_id") != experiment_id]
-                if len(updated) == len(registry):
+                record = next(
+                    (
+                        item
+                        for item in registry
+                        if isinstance(item, dict)
+                        and item.get("experiment_id") == experiment_id
+                    ),
+                    None,
+                )
+                if record is None:
                     raise ValueError("Experimento no encontrado.")
-                path = self._models_registry_path()
-                os.makedirs(os.path.dirname(path), exist_ok=True)
-                temp = path + ".tmp"
-                with open(temp, "w", encoding="utf-8") as stream:
-                    json.dump(updated, stream, ensure_ascii=False, indent=2, allow_nan=False)
-                    stream.flush()
-                    os.fsync(stream.fileno())
-                os.replace(temp, path)
+                path = next(
+                    (
+                        candidate
+                        for candidate in self._experiment_paths()
+                        if self._read_experiment_id(candidate) == experiment_id
+                    ),
+                    None,
+                )
+                if not path:
+                    raise ValueError("Archivo de experimento no encontrado.")
+                models_dir = os.path.abspath(os.path.dirname(self._models_registry_path()))
+                import shutil
+                folder_names = {
+                    os.path.splitext(
+                        self._experiment_filename((record.get("config") or {}).get("name"))
+                    )[0],
+                    experiment_id,
+                }
+                for folder_name in folder_names:
+                    output_dir = os.path.abspath(os.path.join(models_dir, folder_name))
+                    if os.path.dirname(output_dir) != models_dir:
+                        raise ValueError("Ruta de resultados de experimento no válida.")
+                    if os.path.isdir(output_dir):
+                        shutil.rmtree(output_dir)
+                os.remove(path)
             return {"success": True, "experiment_id": experiment_id}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1969,7 +2061,13 @@ class ApiBridge:
                 window_by_id = {w.window_id: w for w in list(self._window_records)}
                 experiment_id = record["experiment_id"]
                 self._update_model_record(experiment_id, {"status": "running", "error": None})
-                output_dir = os.path.join(os.path.dirname(os.path.dirname(self._dataset_path)), "Modelos", str(experiment_id))
+                experiment_stem = os.path.splitext(
+                    self._experiment_filename((config_snapshot or {}).get("name"))
+                )[0]
+                output_dir = os.path.join(
+                    os.path.dirname(self._models_registry_path()),
+                    experiment_stem,
+                )
                 os.makedirs(output_dir, exist_ok=True)
                 self._model_training_state = {
                     "status": "preparing", "epoch": 0,
@@ -2084,11 +2182,17 @@ class ApiBridge:
                     break
             if not found:
                 raise ValueError("Experimento no encontrado en el registro: " + str(experiment_id))
-            path = self._models_registry_path()
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            temp = path + ".tmp"
-            with open(temp, "w", encoding="utf-8") as stream:
-                json.dump(registry, stream, ensure_ascii=False, indent=2, allow_nan=False)
-                stream.flush()
-                os.fsync(stream.fileno())
-            os.replace(temp, path)
+            path = next(
+                (
+                    candidate
+                    for candidate in self._experiment_paths()
+                    if self._read_experiment_id(candidate) == experiment_id
+                ),
+                None,
+            )
+            if not path:
+                raise ValueError("Archivo de experimento no encontrado: " + str(experiment_id))
+            self._write_experiment(path, next(
+                item for item in registry
+                if item.get("experiment_id") == experiment_id
+            ))

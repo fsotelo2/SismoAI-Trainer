@@ -16,7 +16,8 @@
       );
   let dataset = null,
     pollHandle = null,
-    active = false;
+    active = false,
+    hasSavedExperiments = false;
   const names = {
     "1d_cnn": "1D-CNN",
     feature_classifier: "Clasificador de características",
@@ -114,8 +115,6 @@
           .join("")
       : '<option value="">No hay archivos Dataset disponibles</option>';
     selector.disabled = available.length === 0;
-    const deleteButton = $("models-delete-dataset");
-    if (deleteButton) deleteButton.disabled = available.length === 0;
     if (!r?.success) {
       b.textContent = "Error de consulta";
       b.className = "badge badge-warning";
@@ -207,6 +206,8 @@
   }
   function renderLibrary(r) {
     const list = r?.experiments || [];
+    hasSavedExperiments = list.length > 0;
+    updateExportButton();
     $("models-library-body").innerHTML = list.length
       ? list
           .map((x) => {
@@ -255,6 +256,14 @@
           .join("")
       : '<tr><td colspan="7">No hay experimentos guardados.</td></tr>';
   }
+  function updateExportButton() {
+    const button = $("btn-continue-exportar");
+    if (!button) return;
+    button.disabled = !hasSavedExperiments;
+    button.title = hasSavedExperiments
+      ? "Hay experimentos guardados disponibles"
+      : "Guarda un experimento antes de continuar a Exportar";
+  }
   async function refresh() {
     const r = await Promise.race([
       Bridge.getModelExperiments(),
@@ -270,6 +279,8 @@
       ),
     ]);
     if (r?.success === false || r?.error) {
+      hasSavedExperiments = false;
+      updateExportButton();
       $("models-library-body").innerHTML =
         '<tr><td colspan="6">Error al consultar biblioteca: ' +
         esc(r.error || "desconocido") +
@@ -311,46 +322,6 @@
       $("models-form-message").textContent =
         "No se pudo guardar: " + (e?.message || String(e));
       return null;
-    }
-  }
-  async function deleteDataset() {
-    const selector = $("models-dataset"),
-      filename = selector?.value;
-    if (!filename) {
-      alert("Selecciona un Dataset para eliminar.");
-      return;
-    }
-    const chosen = Array.from(selector.options).find(
-      (o) => o.value === filename,
-    );
-    const name = chosen?.textContent || filename;
-    if (
-      !confirm(
-        '¿Eliminar el Dataset "' +
-          name +
-          '"? Se eliminará su manifiesto JSON. Los archivos fuente BIN no se modificarán. Si hay experimentos asociados, primero deberás eliminarlos.',
-      )
-    )
-      return;
-    selector.disabled = true;
-    try {
-      const r = await Bridge.deleteDataset(filename);
-      if (!r?.success)
-        throw new Error(r?.error || "No se pudo eliminar el Dataset.");
-      const catalog = await Bridge.getDatasetCatalog();
-      if (!catalog?.success)
-        throw new Error(
-          catalog?.error ||
-            "Se eliminó, pero no se pudo actualizar el inventario.",
-        );
-      datasetRender(catalog);
-      $("models-form-message").textContent = "Dataset eliminado.";
-    } catch (err) {
-      alert(err?.message || String(err));
-    } finally {
-      selector.disabled = !(
-        selector.options.length && selector.options[0].value
-      );
     }
   }
   async function getExperiment(id) {
@@ -753,7 +724,6 @@
     if (a === "train") train();
     if (a === "reset") reset();
     if (a === "refresh") refresh();
-    if (a === "delete-dataset") deleteDataset();
     if (a === "detail") showExperimentDetail(b.dataset.id);
     if (a === "load") loadExperiment(b.dataset.id);
     if (a === "delete") deleteExperiment(b.dataset.id);

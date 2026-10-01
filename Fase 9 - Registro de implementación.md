@@ -8,7 +8,7 @@
 - Interfaz Modelos integrada al cargador de vistas existente.
 - Consulta del manifiesto Dataset activo y visualización de conteos de particiones y etiquetas binarias.
 - Configuración de experimento con validación de hiperparámetros, arquitectura, sensores, semilla y opciones.
-- Registro persistente de experimentos en `model_experiments.json`, sin sobrescribir registros previos.
+- Registro persistente de experimentos como archivos individuales `Modelos/<nombre>.json`, sin sobrescribir configuraciones previas; los registros antiguos `model_experiments.json` se migran automáticamente.
 - Preparación de tensores desde las ventanas referenciadas por el manifiesto en el mismo worker de fondo que entrena: remuestreo lineal a longitud fija (256 puntos), normalización z-score por ventana/canal y validación de tiempos finitos, estrictamente crecientes y etiquetas binarias. La interfaz recibe el estado «preparing» sin esperar a que termine esta etapa.
 - Entrenamiento CPU en segundo plano con PyTorch: 1D-CNN, clasificador denso y baseline lineal.
 - Seguimiento de época, pérdidas y accuracy de validation; parada temprana opcional.
@@ -23,7 +23,7 @@
 - El entrenador valida tipos estrictos y límites de épocas (1–10000), batch size (1–4096) y learning rate finito (0–1], incluso si se invoca fuera de la interfaz.
 - La arquitectura baseline se identifica en la interfaz como clasificador lineal, evitando describirla como un sistema de reglas.
 - La interfaz informa errores de comunicación al iniciar, guardar configuración o consultar el progreso, en lugar de dejar fallar la operación sin explicación.
-- El puente evita iniciar una segunda ejecución simultánea, actualiza el estado compartido con bloqueo y no sobrescribe un registro de experimentos ilegible como si estuviera vacío.
+- El puente evita iniciar una segunda ejecución simultánea, actualiza el archivo individual con bloqueo y no sobrescribe un registro de experimentos ilegible como si estuviera vacío.
 
 ## Correcciones derivadas de CI
 

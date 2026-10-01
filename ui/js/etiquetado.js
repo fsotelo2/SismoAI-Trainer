@@ -10,7 +10,8 @@
     context = null,
     signalCache = {},
     activeFilter = "all",
-    selectedIds = new Set();
+    selectedIds = new Set(),
+    hasSavedBatches = false;
   const esc = (v) =>
     String(v ?? "").replace(
       /[&<>"']/g,
@@ -185,21 +186,11 @@
   function updateDatasetButton() {
     const button = $("btn-continue-dataset");
     if (!button) return;
-    const ready =
-      items.length > 0 &&
-      items.every((item) => {
-        // Gate progression only on the last persisted label, never unsaved editor state.
-        const l = item._savedLabel;
-        return (
-          l &&
-          (l.class_code === 0 || l.class_code === 1) &&
-          l.quality_review === "confirmed"
-        );
-      });
+    const ready = hasSavedBatches;
     button.disabled = !ready;
     button.title = ready
-      ? "Todas las ventanas están etiquetadas y confirmadas"
-      : "Confirma todas las etiquetas para continuar a Dataset";
+      ? "Hay etiquetados guardados disponibles"
+      : "Guarda un etiquetado antes de continuar a Dataset";
     button.setAttribute("aria-disabled", String(!ready));
   }
   function markDirty() {
@@ -403,10 +394,14 @@
     const r = await Bridge.getLabelBatches(),
       list = r?.items || [];
     if (!r?.success) {
+      hasSavedBatches = false;
+      updateDatasetButton();
       body.innerHTML =
         '<tr><td colspan="4">No se pudieron cargar los etiquetados.</td></tr>';
       return;
     }
+    hasSavedBatches = list.length > 0;
+    updateDatasetButton();
     body.innerHTML = list.length
       ? list
           .map(

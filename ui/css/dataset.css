@@ -3,21 +3,28 @@
   --x: 0px;
   --y: 0px;
   --w: 100%;
-  --h: 360px;
+  --h: 250px;
 }
 
 .dataset-view > .ds-section:nth-child(2) {
   --x: 0px;
-  --y: 365px;
+  --y: 255px;
   --w: 100%;
   --h: 200px;
 }
 
 .dataset-view > .ds-section:nth-child(3) {
   --x: 0px;
-  --y: 570px;
+  --y: 460px;
   --w: 100%;
   --h: 130px;
+}
+
+.dataset-view > .ds-section:nth-child(4) {
+  --x: 0px;
+  --y: 600px;
+  --w: 100%;
+  --h: 110px;
 }
 
 .dataset-view {
@@ -935,8 +942,137 @@
 /* Las regiones de división y estado deben ajustarse a su área asignada.
    El desplazamiento queda limitado a la tabla de ejemplos. */
 .dataset-view > .ds-section:nth-child(2),
-.dataset-view > .ds-section:nth-child(3) {
+.dataset-view > .ds-section:nth-child(3),
+.dataset-view > .ds-section:nth-child(4) {
   overflow: hidden;
+}
+
+.ds-saved-region {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  overflow: hidden;
+}
+.ds-saved-region .ds-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  margin: 0 0 7px;
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+.ds-saved-region .ds-section-heading h2 {
+  font-size: 12px;
+  font-weight: 600;
+}
+.ds-saved-region .table-responsive {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+.ds-saved-region .data-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 11px;
+}
+.ds-saved-region .data-table th,
+.ds-saved-region .data-table td {
+  padding: 2px 6px;
+  line-height: 1.1;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.ds-saved-region .data-table th {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  background: #f8fafc;
+}
+.ds-saved-region .data-table tbody tr {
+  height: 25px;
+}
+.ds-saved-region .data-table code {
+  font-size: 11px;
+}
+
+/* Compactar la vista de ventanas para mantener todo dentro de su región. */
+.dataset-view > .ds-section:first-child {
+  padding: 8px 12px;
+}
+.dataset-view > .ds-section:first-child .ds-section-heading {
+  margin-bottom: 5px;
+  gap: 8px;
+}
+.dataset-view > .ds-section:first-child .ds-section-heading h2 {
+  font-size: 17px;
+}
+.dataset-view > .ds-section:first-child .ds-section-heading p {
+  font-size: 10px;
+  margin-top: 1px;
+}
+.dataset-view > .ds-section:first-child .ds-metrics {
+  margin-bottom: 5px;
+  padding: 4px 0;
+}
+.dataset-view > .ds-section:first-child .ds-metric {
+  gap: 7px;
+  padding: 0 8px;
+}
+.dataset-view > .ds-section:first-child .ds-metric > span {
+  font-size: 20px;
+}
+.dataset-view > .ds-section:first-child .ds-metric strong {
+  font-size: 16px;
+}
+.dataset-view > .ds-section:first-child .ds-metric small {
+  font-size: 10px;
+}
+.dataset-view > .ds-section:first-child .ds-overview-grid {
+  min-height: 0;
+  overflow: hidden;
+  gap: 8px;
+}
+.dataset-view > .ds-section:first-child .ds-subcard {
+  padding: 6px 8px;
+}
+.dataset-view > .ds-section:first-child .ds-subcard h3 {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.dataset-view > .ds-section:first-child .ds-class-layout {
+  gap: 8px;
+  overflow: hidden;
+}
+.dataset-view > .ds-section:first-child .ds-donut {
+  width: 86px;
+  height: 86px;
+}
+.dataset-view > .ds-section:first-child .ds-donut:before {
+  width: 54px;
+  height: 54px;
+}
+.dataset-view > .ds-section:first-child .ds-donut strong {
+  font-size: 14px;
+}
+.dataset-view > .ds-section:first-child .ds-donut small,
+.dataset-view > .ds-section:first-child .ds-legend > div,
+.dataset-view > .ds-section:first-child .ds-legend b {
+  font-size: 10px;
+}
+.dataset-view > .ds-section:first-child .ds-legend {
+  gap: 4px;
+  min-width: 110px;
+}
+.dataset-view > .ds-section:first-child .ds-summary {
+  font-size: 10px;
+  margin-top: 4px;
 }
 
 /* Mantener el resumen en dos columnas mientras exista espacio para ambas

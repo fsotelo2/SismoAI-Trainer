@@ -415,6 +415,7 @@ const App = (() => {
     ".dataset-view > .ds-section:nth-child(1)",
     ".dataset-view > .ds-section:nth-child(2)",
     ".dataset-view > .ds-section:nth-child(3)",
+    ".dataset-view > .ds-section:nth-child(4)",
     ".models-config-grid",
     ".models-execution",
     ".models-library",
