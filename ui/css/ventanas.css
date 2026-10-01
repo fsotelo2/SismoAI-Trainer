@@ -102,3 +102,38 @@
   max-width:18vw;
 }
 .app-footer #btn-continue-labeling{margin-left:8px}
+
+
+/* Density pass: compact Windows workspace to fit controls, charts and tables. */
+.windows-page{gap:8px;padding:2px 0}
+.windows-config,.windows-charts .panel,.windows-list-panel{padding:10px;border-radius:8px}
+.windows-config-head,.panel-heading{gap:8px;margin-bottom:7px}
+.windows-config-head h2{font-size:14px}
+.windows-config-head p{font-size:12px;margin-top:2px}
+.windows-mode-tabs{gap:7px}
+.windows-mode-tabs>.btn,.windows-controls>.btn{min-height:30px;padding:6px 10px;font-size:12px;line-height:1.2}
+.windows-source{gap:6px;font-size:12px}
+.windows-source strong{font-size:12px}
+.windows-source .form-select{min-height:29px;font-size:12px;padding-top:4px;padding-bottom:4px}
+.windows-controls{gap:9px}
+.windows-controls>label{gap:3px;font-size:12px;min-width:112px}
+.windows-controls .form-input,.windows-controls .form-select{min-height:29px;height:29px;padding:4px 8px;font-size:12px}
+.windows-controls fieldset{gap:8px;padding:5px 8px;font-size:12px}
+.windows-controls fieldset legend{font-size:10px}
+.windows-controls fieldset label{gap:4px}
+.windows-charts{gap:8px}
+.windows-charts .panel{padding:9px}
+.windows-charts .panel-heading{font-size:12px;margin-bottom:3px}
+.panel-heading span{font-size:11px}
+.windows-canvas{height:118px}
+.windows-list-panel .panel-heading{font-size:12px}
+.windows-list-panel .panel-heading>div{gap:4px}
+.windows-list-panel table{font-size:11px}
+.windows-list-panel th,.windows-list-panel td{padding:2px 6px;line-height:1.05}
+.windows-list-panel tbody tr{height:22px}
+.windows-list-panel td .form-select{min-height:21px;height:21px;padding:1px 20px 1px 6px;font-size:11px}
+.windows-list-panel .btn,.windows-list-panel .btn-sm{min-height:25px;padding:3px 8px;font-size:11px}
+.windows-list-panel .table-responsive{font-size:11px}
+.status-pill{padding:2px 6px;font-size:10px}
+.app-footer #win-footer-controls label{font-size:11px}
+@media(max-width:1050px){.windows-charts .panel{padding:8px}}
