@@ -238,7 +238,8 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     digest = hashlib.sha256(weights.read_bytes()).hexdigest()
     result={"status":"trained","created_at":datetime.now(timezone.utc).isoformat(),
             "epochs_completed":len(history),"history":history,"metrics":metrics,
-            "weights_path":str(weights),"weights_bytes":weights.stat().st_size,"weights_sha256":digest,\n            "config":config,
+            "weights_path":str(weights),"weights_bytes":weights.stat().st_size,"weights_sha256":digest,
+            "config":config,
             "input_shape":original_shape,"preprocessing":"resample lineal a 256 puntos; z-score por ventana y canal" + ("; seis estadísticas por canal" if config["architecture"] == "feature_classifier" else ""),
             "elapsed_seconds":time.time()-start}
     with open(out/"training_result.json","w",encoding="utf-8") as f:
