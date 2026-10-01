@@ -1419,13 +1419,23 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
-    def save_window_label(self, window_id: str, payload: dict) -> dict:
-        """Validate and persist one annotation without modifying the source window."""
+    def save_window_label(self, window_id: str, payload: dict, window_ref=None) -> dict:
+        """Save annotation in the active batch, using the selection-scoped reference."""
         try:
-            window = next((w.to_dict() for w in self._window_records if w.window_id == window_id), None)
+            target_items = (self._active_label_batch or {}).get("records", [])
+            if not target_items and self._active_window_selection:
+                target_items = [{"window": w, "label": None}
+                                for w in self._active_window_selection.get("records", [])]
+            entry = next((x for x in target_items
+                          if (x.get("window") or {}).get("window_id") == window_id
+                          and (not window_ref or (x.get("window") or {}).get("window_ref") == window_ref)), None)
+            window = dict(entry.get("window")) if entry else next(
+                (w.to_dict() for w in self._window_records if w.window_id == window_id), None)
             if window is None:
-                return {"success": False, "error": "Ventana no encontrada."}
+                return {"success": False, "error": "Ventana no encontrada en el conjunto activo."}
             label = self._labeling.save_label(window, payload)
+            if entry is not None:
+                entry["label"] = label
             return {"success": True, "label": label}
         except (LabelingError, TypeError, ValueError) as exc:
             return {"success": False, "error": str(exc)}
