@@ -1365,8 +1365,6 @@ class ApiBridge:
             allowed_arch = {"1d_cnn", "feature_classifier", "baseline"}
             if config.get("architecture") not in allowed_arch:
                 raise ValueError("Arquitectura no reconocida.")
-            if config.get("target") != "esp32s3":
-                raise ValueError("El destino inicial soportado es ESP32-S3.")
             registry_result = self.get_model_experiments()
             if not registry_result.get("success"):
                 raise ValueError("No se pudo leer el registro de experimentos: " + registry_result.get("error", "error desconocido"))
@@ -1413,8 +1411,8 @@ class ApiBridge:
                     return {"success": False, "error": "Ya existe un entrenamiento en ejecución."}
                 if not self._active_dataset or str(self._active_dataset.get("dataset_id")) != str(dataset_id):
                     raise ValueError("El dataset activo cambió. Actualiza la vista.")
-                if not isinstance(config, dict) or config.get("target") != "esp32s3":
-                    raise ValueError("Configuración o destino no válido.")
+                if not isinstance(config, dict):
+                    raise ValueError("Configuración no válida.")
                 registry_result = self.get_model_experiments()
                 if not registry_result.get("success"):
                     raise ValueError("No se pudo leer el registro de experimentos: " + registry_result.get("error", "error desconocido"))
