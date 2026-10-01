@@ -1732,6 +1732,7 @@ class ApiBridge:
                 # copied as a lookup; signal loading remains in the worker.
                 import copy
                 manifest = copy.deepcopy(self._active_dataset)
+                manifest_path_snapshot = os.path.abspath(self._dataset_path)
                 config_snapshot = copy.deepcopy(config)
                 window_by_id = {w.window_id: w for w in list(self._window_records)}
                 experiment_id = record["experiment_id"]
@@ -1763,10 +1764,9 @@ class ApiBridge:
                                 if not snapshot_rel:
                                     raise ValueError("El Dataset no contiene una copia física de la ventana " + str(wid) +
                                                      ". Genere nuevamente el Dataset desde Etiquetado.")
-                                snapshot_path = os.path.abspath(os.path.join(os.path.dirname(self._dataset_path), snapshot_rel))
-                                snapshot_root = os.path.abspath(os.path.join(os.path.dirname(self._dataset_path),
-                                    str((manifest.get("snapshot") or {}).get("directory", "")))) if (manifest.get("snapshot") or {}).get("directory") else os.path.abspath(os.path.dirname(self._dataset_path))
-                                if os.path.commonpath([os.path.abspath(os.path.dirname(self._dataset_path)), snapshot_path]) != os.path.abspath(os.path.dirname(self._dataset_path)):
+                                snapshot_base = os.path.abspath(os.path.dirname(manifest_path_snapshot))
+                                snapshot_path = os.path.abspath(os.path.join(snapshot_base, snapshot_rel))
+                                if os.path.commonpath([snapshot_base, snapshot_path]) != snapshot_base:
                                     raise ValueError("Ruta de snapshot inválida para la ventana " + str(wid))
                                 if not os.path.isfile(snapshot_path):
                                     raise ValueError("No se encontró el archivo físico de la ventana " + str(wid) +
