@@ -76,7 +76,7 @@ const Bridge = (() => {
     startModelTraining: (config, datasetId) => call('start_model_training', config, datasetId),
     getModelTrainingState: () => call('get_model_training_state'),
     generateDataset: (ratios, seed, name) => call('generate_dataset', ratios, seed, name),
-    getWindowSignal: (windowId) => call('get_window_signal', windowId),
+    getWindowSignal: (windowId, windowRef) => call('get_window_signal', windowId, windowRef),
     saveWindowLabel: (windowId, payload, windowRef) => call('save_window_label', windowId, payload, windowRef),
     clearWindows: () => call('clear_windows'),
     setWindowSelection: (windowId, status) => call('set_window_selection', windowId, status),
