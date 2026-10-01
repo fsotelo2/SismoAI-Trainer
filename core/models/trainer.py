@@ -134,7 +134,10 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     if not isinstance(config, dict) or not isinstance(config.get("training"), dict):
         raise ValueError("La configuración de entrenamiento no es válida.")
     training = config["training"]
-    seed = int(training.get("seed", 42))
+    seed_value = training.get("seed", 42)
+    if isinstance(seed_value, bool) or not isinstance(seed_value, int) or seed_value < 0:
+        raise ValueError("La semilla debe ser un entero no negativo.")
+    seed = seed_value
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
     torch.set_num_threads(max(1, min(4, os.cpu_count() or 1)))
     _validate_arrays(arrays)
@@ -155,8 +158,6 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
         raise ValueError("Optimizador no soportado.")
     if training.get("loss", "cross_entropy") != "cross_entropy":
         raise ValueError("La única función de pérdida implementada es cross_entropy.")
-    if isinstance(training.get("seed", 42), bool) or seed < 0:
-        raise ValueError("La semilla debe ser un entero no negativo.")
     if len(set(map(int, y_train))) < 2:
         raise ValueError("Train debe contener ambas clases para entrenar clasificación binaria.")
     if len(set(map(int, y_val))) < 2:
