@@ -65,7 +65,8 @@ def create_manifest(folder, kind, name, records, source_id=None):
         "records": records,
     }
     os.makedirs(folder, exist_ok=True)
-    path = os.path.join(folder, kind + "_" + manifest_id + ".json")
+    filename_name = re.sub(r"[^A-Za-z0-9_-]+", "_", payload["name"]).strip("_-") or kind
+    path = os.path.join(folder, filename_name + "_" + manifest_id + ".json")
     _atomic_json(path, payload)
     return payload, os.path.abspath(path)
 
