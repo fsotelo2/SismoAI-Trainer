@@ -178,6 +178,12 @@
       await new Promise(resolve=>setTimeout(resolve,150));
     }
   }
+  async function refreshSavedSelections(){
+    const body=$('w-saved-rows');if(!body)return;
+    const r=await Bridge.getWindowSelections(),items=r?.items||[];
+    if(!r?.success){body.innerHTML='<tr><td colspan="4">No se pudieron cargar las selecciones.</td></tr>';return;}
+    body.innerHTML=items.length?items.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td><code>'+escapeHtml(x.id)+'</code></td><td>'+x.count+'</td><td><button class="btn btn-secondary btn-sm" data-w-action="delete-saved" data-filename="'+escapeHtml(x.filename)+'">Eliminar</button></td></tr>').join(''):'<tr><td colspan="4" class="text-center">No hay selecciones guardadas.</td></tr>';
+  }
   async function refresh() {
     const files=await loadFileOptions();
     let state=await Bridge.getAnalysisState();
@@ -193,13 +199,21 @@
       await waitForAnalysis();
     }
     context=await Bridge.getWindowContext();windows=await Bridge.getWindows();
-    renderContext();renderRows();
+    renderContext();renderRows();await refreshSavedSelections();
   }
   async function action(e) {
     const b=e.target.closest('[data-w-action]');if(!b)return;
     const a=b.dataset.wAction;
     if(a==='mode'){setMode(b.dataset.mode);renderContext();}
     if(a==='refresh')await refresh();
+    if(a==='refresh-saved')await refreshSavedSelections();
+    if(a==='delete-saved'){
+      const filename=b.dataset.filename;
+      if(!confirm('¿Eliminar la selección guardada "'+filename+'"? Esta acción no se puede deshacer.'))return;
+      const result=await Bridge.deleteWindowSelection(filename);
+      if(!result?.success){alert(result?.error||'No se pudo eliminar la selección.');return;}
+      await refreshSavedSelections();
+    }
     if(a==='prev-event' || a==='next-event'){
       const index=Number(context?.event_index);
       if(Number.isInteger(index) && index>=0){
