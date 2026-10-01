@@ -139,9 +139,16 @@
     }finally{if(btn)btn.disabled=false;}
   }
   window.saveWindowSelectionAndContinue=async function(){
-    if(!windows.some(w=>w.selection_status==='include')){if($('win-version-note'))$('win-version-note').textContent='Incluye al menos una ventana.';return;}
-    const r=await saveSelection();
-    if(r?.success)await App.navigateTo('etiquetado');
+    if(!windows.some(w=>w.selection_status==='include')){
+      if($('win-version-note'))$('win-version-note').textContent='Incluye al menos una ventana.';
+      return;
+    }
+    const saved=await Bridge.getWindowSelections();
+    if(!saved?.active_filename){
+      if($('win-version-note'))$('win-version-note').textContent='Guarda la selección antes de continuar a Etiquetado.';
+      return;
+    }
+    await App.navigateTo('etiquetado');
   };
   function renderRows() {
     const continueBtn=document.getElementById('btn-continue-labeling');
