@@ -146,11 +146,18 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     x_test, y_test = arrays["test"]
     if len(x_train) == 0 or len(x_val) == 0:
         raise ValueError("Train y Validation deben contener muestras.")
-    epochs = int(training.get("epochs", 0))
-    batch_size = int(training.get("batch_size", 0))
-    learning_rate = float(training.get("learning_rate", 0))
-    if epochs < 1 or batch_size < 1 or not np.isfinite(learning_rate) or learning_rate <= 0:
-        raise ValueError("Épocas, batch size y learning rate deben ser positivos.")
+    epochs_value = training.get("epochs", 0)
+    batch_value = training.get("batch_size", 0)
+    lr_value = training.get("learning_rate", 0)
+    if isinstance(epochs_value, bool) or not isinstance(epochs_value, int) or not 1 <= epochs_value <= 10000:
+        raise ValueError("Épocas debe ser un entero entre 1 y 10000.")
+    if isinstance(batch_value, bool) or not isinstance(batch_value, int) or not 1 <= batch_value <= 4096:
+        raise ValueError("Batch size debe ser un entero entre 1 y 4096.")
+    if isinstance(lr_value, bool) or not isinstance(lr_value, (int, float)) or not np.isfinite(lr_value) or not 0 < lr_value <= 1:
+        raise ValueError("Learning rate debe ser un número finito mayor que 0 y menor o igual que 1.")
+    epochs = epochs_value
+    batch_size = batch_value
+    learning_rate = float(lr_value)
     if config.get("architecture") not in ("1d_cnn", "feature_classifier", "baseline"):
         raise ValueError("Arquitectura no soportada.")
     optimizer_value = training.get("optimizer", "adam")
