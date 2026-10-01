@@ -64,6 +64,7 @@ class WindowRecord:
     def to_dict(self) -> Dict[str, Any]:
         """Return a JSON-compatible representation."""
         result = asdict(self)
+        result["duration_ms"] = self.duration_ms
         result["sensors"] = list(self.sensors)
         result["quality"]["findings"] = list(self.quality.findings)
         return result
