@@ -79,3 +79,5 @@
  .models-config-grid{grid-template-columns:1fr 1fr}
  .models-config-grid>.models-card:first-child{grid-column:1/-1}
 }
+
+.models-library .models-row-actions{white-space:nowrap;min-width:220px}.models-library .models-row-actions .btn{font-size:10px;padding:4px 7px}.models-library .table-container{overflow-x:auto}.models-library table{min-width:900px}
