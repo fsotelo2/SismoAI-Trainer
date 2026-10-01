@@ -1167,7 +1167,8 @@ class ApiBridge:
         """List valid named manifests saved in the selected project's Dataset folder."""
         datasets = []
         try:
-            os.makedirs(self._dataset_dir, exist_ok=True)
+            if not os.path.isdir(self._dataset_dir):
+                return datasets
             for filename in sorted(os.listdir(self._dataset_dir), key=str.casefold):
                 if not filename.lower().endswith(".json"):
                     continue
@@ -1273,6 +1274,7 @@ class ApiBridge:
                 manifest["name"] = "Dataset_sin_nombre"
             # Persist an immutable physical snapshot of every included window's signals.
             import numpy as np
+            os.makedirs(self._dataset_dir, exist_ok=True)
             snapshot_dirname = "dataset_" + str(manifest["dataset_id"]) + "_data"
             snapshot_dir = os.path.join(self._dataset_dir, snapshot_dirname)
             os.makedirs(snapshot_dir, exist_ok=False)
