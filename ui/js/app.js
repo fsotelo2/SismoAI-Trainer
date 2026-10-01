@@ -118,7 +118,7 @@ const App = (() => {
 
     if (action === 'footer-continue-labeling') { if(window.saveWindowSelectionAndContinue) await window.saveWindowSelectionAndContinue(); return; }
 
-    if (action === 'footer-continue-dataset') { if(window.saveLabelBatchAndContinue) await window.saveLabelBatchAndContinue(); return; }
+    if (action === 'footer-continue-dataset') { await navigateTo('dataset'); return; }
 
     if (action === 'analyze-file') {
       const fileName = target.getAttribute('data-file');
