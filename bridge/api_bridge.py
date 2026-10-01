@@ -1741,7 +1741,8 @@ class ApiBridge:
                 window_by_id = {w.window_id: w for w in list(self._window_records)}
                 experiment_id = record["experiment_id"]
                 self._update_model_record(experiment_id, {"status": "running", "error": None})
-                output_dir = os.path.join(os.path.dirname(self._dataset_path), "models", str(experiment_id))
+                output_dir = os.path.join(os.path.dirname(os.path.dirname(self._dataset_path)), "Modelos", str(experiment_id))
+                os.makedirs(output_dir, exist_ok=True)
                 self._model_training_state = {
                     "status": "preparing", "epoch": 0,
                     "epochs": int((config.get("training") or {}).get("epochs", 0)),
