@@ -1176,6 +1176,10 @@ class ApiBridge:
                     raise ValueError("Este Dataset está asociado a " + str(len(linked)) +
                                      " experimento(s). Elimina primero esos experimentos desde MODELOS.")
             os.remove(path)
+            snapshot_dir = os.path.join(self._dataset_dir, "dataset_" + dataset_id + "_data")
+            if os.path.isdir(snapshot_dir):
+                import shutil
+                shutil.rmtree(snapshot_dir)
             was_active = bool(self._active_dataset and str(self._active_dataset.get("dataset_id")) == dataset_id)
             if was_active:
                 self._active_dataset = None
