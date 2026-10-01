@@ -91,7 +91,7 @@
     const selections=await Bridge.getWindowSelections();
     const select=$('label-window-selection');
     if(select){
-      const list=selections?.items||[],active=window.__activeWindowSelectionFilename||'';
+      const list=selections?.items||[],active=selections?.active_filename||window.__activeWindowSelectionFilename||'';
       select.innerHTML='<option value="">Selección activa</option>'+list.map(s=>'<option value="'+esc(s.filename)+'" '+(s.filename===active?'selected':'')+'>'+esc(s.name)+' · '+esc(s.count)+' ventanas</option>').join('');
     }
     const r=await Bridge.getLabelingWorkspace();
