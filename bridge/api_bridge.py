@@ -1105,6 +1105,13 @@ class ApiBridge:
 
     def create_label_batch(self, name):
         try:
+            display_name = str(name or "").strip()
+            if not display_name or len(display_name) > 80:
+                raise ValueError("El nombre es obligatorio y debe tener hasta 80 caracteres.")
+            if display_name.lower().endswith(".json"):
+                display_name = display_name[:-5].rstrip()
+            if not display_name or display_name in (".", "..") or re.search(r'[<>:"/\\|?*]', display_name):
+                raise ValueError("El nombre contiene caracteres no permitidos.")
             workspace = self.get_labeling_workspace()
             items = workspace.get("items", [])
             if not items or any(
@@ -1117,17 +1124,58 @@ class ApiBridge:
             source_id = ((self._active_label_batch or {}).get("source_id")
                          if self._active_label_batch else
                          (self._active_window_selection or {}).get("id"))
-            manifest, path = pipeline_manifests.create_manifest(
-                os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados"),
-                "labels", name, items, source_id=source_id)
+            folder = os.path.abspath(os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados"))
+            os.makedirs(folder, exist_ok=True)
+            filename = display_name + ".json"
+            duplicate = filename.casefold() in {x.casefold() for x in os.listdir(folder)}
+            if not duplicate:
+                for entry in os.listdir(folder):
+                    if not entry.lower().endswith(".json"):
+                        continue
+                    try:
+                        with open(os.path.join(folder, entry), encoding="utf-8") as stream:
+                            saved = json.load(stream)
+                        if isinstance(saved, dict) and str(saved.get("name", "")).strip().casefold() == display_name.casefold():
+                            duplicate = True
+                            break
+                    except (OSError, ValueError, TypeError):
+                        continue
+            if duplicate:
+                return {"success": False, "error": "Ya existe un etiquetado con ese nombre. Elige otro nombre."}
+            manifest, generated_path = pipeline_manifests.create_manifest(
+                folder, "labels", display_name, items, source_id=source_id)
+            target_path = os.path.join(folder, filename)
+            if os.path.exists(target_path):
+                os.remove(generated_path)
+                return {"success": False, "error": "Ya existe un etiquetado con ese nombre. Elige otro nombre."}
+            os.rename(generated_path, target_path)
             self._active_label_batch = manifest
-            return {"success": True, "batch": manifest, "filename": os.path.basename(path)}
+            return {"success": True, "batch": manifest, "filename": filename}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
     def get_label_batches(self):
         folder = os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados")
         return {"success": True, "items": pipeline_manifests.list_manifests(folder, "labels")}
+
+    def delete_label_batch(self, filename):
+        try:
+            safe_name = os.path.basename(str(filename or "").strip())
+            if not safe_name or safe_name != filename or not safe_name.lower().endswith(".json"):
+                raise ValueError("Nombre de archivo de etiquetado no válido.")
+            folder = os.path.abspath(os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados"))
+            manifest = pipeline_manifests.load_manifest(folder, "labels", safe_name)
+            # Do not remove a batch currently selected as the source of an active Dataset.
+            active_dataset = getattr(self, "_active_dataset", None) or {}
+            if isinstance(active_dataset, dict) and active_dataset.get("source_label_id") == manifest.get("id"):
+                return {"success": False, "error": "No se puede eliminar: el Dataset activo depende de este etiquetado."}
+            os.remove(os.path.join(folder, safe_name))
+            if self._active_label_batch and self._active_label_batch.get("id") == manifest.get("id"):
+                self._active_label_batch = None
+                self._active_label_items = []
+            return {"success": True, "id": manifest.get("id"), "filename": safe_name}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
 
     def select_label_batch(self, filename):
         try:
