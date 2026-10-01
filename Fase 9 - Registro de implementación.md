@@ -9,13 +9,14 @@
 - Consulta del manifiesto Dataset activo y visualización de conteos de particiones y etiquetas binarias.
 - Configuración de experimento con validación de hiperparámetros, arquitectura, sensores, semilla y opciones.
 - Registro persistente de experimentos en `model_experiments.json`, sin sobrescribir registros previos.
-- Preparación de tensores desde las ventanas referenciadas por el manifiesto: remuestreo lineal a longitud fija (256 puntos) y normalización z-score por ventana/canal.
+- Preparación de tensores desde las ventanas referenciadas por el manifiesto: remuestreo lineal a longitud fija (256 puntos), normalización z-score por ventana/canal y validación de tiempos finitos, estrictamente crecientes y etiquetas binarias.
 - Entrenamiento CPU en segundo plano con PyTorch: 1D-CNN, clasificador denso y baseline lineal.
 - Seguimiento de época, pérdidas y accuracy de validation; parada temprana opcional.
 - Evaluación separada de train, validation y test; matriz de confusión y métricas macro/por clase.
 - Checkpoint `weights.pt`, historial y `training_result.json` por experimento.
 - Pruebas unitarias para métricas, formas de salida y ejecución sintética.
 - Registro de configuración completa y hash SHA-256 del checkpoint por ejecución.
+- Validación explícita de opciones realmente implementadas; por ahora la pérdida admitida es `cross_entropy`.
 
 ## Correcciones derivadas de CI
 
@@ -26,7 +27,7 @@ Se corrigieron los siguientes problemas detectados por la ejecución de GitHub A
 - Pruebas de etiquetado alineadas con el contrato vigente: dos clases principales; la taxonomía secundaria sigue abierta hasta su aprobación.
 - `WindowRecord.to_dict()` ahora incluye `duration_ms`, campo requerido por la prueba de forma común del registro.
 
-Las pruebas automatizadas en GitHub Actions se desactivaron por solicitud del usuario. Las correcciones quedan pendientes de verificación local en el PC.
+Las pruebas automatizadas en GitHub Actions se desactivaron por solicitud del usuario. Las correcciones y los cambios posteriores quedan pendientes de verificación local en el PC; no se declara la suite como aprobada.
 
 ## Límites explícitos
 
