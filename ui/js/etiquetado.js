@@ -114,12 +114,13 @@
   }
   async function drawSignals(item){
     const id=item.window.window_id;
-    let data=signalCache[id];
+    const ref=item.window.window_ref||id;
+    let data=signalCache[ref];
     if(!data){
       $('label-signal-note').textContent='Cargando señal de la ventana…';
-      data=await Bridge.getWindowSignal(id);
+      data=await Bridge.getWindowSignal(id,ref);
       if(selectedId!==id)return;
-      signalCache[id]=data;
+      signalCache[ref]=data;
     }
     const signals=data?.signals||{};
     const geo=signals.GEO||{},mpu=signals.MPU||{};
