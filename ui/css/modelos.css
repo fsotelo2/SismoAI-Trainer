@@ -1,6 +1,4 @@
 .models-view{display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0;padding-bottom:4px}
-.models-target{display:flex;align-items:center;gap:12px;padding:10px 14px;flex:0 0 auto}
-.models-target-icon,.models-library-icon{font-size:25px;color:var(--color-primary)}
 .models-target strong{display:block;font-size:14px}.models-target small{display:block;color:var(--color-text-muted);font-size:11px;margin-top:2px}.models-target .badge{margin-left:auto}
 .models-config-grid{display:grid;grid-template-columns:minmax(280px,1.35fr) minmax(250px,.95fr) minmax(280px,1.15fr);gap:12px;align-items:stretch}
 .models-card{padding:12px;min-width:0;display:flex;flex-direction:column;gap:8px}
