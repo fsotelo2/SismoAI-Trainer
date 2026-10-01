@@ -1367,7 +1367,10 @@ class ApiBridge:
                 raise ValueError("Arquitectura no reconocida.")
             if config.get("target") != "esp32s3":
                 raise ValueError("El destino inicial soportado es ESP32-S3.")
-            registry = self.get_model_experiments().get("experiments", [])
+            registry_result = self.get_model_experiments()
+            if not registry_result.get("success"):
+                raise ValueError("No se pudo leer el registro de experimentos: " + registry_result.get("error", "error desconocido"))
+            registry = registry_result.get("experiments", [])
             import uuid
             from datetime import datetime
             record = {
@@ -1522,13 +1525,30 @@ class ApiBridge:
             return {"success": False, "error": str(exc)}
 
     def _update_model_record(self, experiment_id: str, changes: dict) -> None:
-        registry=self.get_model_experiments().get("experiments",[])
-        for item in registry:
-            if item.get("experiment_id")==experiment_id:
-                item.update(changes);break
-        path=self._models_registry_path()
-        os.makedirs(os.path.dirname(path),exist_ok=True)
-        temp=path+".tmp"
-        with open(temp,"w",encoding="utf-8") as stream:
-            json.dump(registry,stream,ensure_ascii=False,indent=2,allow_nan=False)
-        os.replace(temp,path)
+        """Update one experiment atomically; never replace a corrupt registry with an empty one."""
+        lock = getattr(self, "_model_registry_lock", None)
+        if lock is None:
+            import threading
+            self._model_registry_lock = threading.RLock()
+            lock = self._model_registry_lock
+        with lock:
+            result = self.get_model_experiments()
+            if not result.get("success"):
+                raise ValueError("No se pudo leer el registro de experimentos: " + result.get("error", "error desconocido"))
+            registry = result.get("experiments", [])
+            found = False
+            for item in registry:
+                if item.get("experiment_id") == experiment_id:
+                    item.update(changes)
+                    found = True
+                    break
+            if not found:
+                raise ValueError("Experimento no encontrado en el registro: " + str(experiment_id))
+            path = self._models_registry_path()
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            temp = path + ".tmp"
+            with open(temp, "w", encoding="utf-8") as stream:
+                json.dump(registry, stream, ensure_ascii=False, indent=2, allow_nan=False)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temp, path)
