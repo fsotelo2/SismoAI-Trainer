@@ -1153,6 +1153,44 @@ class ApiBridge:
             pass
         return datasets
 
+    def delete_dataset(self, filename: str) -> dict:
+        """Delete a saved Dataset manifest; preserve source data and refuse dangling experiment references."""
+        try:
+            safe_name = os.path.basename(str(filename or "").strip())
+            if not safe_name or safe_name != filename or not safe_name.lower().endswith(".json"):
+                raise ValueError("Nombre de archivo de Dataset no válido.")
+            path = os.path.abspath(os.path.join(self._dataset_dir, safe_name))
+            if os.path.dirname(path) != os.path.abspath(self._dataset_dir):
+                raise ValueError("Ruta de Dataset no válida.")
+            with open(path, encoding="utf-8") as stream:
+                manifest = json.load(stream)
+            if (not isinstance(manifest, dict) or manifest.get("schema") != "sismoai-dataset"
+                    or manifest.get("schema_version") != 1 or not manifest.get("dataset_id")):
+                raise ValueError("El archivo no contiene un manifiesto SismoAI válido.")
+            dataset_id = str(manifest["dataset_id"])
+            experiments = self.get_model_experiments()
+            if experiments.get("success"):
+                linked = [x for x in experiments.get("experiments", [])
+                          if isinstance(x, dict) and str(x.get("dataset_id")) == dataset_id]
+                if linked:
+                    raise ValueError("Este Dataset está asociado a " + str(len(linked)) +
+                                     " experimento(s). Elimina primero esos experimentos desde MODELOS.")
+            os.remove(path)
+            was_active = bool(self._active_dataset and str(self._active_dataset.get("dataset_id")) == dataset_id)
+            if was_active:
+                self._active_dataset = None
+                self._dataset_path = ""
+                remaining = self._list_dataset_manifests()
+                if remaining:
+                    selected = self.select_dataset(remaining[0]["filename"])
+                    if not selected.get("success"):
+                        return {"success": True, "deleted": safe_name, "active_dataset": None,
+                                "warning": selected.get("error")}
+            return {"success": True, "deleted": safe_name, "active_dataset": self._active_dataset,
+                    "datasets": self._list_dataset_manifests()}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
     def select_dataset(self, filename: str) -> dict:
         """Select one saved manifest by filename from the current project's Dataset folder."""
         try:
