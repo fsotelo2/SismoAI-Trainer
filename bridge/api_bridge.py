@@ -1352,7 +1352,20 @@ class ApiBridge:
             filename = display_name + ".json"
             os.makedirs(folder, exist_ok=True)
             existing = {entry.casefold() for entry in os.listdir(folder)}
-            if filename.casefold() in existing:
+            duplicate_name = filename.casefold() in existing
+            if not duplicate_name:
+                for entry in os.listdir(folder):
+                    if not entry.lower().endswith(".json"):
+                        continue
+                    try:
+                        with open(os.path.join(folder, entry), encoding="utf-8") as stream:
+                            saved = json.load(stream)
+                        if isinstance(saved, dict) and str(saved.get("name", "")).strip().casefold() == display_name.casefold():
+                            duplicate_name = True
+                            break
+                    except (OSError, ValueError, TypeError):
+                        continue
+            if duplicate_name:
                 return {"success": False,
                         "error": "Ya existe una selección con ese nombre. Elige otro nombre."}
             for record in records:
