@@ -1057,6 +1057,8 @@ class ApiBridge:
             try:
                 with open(candidate, encoding="utf-8") as stream:
                     data = json.load(stream)
+                if not isinstance(data, dict):
+                    continue
                 if data.get("schema") == "sismoai-dataset" and data.get("schema_version") == 1:
                     valid.append((str(data.get("created_at", "")), candidate, data))
             except (OSError, ValueError, TypeError):
@@ -1131,6 +1133,8 @@ class ApiBridge:
                 try:
                     with open(path, encoding="utf-8") as stream:
                         data = json.load(stream)
+                    if not isinstance(data, dict):
+                        continue
                     if data.get("schema") != "sismoai-dataset" or data.get("schema_version") != 1:
                         continue
                     if not data.get("dataset_id") or not isinstance(data.get("splits"), dict):
