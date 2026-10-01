@@ -1154,7 +1154,7 @@ class ApiBridge:
                 if w.get("source_event_id") is not None:
                     events.add((w.get("source_file"), str(w.get("source_event_id"))))
             counts["events"] = len(events)
-            return {"success": True, "items": items, "counts": counts, "active_dataset": self._active_dataset, "datasets": self._list_dataset_manifests(), "manifest_path": self._dataset_path}
+            return {"success": True, "items": items, "counts": counts, "active_dataset": self._active_dataset, "datasets": self._list_dataset_manifests(), "label_batches": self.get_label_batches().get("items", []), "manifest_path": self._dataset_path}
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": [], "counts": {}}
 
