@@ -1092,9 +1092,60 @@ class ApiBridge:
                 if w.get("source_event_id") is not None:
                     events.add((w.get("source_file"), str(w.get("source_event_id"))))
             counts["events"] = len(events)
-            return {"success": True, "items": items, "counts": counts, "active_dataset": self._active_dataset, "manifest_path": self._dataset_path}
+            return {"success": True, "items": items, "counts": counts, "active_dataset": self._active_dataset, "datasets": self._list_dataset_manifests(), "manifest_path": self._dataset_path}
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": [], "counts": {}}
+
+    def _list_dataset_manifests(self):
+        """List valid named manifests saved in the selected project's Dataset folder."""
+        datasets = []
+        try:
+            os.makedirs(self._dataset_dir, exist_ok=True)
+            for filename in sorted(os.listdir(self._dataset_dir), key=str.casefold):
+                if not filename.lower().endswith(".json"):
+                    continue
+                path = os.path.join(self._dataset_dir, filename)
+                if not os.path.isfile(path):
+                    continue
+                try:
+                    with open(path, encoding="utf-8") as stream:
+                        data = json.load(stream)
+                    if data.get("schema") != "sismoai-dataset" or data.get("schema_version") != 1:
+                        continue
+                    if not data.get("dataset_id") or not isinstance(data.get("splits"), dict):
+                        continue
+                    datasets.append({
+                        "filename": filename,
+                        "name": data.get("name") or os.path.splitext(filename)[0],
+                        "dataset_id": data["dataset_id"],
+                        "created_at": data.get("created_at", ""),
+                        "windows": (data.get("summary") or {}).get("all", {}).get("windows", 0),
+                        "active": bool(self._active_dataset and self._active_dataset.get("dataset_id") == data.get("dataset_id")),
+                    })
+                except (OSError, ValueError, TypeError):
+                    continue
+        except OSError:
+            pass
+        return datasets
+
+    def select_dataset(self, filename: str) -> dict:
+        """Select one saved manifest by filename from the current project's Dataset folder."""
+        try:
+            safe_name = os.path.basename(str(filename or "").strip())
+            if safe_name != filename or not safe_name.lower().endswith(".json"):
+                return {"success": False, "error": "Nombre de archivo de Dataset no válido."}
+            path = os.path.join(self._dataset_dir, safe_name)
+            with open(path, encoding="utf-8") as stream:
+                data = json.load(stream)
+            if (data.get("schema") != "sismoai-dataset" or data.get("schema_version") != 1
+                    or not data.get("dataset_id") or not isinstance(data.get("splits"), dict)):
+                return {"success": False, "error": "El archivo no contiene un manifiesto SismoAI válido."}
+            self._active_dataset = data
+            self._dataset_path = path
+            return {"success": True, "active_dataset": data, "manifest_path": path,
+                    "datasets": self._list_dataset_manifests()}
+        except (OSError, ValueError, TypeError) as exc:
+            return {"success": False, "error": "No se pudo cargar el Dataset: " + str(exc)}
 
     def generate_dataset(self, ratios=None, seed=42, name=None) -> dict:
         try:
