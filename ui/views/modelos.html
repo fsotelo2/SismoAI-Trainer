@@ -1,5 +1,5 @@
 <section class="models-view">
-<div class="models-target card"><div class="models-target-icon">▣</div><div><strong>Destino: ESP32-S3</strong><small>Perfil inicial · ESP-DL + ESP-PPQ</small></div><span class="badge badge-info">Perfil inicial</span></div>
+
 <div class="models-config-grid">
 <section class="card models-card"><header class="models-card-heading"><span class="models-step">1</span><div><h2>Dataset de entrenamiento</h2><p>Conjunto de datos que se utilizará para entrenar el modelo.</p></div><span id="models-dataset-badge" class="badge">Consultando</span></header>
 <div class="form-group"><label class="form-label" for="models-dataset">Dataset activo</label><select id="models-dataset" class="form-select" disabled><option>Consultando dataset...</option></select></div><div id="models-dataset-summary" class="models-dataset-summary">Consultando manifiesto activo…</div>
@@ -8,7 +8,7 @@
 <div class="form-group"><label class="form-label" for="models-name">Nombre del experimento</label><input id="models-name" class="form-input" maxlength="80" value="cnn_sismos_001"></div>
 <div class="form-group"><label class="form-label" for="models-architecture">Arquitectura</label><select id="models-architecture" class="form-select"><option value="1d_cnn">1D-CNN</option><option value="feature_classifier">Clasificador de características</option><option value="baseline">Baseline lineal</option></select></div>
 <div class="form-group"><label class="form-label" for="models-framework">Framework</label><select id="models-framework" class="form-select"><option value="pytorch">PyTorch</option></select></div>
-<div class="form-group"><label class="form-label" for="models-target-select">Destino</label><select id="models-target-select" class="form-select"><option value="esp32s3">ESP32-S3 (perfil inicial)</option></select></div>
+
 <div class="form-group"><label class="form-label" for="models-input">Señal(es) de entrada</label><select id="models-input" class="form-select"><option value="geo_mpu">GEO + MPU (dos señales)</option><option value="geo">GEO</option><option value="mpu">MPU</option></select></div>
 <div class="form-group"><label class="form-label" for="models-description">Descripción (opcional)</label><textarea id="models-description" class="form-input models-textarea" rows="2" maxlength="300" placeholder="Objetivo o notas del experimento"></textarea></div></section>
 <section class="card models-card"><header class="models-card-heading"><span class="models-step">3</span><div><h2>Parámetros de entrenamiento</h2><p>Ajusta los principales parámetros del proceso de aprendizaje.</p></div></header>
