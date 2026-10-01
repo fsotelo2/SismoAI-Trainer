@@ -1367,6 +1367,33 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": []}
 
+    def delete_window_selection(self, filename):
+        """Delete a saved window selection only when no label batch depends on it."""
+        try:
+            safe_name = os.path.basename(str(filename or "").strip())
+            if not safe_name or safe_name != filename or not safe_name.lower().endswith(".json"):
+                raise ValueError("Nombre de archivo de selección no válido.")
+            folder = os.path.abspath(self._window_selection_dir)
+            path = os.path.abspath(os.path.join(folder, safe_name))
+            if os.path.dirname(path) != folder:
+                raise ValueError("Ruta de selección no válida.")
+            manifest = pipeline_manifests.load_manifest(folder, "windows", safe_name)
+            label_folder = os.path.join(os.path.dirname(folder), "Etiquetados")
+            dependent = [x for x in pipeline_manifests.list_manifests(label_folder, "labels")
+                         if x.get("source_id") == manifest.get("id")]
+            if dependent:
+                return {"success": False,
+                        "error": "No se puede eliminar: existe un etiquetado guardado que depende de esta selección."}
+            if self._active_window_selection and self._active_window_selection.get("id") == manifest.get("id"):
+                self._active_window_selection = None
+                self._active_window_selection_filename = ""
+                self._active_label_batch = None
+                self._active_label_items = []
+            os.remove(path)
+            return {"success": True, "id": manifest.get("id"), "filename": safe_name}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
     def select_window_selection(self, filename):
         try:
             manifest = pipeline_manifests.load_manifest(
