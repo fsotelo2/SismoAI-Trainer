@@ -55,8 +55,18 @@ window.initModels=async(datasetHint=null)=>{
  try{
   const result=await Promise.race([Bridge.getDatasetCatalog(),new Promise(resolve=>setTimeout(()=>resolve({success:false,error:'Tiempo de espera agotado al consultar los archivos JSON de Dataset.'}),12000))]);
   if(result?.success){
-   if(datasetHint)result.active_dataset=datasetHint;
-   datasetRender(result);
+   if(datasetHint){
+    result.active_dataset=datasetHint;
+    datasetRender(result);
+   }else if(!result.active_dataset&&Array.isArray(result.datasets)&&result.datasets.length){
+    // If no active manifest was restored, load the first available saved JSON.
+    const first=result.datasets[0].filename;
+    const loaded=await Bridge.selectDataset(first);
+    if(loaded?.success)datasetRender({success:true,active_dataset:loaded.active_dataset,datasets:loaded.datasets,manifest_path:loaded.manifest_path});
+    else datasetRender({...result,active_dataset:null,error:loaded?.error||'No se pudo cargar el primer Dataset.'});
+   }else{
+    datasetRender(result);
+   }
   }else if(datasetHint){
    badge.textContent='Dataset generado';badge.className='badge badge-warning';
    summary.textContent=(datasetHint.name||'Dataset')+' · Manifiesto recibido. No se pudo consultar el inventario: '+(result?.error||'respuesta no válida');
@@ -68,7 +78,7 @@ window.initModels=async(datasetHint=null)=>{
    badge.textContent='Dataset generado';badge.className='badge badge-warning';
    summary.textContent=(datasetHint.name||'Dataset')+' · Manifiesto recibido. Error consultando inventario: '+(e?.message||String(e));
   }else datasetRender({success:false,error:'Error al cargar el Dataset: '+(e?.message||String(e))});
- }finally{selector.disabled=!dataset;}
+ }finally{selector.disabled=!(selector.options.length&&selector.options[0].value);}
  try{await refresh()}catch(e){$('models-library-body').innerHTML='<tr><td colspan="6">Error al consultar experimentos: '+esc(e?.message||String(e))+'</td></tr>'}
  try{const state=await Promise.race([Bridge.getModelTrainingState(),new Promise(resolve=>setTimeout(()=>resolve({success:false,error:'Tiempo de espera agotado al consultar el estado.'}),12000))]);if(state?.status==='preparing'||state?.status==='running'){active=true;poll()}else if(state?.status==='completed'||state?.status==='error')updateProgress(state)}catch(e){$('models-progress-detail').textContent='No se pudo consultar el estado: '+(e?.message||String(e))}
 };
