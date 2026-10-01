@@ -9,7 +9,7 @@
 - Consulta del manifiesto Dataset activo y visualización de conteos de particiones y etiquetas binarias.
 - Configuración de experimento con validación de hiperparámetros, arquitectura, sensores, semilla y opciones.
 - Registro persistente de experimentos en `model_experiments.json`, sin sobrescribir registros previos.
-- Preparación de tensores desde las ventanas referenciadas por el manifiesto: remuestreo lineal a longitud fija (256 puntos), normalización z-score por ventana/canal y validación de tiempos finitos, estrictamente crecientes y etiquetas binarias.
+- Preparación de tensores desde las ventanas referenciadas por el manifiesto en el mismo worker de fondo que entrena: remuestreo lineal a longitud fija (256 puntos), normalización z-score por ventana/canal y validación de tiempos finitos, estrictamente crecientes y etiquetas binarias. La interfaz recibe el estado «preparing» sin esperar a que termine esta etapa.
 - Entrenamiento CPU en segundo plano con PyTorch: 1D-CNN, clasificador denso y baseline lineal.
 - Seguimiento de época, pérdidas y accuracy de validation; parada temprana opcional.
 - Evaluación separada de train, validation y test; matriz de confusión y métricas macro/por clase.
@@ -22,7 +22,8 @@
 
 - El entrenador valida tipos estrictos y límites de épocas (1–10000), batch size (1–4096) y learning rate finito (0–1], incluso si se invoca fuera de la interfaz.
 - La arquitectura baseline se identifica en la interfaz como clasificador lineal, evitando describirla como un sistema de reglas.
-- La interfaz informa errores de comunicación al iniciar o consultar el progreso, en lugar de dejar fallar la operación sin explicación.
+- La interfaz informa errores de comunicación al iniciar, guardar configuración o consultar el progreso, en lugar de dejar fallar la operación sin explicación.
+- El puente evita iniciar una segunda ejecución simultánea, actualiza el estado compartido con bloqueo y no sobrescribe un registro de experimentos ilegible como si estuviera vacío.
 
 ## Correcciones derivadas de CI
 
@@ -34,6 +35,12 @@ Se corrigieron los siguientes problemas detectados por la ejecución de GitHub A
 - `WindowRecord.to_dict()` ahora incluye `duration_ms`, campo requerido por la prueba de forma común del registro.
 
 Las pruebas automatizadas en GitHub Actions se desactivaron por solicitud del usuario. Las correcciones y los cambios posteriores quedan pendientes de verificación local en el PC; no se declara la suite como aprobada.
+
+## Revisión de cierre de código
+
+- Se trasladó la lectura y preparación de señales al worker para evitar bloquear la interfaz durante el procesamiento del Dataset.
+- Se reforzó la actualización del registro para fallar explícitamente ante corrupción o ausencia del experimento, en vez de reemplazar silenciosamente el contenido.
+- La suite no se ha ejecutado en este entorno; la comprobación final de importaciones, comportamiento de PyWebView y entrenamiento con Dataset real corresponde a la validación local descrita abajo.
 
 ## Límites explícitos
 
