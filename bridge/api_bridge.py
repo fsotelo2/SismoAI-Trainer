@@ -1044,7 +1044,7 @@ class ApiBridge:
                 if w.get("source_event_id") is not None:
                     events.add((w.get("source_file"), str(w.get("source_event_id"))))
             counts["events"] = len(events)
-            return {"success": True, "items": items, "counts": counts, "active_dataset": self._active_dataset}
+            return {"success": True, "items": items, "counts": counts, "active_dataset": self._active_dataset, "manifest_path": self._dataset_path}
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": [], "counts": {}}
 
@@ -1073,7 +1073,7 @@ class ApiBridge:
             }
             save_manifest(self._dataset_path, manifest)
             self._active_dataset = manifest
-            return {"success": True, "dataset": manifest}
+            return {"success": True, "dataset": manifest, "manifest_path": self._dataset_path}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
