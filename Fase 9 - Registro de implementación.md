@@ -85,3 +85,5 @@ La verificación visual/integral requiere abrir la aplicación de escritorio en 
 - Modelos consume el manifiesto activo desde el backend; las filas del manifiesto referencian ventanas persistidas por `window_id`, y el backend obtiene sus señales fuente al preparar el entrenamiento.
 - En el primer arranque con un manifiesto antiguo en `dataset.json`, se intenta migrarlo al nuevo destino sin eliminar el archivo anterior.
 - Pendiente de validación local: confirmar que la ruta de datos y la restauración funcionan en la instalación del usuario y ejecutar entrenamiento de extremo a extremo.
+
+- El manifiesto se guarda con el nombre del Dataset: `Dataset/<nombre_del_dataset>.json` (por ejemplo, `Dataset/Sismos_Local_v01.json`). Los caracteres no válidos para nombres de archivo se sustituyen por guion bajo. Al restaurar, se selecciona el manifiesto válido más recientemente creado de la carpeta del proyecto.
