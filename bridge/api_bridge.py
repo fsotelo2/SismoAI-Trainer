@@ -59,6 +59,7 @@ class ApiBridge:
         self._labeling = LabelingService()
         self._window_selection_dir = os.path.join(os.path.dirname(self._window_path), 'window_selections')
         self._active_window_selection = None
+        self._active_window_selection_filename = ''
         self._active_label_batch = None
         self._active_label_items = []
         self._legacy_global_dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
@@ -1345,6 +1346,7 @@ class ApiBridge:
             from core.pipeline.manifests import _atomic_json
             _atomic_json(path, manifest)
             self._active_window_selection = manifest
+            self._active_window_selection_filename = os.path.basename(path)
             self._active_label_batch = None
             self._active_label_items = [{"window": dict(w), "label": None} for w in manifest["records"]]
             return {"success": True, "selection": manifest, "filename": os.path.basename(path)}
@@ -1353,8 +1355,9 @@ class ApiBridge:
 
     def get_window_selections(self):
         try:
-            return {"success": True, "items": pipeline_manifests.list_manifests(
-                self._window_selection_dir, "windows")}
+            items = pipeline_manifests.list_manifests(self._window_selection_dir, "windows")
+            return {"success": True, "items": items,
+                    "active_filename": self._active_window_selection_filename}
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": []}
 
@@ -1363,6 +1366,7 @@ class ApiBridge:
             manifest = pipeline_manifests.load_manifest(
                 self._window_selection_dir, "windows", filename)
             self._active_window_selection = manifest
+            self._active_window_selection_filename = filename
             self._active_label_batch = None
             self._active_label_items = [{"window": dict(w), "label": None} for w in manifest["records"]]
             return {"success": True, "selection": manifest}
