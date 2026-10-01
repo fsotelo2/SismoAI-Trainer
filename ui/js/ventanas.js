@@ -135,6 +135,7 @@
       const r=await Bridge.createWindowSelection(name);
       if(!r?.success){if($('win-version-note'))$('win-version-note').textContent=r?.error||'No se pudo guardar.';return null;}
       if($('win-version-note'))$('win-version-note').textContent='Guardado: '+r.selection.name+' · ID '+r.selection.id.slice(0,8);
+      await refreshSavedSelections();
       return r;
     }finally{if(btn)btn.disabled=false;}
   }
