@@ -82,7 +82,16 @@
     const name=$('label-batch-name')?.value?.trim();
     if(!name){$('label-message').textContent='Escribe un nombre para el lote de etiquetado.';return;}
     const r=await Bridge.createLabelBatch(name);
-    if(!r?.success){$('label-message').textContent=r?.error||'No se pudo guardar el lote.';return;}
+    if(!r?.success){
+      const message=r?.error||'No se pudo guardar el lote.';
+      $('label-message').textContent=message;
+      if(message.toLowerCase().includes('ya existe')||message.toLowerCase().includes('mismo nombre')){
+        alert(message+' Usa otro nombre para guardar el etiquetado.');
+        $('label-batch-name')?.focus();
+        $('label-batch-name')?.select();
+      }
+      return;
+    }
     $('label-message').textContent='Lote guardado: '+r.batch.name+' · ID '+r.batch.id.slice(0,8);
     await refreshLabelBatches();
   };
