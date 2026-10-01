@@ -287,6 +287,11 @@
     await Bridge.setWindowSelection(el.dataset.id,el.value);await refresh();
   });
   window.addEventListener('resize',()=>{if(context?.ready)renderContext();});
-  window.initWindows=refresh;
+  window.initWindows=async function(){
+    const reset=await Bridge.beginWindowSession();
+    if(!reset?.success){alert(reset?.error||'No se pudo reiniciar la sesión de ventanas.');return;}
+    windows=[];
+    await refresh();
+  };
   setMode('fixed');
 })();
