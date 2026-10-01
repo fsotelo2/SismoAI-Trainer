@@ -1158,6 +1158,17 @@ class ApiBridge:
                 manifest["name"] = str(name).strip()[:80] or "Dataset_sin_nombre"
             else:
                 manifest["name"] = "Dataset_sin_nombre"
+            # Source locator and reconstruction semantics for consumers of this manifest.
+            manifest["source"] = {
+                "root_path": os.path.abspath(self._project.folder_path) if self._project.folder_path else None,
+                "file_field": "source_file",
+                "event_field": "event_index",
+                "event_index_base": 0,
+                "time_unit": "microseconds",
+                "time_reference": "event_relative",
+                "interval_convention": "[start_us, end_us)",
+                "reconstruction": "Load source_file from root_path, parse BIN, select event_index, then crop each listed sensor to the window interval.",
+            }
             # Explicit contract consumed by Phase 9 Modelos/trainer.
             manifest["model_contract"] = {
                 "task": "binary_classification",
