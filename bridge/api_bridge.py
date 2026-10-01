@@ -55,7 +55,9 @@ class ApiBridge:
         self._window_sequence = 0
         self._restore_windows()
         self._labeling = LabelingService()
-        self._dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
+        self._dataset_dir = os.path.join(os.path.dirname(self._window_path), 'Dataset')
+        self._dataset_path = os.path.join(self._dataset_dir, 'dataset_activo.json')
+        self._legacy_dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
         self._active_dataset = None
         self._restore_dataset()
 
@@ -1007,13 +1009,20 @@ class ApiBridge:
     # ------------------------------------------------------------------
 
     def _restore_dataset(self):
-        try:
-            with open(self._dataset_path, encoding="utf-8") as stream:
-                data = json.load(stream)
-            if data.get("schema") == "sismoai-dataset" and data.get("schema_version") == 1:
-                self._active_dataset = data
-        except (OSError, ValueError, TypeError):
-            self._active_dataset = None
+        # Prefer the canonical Dataset folder; migrate the previous root-level file
+        # transparently so existing local projects keep their active dataset.
+        for candidate in (self._dataset_path, self._legacy_dataset_path):
+            try:
+                with open(candidate, encoding="utf-8") as stream:
+                    data = json.load(stream)
+                if data.get("schema") == "sismoai-dataset" and data.get("schema_version") == 1:
+                    self._active_dataset = data
+                    if candidate != self._dataset_path:
+                        save_manifest(self._dataset_path, data)
+                    return
+            except (OSError, ValueError, TypeError):
+                continue
+        self._active_dataset = None
 
     def get_dataset_workspace(self) -> dict:
         try:
@@ -1048,6 +1057,20 @@ class ApiBridge:
             manifest = build_manifest(workspace["items"], tuple(ratios), seed)
             if name is not None:
                 manifest["name"] = str(name).strip()[:80] or "Dataset_sin_nombre"
+            else:
+                manifest["name"] = "Dataset_sin_nombre"
+            # Explicit contract consumed by Phase 9 Modelos/trainer.
+            manifest["model_contract"] = {
+                "task": "binary_classification",
+                "framework": "pytorch",
+                "input_shape": ["samples", "channels", "points"],
+                "supported_inputs": ["geo_mpu", "geo", "mpu"],
+                "points_per_window": 256,
+                "normalization": "per_window_z_score",
+                "label_field": "class_code",
+                "classes": {"0": "TEMBLOR", "1": "NO_SISMICO"},
+                "required_splits": ["train", "validation", "test"],
+            }
             save_manifest(self._dataset_path, manifest)
             self._active_dataset = manifest
             return {"success": True, "dataset": manifest}
