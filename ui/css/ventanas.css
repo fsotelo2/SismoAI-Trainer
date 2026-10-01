@@ -85,3 +85,20 @@
   .app-footer #win-footer-controls input{flex:1 1 120px;max-width:none}
   .app-footer #btn-continue-labeling{padding:8px 10px;font-size:13px}
 }
+
+/* Compact status bar: reserve the final position for Continue. */
+.app-footer #win-footer-controls{
+  flex:0 1 auto;
+  width:auto;
+  margin-left:auto;
+  justify-content:flex-start;
+  gap:8px;
+}
+.app-footer #win-footer-controls #win-version-note{display:none}
+.app-footer #win-footer-controls input{
+  flex:0 1 190px;
+  width:190px;
+  min-width:130px;
+  max-width:18vw;
+}
+.app-footer #btn-continue-labeling{margin-left:8px}
