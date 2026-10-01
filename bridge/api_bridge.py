@@ -1027,12 +1027,12 @@ class ApiBridge:
         if project_root:
             root = os.path.abspath(os.path.expanduser(project_root))
             self._dataset_dir = os.path.join(root, "Dataset")
-            self._window_selection_dir = os.path.join(root, "ventanas")
+            self._window_selection_dir = os.path.join(root, "Ventanas")
             self._legacy_dataset_path = os.path.join(root, "dataset.json")
         else:
             base = os.path.dirname(self._window_path)
             self._dataset_dir = os.path.join(base, "Dataset")
-            self._window_selection_dir = os.path.join(base, "ventanas")
+            self._window_selection_dir = os.path.join(base, "Ventanas")
             self._legacy_dataset_path = os.path.join(base, "dataset.json")
         os.makedirs(self._window_selection_dir, exist_ok=True)
         self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
