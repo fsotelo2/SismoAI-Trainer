@@ -88,6 +88,12 @@
   };
   async function load(){
     $('label-window-list').innerHTML='<p class="label-empty">Cargando ventanas…</p>';
+    const selections=await Bridge.getWindowSelections();
+    const select=$('label-window-selection');
+    if(select){
+      const list=selections?.items||[],active=window.__activeWindowSelectionFilename||'';
+      select.innerHTML='<option value="">Selección activa</option>'+list.map(s=>'<option value="'+esc(s.filename)+'" '+(s.filename===active?'selected':'')+'>'+esc(s.name)+' · '+esc(s.count)+' ventanas</option>').join('');
+    }
     const r=await Bridge.getLabelingWorkspace();
     if(!r?.success){$('label-window-list').innerHTML='<p class="label-empty">'+esc(r?.error||'No se pudo cargar.')+'</p>';return;}
     items=r.items||[];updateDatasetButton();items.forEach(x=>{x._savedLabel=x.label?JSON.parse(JSON.stringify(x.label)):null;});renderCounts(r.counts);filter();
@@ -137,6 +143,14 @@
     if(boundRoot===root)return;
     boundRoot=root;
     $('label-filter')?.addEventListener('change',filter);
+    $('label-window-selection')?.addEventListener('change',async e=>{
+      if(!e.target.value)return;
+      if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?')){e.target.value=window.__activeWindowSelectionFilename||'';return;}
+      discardChanges();
+      const result=await Bridge.selectWindowSelection(e.target.value);
+      if(result?.success){window.__activeWindowSelectionFilename=e.target.value;await load();}
+      else $('label-message').textContent=result?.error||'No se pudo cargar la selección.';
+    });
     $('label-category')?.addEventListener('change',e=>updateSelected({disturbance:e.target.value||null}));
     $('label-observations')?.addEventListener('input',e=>{const item=current();if(!item)return;item.label={...(item.label||{window_id:selectedId,class_code:null,quality_review:'confirmed'}),observations:e.target.value.slice(0,200)};markDirty();$('label-char-count').textContent=e.target.value.length;});
     $('label-show-geo')?.addEventListener('change',()=>current()&&drawSignals(current()));
