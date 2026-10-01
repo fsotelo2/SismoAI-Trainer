@@ -28,7 +28,7 @@ window.initModels=async(datasetHint=null)=>{
  // Show the just-generated manifest immediately; the inventory request must not block the view.
  if(datasetHint)datasetRender({success:true,active_dataset:datasetHint,datasets:[]});
  try{
-  const result=await Promise.race([Bridge.getDatasetWorkspace(),new Promise(resolve=>setTimeout(()=>resolve({success:false,error:'Tiempo de espera agotado al consultar los datasets guardados.'}),12000))]);
+  const result=await Promise.race([Bridge.getDatasetCatalog(),new Promise(resolve=>setTimeout(()=>resolve({success:false,error:'Tiempo de espera agotado al consultar los archivos JSON de Dataset.'}),12000))]);
   if(result?.success){
    if(datasetHint)result.active_dataset=datasetHint;
    datasetRender(result);
