@@ -6,11 +6,12 @@ let dataset=null,pollHandle=null,active=false;
 const names={'1d_cnn':'1D-CNN',feature_classifier:'Clasificador de características',baseline:'Baseline lineal'};
 function config(){return {name:$('models-name').value.trim(),architecture:$('models-architecture').value,framework:$('models-framework').value,input:$('models-input').value,description:$('models-description').value.trim(),training:{epochs:Number($('models-epochs').value),batch_size:Number($('models-batch').value),learning_rate:Number($('models-lr').value),seed:Number($('models-seed').value),optimizer:$('models-optimizer').value,loss:$('models-loss').value,early_stopping:$('models-early-stop').checked,save_best:$('models-best').checked,class_weighting:$('models-weighted').checked}}}
 function validate(c){if(!c.name)return'Indica el nombre del experimento.';if(!Number.isInteger(c.training.epochs)||c.training.epochs<1||c.training.epochs>10000)return'Épocas: entero entre 1 y 10000.';if(!Number.isInteger(c.training.batch_size)||c.training.batch_size<1||c.training.batch_size>4096)return'Batch size: entero entre 1 y 4096.';if(!Number.isFinite(c.training.learning_rate)||c.training.learning_rate<=0||c.training.learning_rate>1)return'Learning rate debe estar entre 0 y 1.';if(!Number.isInteger(c.training.seed)||c.training.seed<0)return'Semilla: entero no negativo.';return''}
+function formatDate(value){if(!value)return '';const date=new Date(value);if(Number.isNaN(date.getTime()))return String(value);return new Intl.DateTimeFormat('es-CO',{timeZone:'America/Bogota',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(date)}
 function datasetRender(r){
 const d=r?.active_dataset||r?.dataset||r?.manifest||null,b=$('models-dataset-badge'),selector=$('models-dataset');
 dataset=null;
 const available=Array.isArray(r?.datasets)?r.datasets:[];
-selector.innerHTML=available.length?available.map(x=>'<option value="'+esc(x.filename)+'"'+(d&&x.dataset_id===d.dataset_id?' selected':'')+'>'+esc(x.name||x.filename)+' · '+esc(x.created_at||'')+'</option>').join(''):'<option value="">No hay archivos Dataset disponibles</option>';
+selector.innerHTML=available.length?available.map(x=>'<option value="'+esc(x.filename)+'"'+(d&&x.dataset_id===d.dataset_id?' selected':'')+'>'+esc(x.name||x.filename)+' · '+esc(formatDate(x.created_at))+'</option>').join(''):'<option value="">No hay archivos Dataset disponibles</option>';
 selector.disabled=available.length===0;
 if(!r?.success){
  b.textContent='Error de consulta';b.className='badge badge-warning';
