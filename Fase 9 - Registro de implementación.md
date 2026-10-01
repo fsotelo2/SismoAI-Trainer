@@ -18,6 +18,12 @@
 - Registro de configuración completa y hash SHA-256 del checkpoint por ejecución.
 - Validación explícita de opciones realmente implementadas; por ahora la pérdida admitida es `cross_entropy`.
 
+## Endurecimiento adicional
+
+- El entrenador valida tipos estrictos y límites de épocas (1–10000), batch size (1–4096) y learning rate finito (0–1], incluso si se invoca fuera de la interfaz.
+- La arquitectura baseline se identifica en la interfaz como clasificador lineal, evitando describirla como un sistema de reglas.
+- La interfaz informa errores de comunicación al iniciar o consultar el progreso, en lugar de dejar fallar la operación sin explicación.
+
 ## Correcciones derivadas de CI
 
 Se corrigieron los siguientes problemas detectados por la ejecución de GitHub Actions:
