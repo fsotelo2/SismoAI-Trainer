@@ -15,7 +15,7 @@
 - Evaluación separada de train, validation y test; matriz de confusión y métricas macro/por clase.
 - Checkpoint `weights.pt`, historial y `training_result.json` por experimento.
 - Pruebas unitarias para métricas, formas de salida y ejecución sintética.
-- Workflow de GitHub Actions para ejecutar las pruebas en push/PR.
+- Registro de configuración completa y hash SHA-256 del checkpoint por ejecución.
 
 ## Correcciones derivadas de CI
 
@@ -26,14 +26,14 @@ Se corrigieron los siguientes problemas detectados por la ejecución de GitHub A
 - Pruebas de etiquetado alineadas con el contrato vigente: dos clases principales; la taxonomía secundaria sigue abierta hasta su aprobación.
 - `WindowRecord.to_dict()` ahora incluye `duration_ms`, campo requerido por la prueba de forma común del registro.
 
-La suite debe volver a ejecutarse en GitHub Actions después de estos commits. Estas correcciones aún no se consideran aprobadas hasta ver el resultado del nuevo workflow.
+Las pruebas automatizadas en GitHub Actions se desactivaron por solicitud del usuario. Las correcciones quedan pendientes de verificación local en el PC.
 
 ## Límites explícitos
 
 La ejecución de entrenamiento es PC-only. El entrenamiento correcto no demuestra compatibilidad con ESP32-S3.
 
 Pendiente antes de cerrar Fase 9:
-1. Ejecutar y corregir la suite CI, incluyendo instalación efectiva de PyTorch.
+1. Ejecutar y corregir localmente la suite de pruebas, incluyendo instalación efectiva de PyTorch.
 2. Verificar la interfaz y el puente PyWebView en el PC con un Dataset real del proyecto.
 3. Fijar versiones concretas de ESP-IDF, ESP-DL y ESP-PPQ y documentar el entorno reproducible.
 4. Implementar y probar la ruta de exportación y cuantización que soporte esa combinación de versiones; validar operador por operador, formato, tolerancias y metadatos.
