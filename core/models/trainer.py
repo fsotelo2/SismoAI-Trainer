@@ -173,6 +173,11 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     out=Path(output_dir); out.mkdir(parents=True,exist_ok=True)
     weights=out/"weights.pt"
     torch.save(model.state_dict(),weights)
+    with torch.no_grad():
+        final_train_loss=float(criterion(model(xt),yt).item())
+        final_val_loss=float(criterion(model(xv),yv).item())
+    metrics["train"]["loss"]=final_train_loss
+    metrics["validation"]["loss"]=final_val_loss
     result={"status":"trained","created_at":datetime.now(timezone.utc).isoformat(),
             "epochs_completed":len(history),"history":history,"metrics":metrics,
             "weights_path":str(weights),"weights_bytes":weights.stat().st_size,
