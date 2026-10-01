@@ -87,3 +87,5 @@ La verificación visual/integral requiere abrir la aplicación de escritorio en 
 - Pendiente de validación local: confirmar que la ruta de datos y la restauración funcionan en la instalación del usuario y ejecutar entrenamiento de extremo a extremo.
 
 - El manifiesto se guarda con el nombre del Dataset: `Dataset/<nombre_del_dataset>.json` (por ejemplo, `Dataset/Sismos_Local_v01.json`). Los caracteres no válidos para nombres de archivo se sustituyen por guion bajo. Al restaurar, se selecciona el manifiesto válido más recientemente creado de la carpeta del proyecto.
+
+- Modelos consulta el inventario de JSON válidos de `./Dataset/` y permite seleccionar el manifiesto que se usará en el experimento. Al cambiar la selección, carga ese manifiesto completo y actualiza resumen, particiones y etiquetas.
