@@ -28,6 +28,16 @@ def _torch():
         ) from exc
 
 
+def _extract_features(x: np.ndarray) -> np.ndarray:
+    """Compute six deterministic per-channel statistics from each normalized window."""
+    x = np.asarray(x, dtype=np.float32)
+    return np.stack((x.mean(axis=2), x.std(axis=2),
+                     np.sqrt(np.mean(np.square(x), axis=2)),
+                     np.max(np.abs(x), axis=2),
+                     np.ptp(x, axis=2),
+                     np.mean(np.abs(np.diff(x, axis=2)), axis=2)), axis=2).astype(np.float32)
+
+
 def build_network(architecture: str, channels: int, points: int, classes: int = 2):
     torch, nn = _torch()
     if architecture == "1d_cnn":
@@ -106,7 +116,7 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     if len(set(map(int, y_val))) < 2:
         # Still score available class distribution; do not fabricate missing labels.
         pass
-    model = build_network(config["architecture"], x_train.shape[1], x_train.shape[2])
+    original_shape = list(x_train.shape[1:])\n    if config["architecture"] == "feature_classifier":\n        x_train, x_val, x_test = (_extract_features(x) for x in (x_train, x_val, x_test))\n    model = build_network(config["architecture"], x_train.shape[1], 6 if config["architecture"] == "feature_classifier" else x_train.shape[2])
     optimizer_name = training.get("optimizer", "adam").lower()
     if optimizer_name == "sgd":
         optimizer = torch.optim.SGD(model.parameters(), lr=float(training["learning_rate"]))
@@ -186,7 +196,7 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     result={"status":"trained","created_at":datetime.now(timezone.utc).isoformat(),
             "epochs_completed":len(history),"history":history,"metrics":metrics,
             "weights_path":str(weights),"weights_bytes":weights.stat().st_size,
-            "input_shape":list(x_train.shape[1:]),"preprocessing":"resample lineal a longitud fija; z-score por ventana y canal",
+            "input_shape":original_shape,"preprocessing":"resample lineal a 256 puntos; z-score por ventana y canal" + ("; seis estadísticas por canal" if config["architecture"] == "feature_classifier" else ""),
             "elapsed_seconds":time.time()-start}
     with open(out/"training_result.json","w",encoding="utf-8") as f:
         json.dump(result,f,ensure_ascii=False,indent=2,allow_nan=False)
