@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
+import math
 import json
 import os
 import tempfile
@@ -18,14 +19,16 @@ def _group_key(window):
     return f'{window.get("source_file", "")}::{event}'
 
 def build_manifest(items, ratios=(0.70, 0.15, 0.15), seed=42):
-    if len(ratios) != 3 or any(not isinstance(x,(int,float)) or x < 0 for x in ratios) or abs(sum(ratios)-1)>1e-6:
+    if len(ratios) != 3 or any(isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x) or x < 0 for x in ratios) or abs(sum(ratios)-1)>1e-6:
         raise DatasetError("Los porcentajes train/validation/test deben sumar 100%.")
     if not items:
         raise DatasetError("No hay ventanas incluidas para construir el dataset.")
     groups=defaultdict(list)
     for item in items:
         w=item.get("window") or {}; label=item.get("label")
-        if not w.get("window_id") or not label or label.get("class_code") not in (0,1) or label.get("quality_review")!="confirmed":
+        if (not w.get("window_id") or not label or isinstance(label.get("class_code"), bool)
+                or not isinstance(label.get("class_code"), int) or label.get("class_code") not in (0, 1)
+                or label.get("quality_review") != "confirmed"):
             raise DatasetError("Todas las ventanas deben tener etiqueta binaria guardada y revisión confirmada.")
         groups[_group_key(w)].append(item)
     # Stable deterministic group assignment, approximately respecting requested proportions.
