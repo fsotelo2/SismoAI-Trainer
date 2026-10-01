@@ -1,12 +1,215 @@
-<section class="dataset-view">
-
-<section class="ds-section card"><div class="ds-section-heading"><div><h2>1. Ventanas disponibles</h2><p>Ventanas existentes y etiquetadas (de la sección Etiquetado).</p></div><div class="ds-actions"><label class="ds-filter-inline" for="ds-filter">Mostrar <select id="ds-filter" class="form-select"><option value="all">Todas</option><option value="confirmed">Confirmadas</option><option value="pending">Pendientes</option><option value="tremor">TEMBLOR</option><option value="nonseismic">NO_SISMICO</option></select></label><label class="ds-filter-inline" for="ds-label-batch">Lote <select id="ds-label-batch" class="form-select"><option value="">Seleccionar etiquetado…</option></select></label><button class="btn btn-secondary" data-ds-action="labeling">↗ Ver en Etiquetado</button></div></div>
-<div class="ds-metrics"><div class="ds-metric"><span>▣</span><div><strong id="ds-m-total">—</strong><small>Ventanas etiquetadas</small></div></div><div class="ds-metric"><span>◇</span><div><strong>2</strong><small>Clases definidas</small></div></div><div class="ds-metric"><span>⌘</span><div><strong id="ds-m-events">—</strong><small>Eventos de origen</small></div></div><div class="ds-metric"><span>✓</span><div><strong id="ds-m-confirmed">—</strong><small>Etiquetas confirmadas</small></div></div><div class="ds-metric"><span>◷</span><div><strong>—</strong><small>Frecuencia</small></div></div></div>
-<div class="ds-overview-grid"><article class="ds-subcard"><h3>Distribución de clases</h3><div class="ds-class-layout"><div class="ds-donut" id="ds-donut"><div><strong id="ds-donut-total">—</strong><small>ventanas</small></div></div><div class="ds-legend" id="ds-legend"><div><i class="ds-dot tremor"></i><span>TEMBLOR</span><b id="ds-class-0">0 (0%)</b></div><div><i class="ds-dot nonseismic"></i><span>NO_SISMICO</span><b id="ds-class-1">0 (0%)</b></div></div></div><div id="ds-imbalance" class="ds-alert" hidden><b>⚠ Clases desbalanceadas</b><p>La distribución puede afectar el entrenamiento y la evaluación.</p></div></article>
-<article class="ds-subcard"><div class="ds-subheading"><h3>Vista de ejemplos</h3><button class="btn btn-secondary btn-sm" data-ds-action="show-all">Ver más</button></div><div class="table-container ds-example-table" id="ds-example-table"><table class="table"><thead><tr><th>ID ventana</th><th>Etiqueta</th><th>Evento / Origen</th><th>Duración</th><th>Canales</th></tr></thead><tbody id="ds-examples"><tr><td colspan="5">Cargando…</td></tr></tbody></table></div></article></div>
-<p id="ds-summary" class="ds-summary">Cargando ventanas…</p></section>
-<section class="ds-section card"><div class="ds-section-heading"><div><h2>2. División de datos</h2><p>Define cómo se dividirán las ventanas en entrenamiento, validación y prueba.</p></div></div>
-<div class="ds-split-controls"><div class="ds-split train"><div class="ds-split-head"><label for="ds-train">Entrenamiento</label><input id="ds-train" type="number" min="0" max="100" value="70">%</div><input class="ds-range" id="ds-train-range" type="range" min="0" max="100" value="70"><p id="ds-train-count">— ventanas aprox.</p></div><div class="ds-split validation"><div class="ds-split-head"><label for="ds-val">Validación</label><input id="ds-val" type="number" min="0" max="100" value="15">%</div><input class="ds-range" id="ds-val-range" type="range" min="0" max="100" value="15"><p id="ds-val-count">— ventanas aprox.</p></div><div class="ds-split test"><div class="ds-split-head"><label for="ds-test">Prueba</label><input id="ds-test" type="number" min="0" max="100" value="15">%</div><input class="ds-range" id="ds-test-range" type="range" min="0" max="100" value="15"><p id="ds-test-count">— ventanas aprox.</p></div></div>
-<div class="ds-split-bar"><span id="ds-bar-train">70%</span><span id="ds-bar-val">15%</span><span id="ds-bar-test">15%</span></div><div class="ds-split-legend"><span>🔵 Entrenamiento (<b id="ds-leg-train">—</b>)</span><span>🟢 Validación (<b id="ds-leg-val">—</b>)</span><span>🟠 Prueba (<b id="ds-leg-test">—</b>)</span></div><p id="ds-validation" class="ds-validation">Los porcentajes deben sumar 100%.</p></section>
-<section class="ds-section card"><div class="ds-section-heading"><div><h2>3. Estado y recomendaciones</h2><p>Verifica que el dataset esté listo para ser utilizado en Modelos.</p></div></div><div class="ds-checks" id="ds-status">Verificando…</div></section>
+<section class="dataset-view workspace-view">
+  <section class="ds-section card">
+    <div class="ds-section-heading">
+      <div>
+        <h2>1. Ventanas disponibles</h2>
+        <p>Ventanas existentes y etiquetadas (de la sección Etiquetado).</p>
+      </div>
+      <div class="ds-actions">
+        <label class="ds-filter-inline" for="ds-filter"
+          >Mostrar
+          <select id="ds-filter" class="form-select">
+            <option value="all">Todas</option>
+            <option value="confirmed">Confirmadas</option>
+            <option value="pending">Pendientes</option>
+            <option value="tremor">TEMBLOR</option>
+            <option value="nonseismic">NO_SISMICO</option>
+          </select></label
+        ><label class="ds-filter-inline" for="ds-label-batch"
+          >Lote
+          <select id="ds-label-batch" class="form-select">
+            <option value="">Seleccionar etiquetado…</option>
+          </select></label
+        ><button class="btn btn-secondary" data-ds-action="labeling">
+          ↗ Ver en Etiquetado
+        </button>
+      </div>
+    </div>
+    <div class="ds-metrics">
+      <div class="ds-metric">
+        <span>▣</span>
+        <div>
+          <strong id="ds-m-total">—</strong><small>Ventanas etiquetadas</small>
+        </div>
+      </div>
+      <div class="ds-metric">
+        <span>◇</span>
+        <div><strong>2</strong><small>Clases definidas</small></div>
+      </div>
+      <div class="ds-metric">
+        <span>⌘</span>
+        <div>
+          <strong id="ds-m-events">—</strong><small>Eventos de origen</small>
+        </div>
+      </div>
+      <div class="ds-metric">
+        <span>✓</span>
+        <div>
+          <strong id="ds-m-confirmed">—</strong
+          ><small>Etiquetas confirmadas</small>
+        </div>
+      </div>
+      <div class="ds-metric">
+        <span>◷</span>
+        <div><strong>—</strong><small>Frecuencia</small></div>
+      </div>
+    </div>
+    <div class="ds-overview-grid">
+      <article class="ds-subcard">
+        <h3>Distribución de clases</h3>
+        <div class="ds-class-layout">
+          <div class="ds-donut" id="ds-donut">
+            <div>
+              <strong id="ds-donut-total">—</strong><small>ventanas</small>
+            </div>
+          </div>
+          <div class="ds-legend" id="ds-legend">
+            <div>
+              <i class="ds-dot tremor"></i><span>TEMBLOR</span
+              ><b id="ds-class-0">0 (0%)</b>
+            </div>
+            <div>
+              <i class="ds-dot nonseismic"></i><span>NO_SISMICO</span
+              ><b id="ds-class-1">0 (0%)</b>
+            </div>
+          </div>
+        </div>
+        <div id="ds-imbalance" class="ds-alert" hidden>
+          <b>⚠ Clases desbalanceadas</b>
+          <p>La distribución puede afectar el entrenamiento y la evaluación.</p>
+        </div>
+      </article>
+      <article class="ds-subcard">
+        <div class="ds-subheading">
+          <h3>Vista de ejemplos</h3>
+          <button class="btn btn-secondary btn-sm" data-ds-action="show-all">
+            Ver más
+          </button>
+        </div>
+        <div class="table-container ds-example-table" id="ds-example-table">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID ventana</th>
+                <th>Etiqueta</th>
+                <th>Evento / Origen</th>
+                <th>Duración</th>
+                <th>Canales</th>
+              </tr>
+            </thead>
+            <tbody id="ds-examples">
+              <tr>
+                <td colspan="5">Cargando…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+    <p id="ds-summary" class="ds-summary">Cargando ventanas…</p>
+  </section>
+  <section class="ds-section card">
+    <div class="ds-section-heading">
+      <div>
+        <h2>2. División de datos</h2>
+        <p>
+          Define cómo se dividirán las ventanas en entrenamiento, validación y
+          prueba.
+        </p>
+      </div>
+    </div>
+    <div class="ds-split-controls">
+      <div class="ds-split train">
+        <div class="ds-split-head">
+          <label for="ds-train">Entrenamiento</label
+          ><input id="ds-train" type="number" min="0" max="100" value="70" />%
+        </div>
+        <input
+          class="ds-range"
+          id="ds-train-range"
+          type="range"
+          min="0"
+          max="100"
+          value="70"
+        />
+        <p id="ds-train-count">— ventanas aprox.</p>
+      </div>
+      <div class="ds-split validation">
+        <div class="ds-split-head">
+          <label for="ds-val">Validación</label
+          ><input id="ds-val" type="number" min="0" max="100" value="15" />%
+        </div>
+        <input
+          class="ds-range"
+          id="ds-val-range"
+          type="range"
+          min="0"
+          max="100"
+          value="15"
+        />
+        <p id="ds-val-count">— ventanas aprox.</p>
+      </div>
+      <div class="ds-split test">
+        <div class="ds-split-head">
+          <label for="ds-test">Prueba</label
+          ><input id="ds-test" type="number" min="0" max="100" value="15" />%
+        </div>
+        <input
+          class="ds-range"
+          id="ds-test-range"
+          type="range"
+          min="0"
+          max="100"
+          value="15"
+        />
+        <p id="ds-test-count">— ventanas aprox.</p>
+      </div>
+    </div>
+    <div class="ds-split-bar">
+      <span id="ds-bar-train">70%</span><span id="ds-bar-val">15%</span
+      ><span id="ds-bar-test">15%</span>
+    </div>
+    <div class="ds-split-legend">
+      <span>🔵 Entrenamiento (<b id="ds-leg-train">—</b>)</span
+      ><span>🟢 Validación (<b id="ds-leg-val">—</b>)</span
+      ><span>🟠 Prueba (<b id="ds-leg-test">—</b>)</span>
+    </div>
+    <p id="ds-validation" class="ds-validation">
+      Los porcentajes deben sumar 100%.
+    </p>
+  </section>
+  <section class="ds-section card">
+    <div class="ds-section-heading">
+      <div>
+        <h2>3. Estado y recomendaciones</h2>
+        <p>Verifica que el dataset esté listo para ser utilizado en Modelos.</p>
+      </div>
+    </div>
+    <div class="ds-checks" id="ds-status">Verificando…</div>
+  </section>
+  <div class="workspace-inline-actions dataset-inline-actions">
+    <div class="ds-footer-controls" id="ds-footer-controls">
+      <label for="ds-name">Nombre del dataset</label>
+      <input id="ds-name" value="Sismos_Local_v01" maxlength="80" />
+      <span id="ds-version-note"
+        ></span
+      >
+      <button
+        class="btn btn-primary"
+        data-ds-action="generate"
+        type="button"
+      >
+        Guardar dataset
+      </button>
+    </div>
+    <button
+      class="btn btn-primary"
+      id="btn-continue-models"
+      data-action="footer-continue-models"
+      type="button"
+      disabled
+    >
+      Continuar a Modelos →
+    </button>
+  </div>
 </section>

@@ -1,15 +1,36 @@
 <!-- Vista: Datos — Tabla de archivos (.BIN), métricas de calidad y resumen -->
-<div class="datos-layout">
+<div class="datos-layout workspace-view">
   <!-- Panel izquierdo: Tabla de archivos -->
   <div class="datos-panel">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Archivos BIN (<span id="data-file-count">0</span>)</h2>
+        <h2 class="card-title">
+          Archivos BIN (<span id="data-file-count">0</span>)
+        </h2>
         <div class="d-flex gap-sm">
-          <input type="text" id="data-search" class="form-input" placeholder="Buscar archivo..." data-action="search-files" style="width: 200px;">
-          <button class="btn btn-secondary btn-sm" data-action="filter-status" id="btn-filter">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          <input
+            type="text"
+            id="data-search"
+            class="form-input"
+            placeholder="Buscar archivo..."
+            data-action="search-files"
+            style="width: 200px"
+          />
+          <button
+            class="btn btn-secondary btn-sm"
+            data-action="filter-status"
+            id="btn-filter"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="width: 16px; height: 16px"
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
           </button>
         </div>
@@ -19,7 +40,9 @@
           <table class="table">
             <thead>
               <tr>
-                <th style="width: 40px;"><input type="checkbox" id="select-all"></th>
+                <th style="width: 40px">
+                  <input type="checkbox" id="select-all" />
+                </th>
                 <th>Archivo</th>
                 <th>Fecha de captura</th>
                 <th>Eventos</th>
@@ -35,18 +58,36 @@
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-md">
-          <span class="text-muted" id="data-selected-count">0 archivos seleccionados</span>
+          <span class="text-muted" id="data-selected-count"
+            >0 archivos seleccionados</span
+          >
           <div class="d-flex gap-sm align-items-center">
             <span class="text-muted">Filas por página</span>
-            <select class="form-select" style="width: 80px;" data-action="page-size">
+            <select
+              class="form-select"
+              style="width: 80px"
+              data-action="page-size"
+            >
               <option value="25">25</option>
               <option value="50" selected>50</option>
               <option value="100">100</option>
             </select>
             <div class="pagination">
-              <button class="pagination-btn" data-action="prev-page" id="btn-prev-page">←</button>
+              <button
+                class="pagination-btn"
+                data-action="prev-page"
+                id="btn-prev-page"
+              >
+                ←
+              </button>
               <span id="page-indicator" class="text-muted">1 / 1</span>
-              <button class="pagination-btn" data-action="next-page" id="btn-next-page">→</button>
+              <button
+                class="pagination-btn"
+                data-action="next-page"
+                id="btn-next-page"
+              >
+                →
+              </button>
             </div>
           </div>
         </div>
@@ -59,21 +100,55 @@
     <div class="card">
       <div class="card-header">
         <h2 class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px;">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            style="
+              width: 20px;
+              height: 20px;
+              vertical-align: middle;
+              margin-right: 8px;
+            "
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            />
+            <polyline points="14 2 14 8 20 8" />
           </svg>
           Detalle del archivo
         </h2>
-        <button class="btn btn-secondary btn-sm" data-action="close-detail" id="btn-close-detail">×</button>
+        <button
+          class="btn btn-secondary btn-sm"
+          data-action="close-detail"
+          id="btn-close-detail"
+        >
+          ×
+        </button>
       </div>
       <div class="card-body" id="data-detail-content">
         <div class="empty-state">
           <div class="empty-state-icon">📄</div>
           <div class="empty-state-title">Selecciona un archivo</div>
-          <div class="empty-state-text">Haz clic en un archivo para ver su detalle</div>
+          <div class="empty-state-text">
+            Haz clic en un archivo para ver su detalle
+          </div>
         </div>
       </div>
     </div>
+  </div>
+  <div class="workspace-inline-actions datos-inline-actions">
+    <button
+      class="btn btn-primary"
+      id="btn-footer-analysis"
+      data-action="footer-analyze"
+      type="button"
+      hidden
+    >
+      Ver análisis →
+    </button>
   </div>
 </div>

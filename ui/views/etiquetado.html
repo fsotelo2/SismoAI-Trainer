@@ -1,48 +1,180 @@
-<section class="labeling-view">
-  <div class="label-toolbar">
-    <div class="label-navigation"><label>Selección <select id="label-window-selection" class="form-select"><option value="">Selección activa</option></select></label>
-      <button class="btn btn-secondary" data-label-action="prev" aria-label="Ventana anterior">←</button>
+<section class="labeling-view workspace-view">
+  <div class="label-toolbar workspace-panel">
+    <div class="label-navigation">
+      <label
+        >Selección
+        <select id="label-window-selection" class="form-select">
+          <option value="">Selección activa</option>
+        </select></label
+      >
+      <button
+        class="btn btn-secondary"
+        data-label-action="prev"
+        aria-label="Ventana anterior"
+      >
+        ←
+      </button>
       <strong id="label-position">Ventana — de —</strong>
-      <button class="btn btn-secondary" data-label-action="next" aria-label="Ventana siguiente">→</button>
+      <button
+        class="btn btn-secondary"
+        data-label-action="next"
+        aria-label="Ventana siguiente"
+      >
+        →
+      </button>
     </div>
     <select id="label-filter" class="form-select" aria-label="Filtrar ventanas">
-      <option value="all">Todas</option><option value="pending" selected>Pendientes</option><option value="labeled">Etiquetadas</option><option value="review">En revisión</option>
+      <option value="all">Todas</option>
+      <option value="pending" selected>Pendientes</option>
+      <option value="labeled">Etiquetadas</option>
+      <option value="review">En revisión</option>
     </select>
-    <span id="label-dirty" class="label-dirty">Sin cambios</span>
-    <button class="btn btn-primary" data-label-action="save">Guardar</button>
   </div>
-  <div class="label-layout">
+  <div class="label-layout workspace-panel">
     <aside class="label-list-panel">
-      <header><strong>Ventanas</strong><span id="label-count">0</span></header>
-      <div id="label-window-list" class="label-window-list"><p class="label-empty">Cargando ventanas…</p></div>
+      <header class="label-list-header">
+        <strong>Ventanas</strong><span id="label-count">0</span>
+      </header>
+      <div class="label-bulk-toolbar">
+        <label class="label-select-all">
+          <input type="checkbox" id="label-select-all" />
+          Seleccionar todas
+        </label>
+        <span id="label-selected-count">0 seleccionadas</span>
+      </div>
+      <div id="label-window-list" class="label-window-list">
+        <p class="label-empty">Cargando ventanas…</p>
+      </div>
     </aside>
     <section class="label-signal-panel">
-      <header><strong>Señal de la ventana seleccionada</strong><div class="label-sensors"><label><input type="checkbox" id="label-show-geo" checked> GEO</label><label><input type="checkbox" id="label-show-mpu" checked> MPU</label></div></header>
-      <div class="label-chart-wrap"><div class="label-chart-title">● GEO (Geófono)</div><canvas id="label-geo-chart"></canvas><div class="label-chart-title">● MPU (Acelerómetro)</div><canvas id="label-mpu-chart"></canvas><div id="label-signal-note" class="label-signal-note"></div></div>
-      <div class="label-info" id="label-window-info">Selecciona una ventana para consultar sus metadatos.</div>
+      <header>
+        <strong>Señal de la ventana seleccionada</strong>
+        <div class="label-sensors">
+          <label
+            ><input type="checkbox" id="label-show-geo" checked /> GEO</label
+          ><label
+            ><input type="checkbox" id="label-show-mpu" checked /> MPU</label
+          >
+        </div>
+      </header>
+      <div class="label-chart-wrap">
+        <div class="label-chart-title">● GEO (Geófono)</div>
+        <canvas id="label-geo-chart"></canvas>
+        <div class="label-chart-title">● MPU (Acelerómetro)</div>
+        <canvas id="label-mpu-chart"></canvas>
+        <div id="label-signal-note" class="label-signal-note"></div>
+      </div>
+      <div class="label-info" id="label-window-info">
+        Selecciona una ventana para consultar sus metadatos.
+      </div>
     </section>
     <aside class="label-editor">
       <header><strong>Etiqueta</strong></header>
       <div class="label-editor-content">
         <label class="label-field-title">Clase principal</label>
         <div class="label-class-options">
-          <button class="label-class tremor" data-label-class="0"><span>∿</span><b>Temblor</b><small>(0)</small></button>
-          <button class="label-class nonsismic" data-label-class="1"><span>⊘</span><b>No sísmico</b><small>(1)</small></button>
+          <button class="label-class tremor" data-label-class="0">
+            <span>∿</span><b>Temblor</b><small>(0)</small>
+          </button>
+          <button class="label-class nonsismic" data-label-class="1">
+            <span>⊘</span><b>No sísmico</b><small>(1)</small>
+          </button>
         </div>
-        <label class="label-field-title" for="label-category">Categoría secundaria <small>(solo no sísmico)</small></label>
-        <select id="label-category" class="form-select" disabled><option value="">Seleccionar categoría…</option><option value="RUIDO">Ruido</option><option value="VIBRACIONES">Vibraciones</option><option value="GOLPES">Golpes</option><option value="INDETERMINADO">Indeterminado</option></select>
+        <label class="label-field-title" for="label-category"
+          >Categoría secundaria <small>(solo no sísmico)</small></label
+        >
+        <select id="label-category" class="form-select" disabled>
+          <option value="">Seleccionar categoría…</option>
+          <option value="RUIDO">Ruido</option>
+          <option value="VIBRACIONES">Vibraciones</option>
+          <option value="GOLPES">Golpes</option>
+          <option value="INDETERMINADO">Indeterminado</option>
+        </select>
         <label class="label-field-title">Estado de anotación</label>
-        <div class="label-status-options"><button class="selected" data-label-review="confirmed">✓ Confirmar</button><button data-label-review="pending">◷ Revisar</button></div>
-        <label class="label-field-title" for="label-observations">Observaciones <small>(opcional)</small></label>
-        <textarea id="label-observations" maxlength="200" placeholder="Añadir una nota…" rows="5"></textarea><div class="label-char-count"><span id="label-char-count">0</span> / 200</div>
-        <button class="btn btn-primary label-save-next" data-label-action="save-next">Guardar y siguiente →</button>
+        <div class="label-status-options">
+          <button class="selected" data-label-review="confirmed">
+            ✓ Confirmar</button
+          ><button data-label-review="pending">◷ Revisar</button>
+        </div>
+        <label class="label-field-title" for="label-observations"
+          >Observaciones <small>(opcional)</small></label
+        >
+        <textarea
+          id="label-observations"
+          maxlength="200"
+          placeholder="Añadir una nota…"
+          rows="5"
+        ></textarea>
+        <div class="label-char-count">
+          <span id="label-char-count">0</span> / 200
+        </div>
+        <button
+          class="btn btn-primary label-save-next"
+          data-label-action="save-next"
+        >
+          Guardar y siguiente →
+        </button>
         <div id="label-message" role="status" class="label-message"></div>
       </div>
     </aside>
   </div>
-  <footer class="label-footer"><span id="label-summary">0 ventanas · 0 pendientes · 0 etiquetadas · 0 en revisión</span></footer>
-  <section class="panel windows-list-panel label-batches-panel">
-    <div class="panel-heading"><strong>Etiquetados guardados</strong><button class="btn btn-secondary btn-sm" data-label-action="refresh-batches">Actualizar</button></div>
-    <div class="table-responsive"><table class="data-table"><thead><tr><th>Nombre</th><th>ID único</th><th>Ventanas</th><th>Acción</th></tr></thead><tbody id="label-batch-rows"><tr><td colspan="4">Cargando etiquetados…</td></tr></tbody></table></div>
+  <footer class="label-footer workspace-panel">
+    <span id="label-summary"
+      >0 ventanas · 0 pendientes · 0 etiquetadas · 0 en revisión</span
+    >
+  </footer>
+  <section class="panel windows-list-panel label-batches-panel workspace-panel">
+    <div class="panel-heading">
+      <strong>Etiquetados guardados</strong
+      ><button
+        class="btn btn-secondary btn-sm"
+        data-label-action="refresh-batches"
+      >
+        Actualizar
+      </button>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>ID único</th>
+            <th>Ventanas</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="label-batch-rows">
+          <tr>
+            <td colspan="4">Cargando etiquetados…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
+  <div class="workspace-inline-actions labeling-inline-actions">
+    <div class="label-batch-controls" id="label-batch-footer">
+      <label for="label-batch-name">Nombre del etiquetado</label>
+      <input
+        id="label-batch-name"
+        value="Etiquetas_v01"
+        maxlength="80"
+      />
+      <button
+        class="btn btn-secondary"
+        data-label-action="save-batch"
+        type="button"
+      >
+        Guardar etiquetado
+      </button>
+    </div>
+    <button
+      class="btn btn-primary"
+      id="btn-continue-dataset"
+      data-action="footer-continue-dataset"
+      type="button"
+      disabled
+    >
+      Continuar a Dataset →
+    </button>
+  </div>
 </section>

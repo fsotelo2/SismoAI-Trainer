@@ -9,7 +9,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: var(--font-family);
   font-size: var(--font-size-base);
@@ -130,6 +131,7 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 /* -- Topbar ---------------------------------------------------------- */
@@ -192,6 +194,11 @@ html, body {
   flex-direction: column;
 }
 
+.view-container > * {
+  min-width: 0;
+  min-height: 0;
+}
+
 .view {
   display: none;
   flex: 1;
@@ -237,101 +244,6 @@ html, body {
 .view-header-text p {
   font-size: var(--font-size-base);
   color: var(--color-text-muted);
-}
-
-/* -- Statusbar ------------------------------------------------------- */
-
-.app-footer {
-  width: 100%;
-  height: 72px;
-  min-height: 72px;
-  box-sizing: border-box;
-  padding: 0 var(--spacing-md);
-  border-top: 1px solid var(--color-border);
-  background-color: var(--color-bg-card);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-/* -- Datos Layout ---------------------------------------------------- */
-
-.datos-layout {
-  display: flex;
-  gap: var(--spacing-md);
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.datos-panel {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.datos-panel .card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.datos-panel .card-body {
-  flex: 1;
-  overflow: auto;
-}
-
-.datos-detail {
-  width: 400px;
-  min-width: 400px;
-  font-size: var(--font-size-sm);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.datos-detail .card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.datos-detail .card-body {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.datos-detail .card-title {
-  font-size: var(--font-size-base);
-}
-
-.datos-detail .table {
-  font-size: var(--font-size-sm);
-}
-
-.datos-detail .table td,
-.datos-detail .table th {
-  padding: var(--spacing-xs) var(--spacing-sm);
-}
-
-.datos-detail h3 {
-  font-size: var(--font-size-base);
-}
-
-.datos-detail h4 {
-  font-size: var(--font-size-sm);
-}
-
-.datos-detail p {
-  font-size: var(--font-size-xs);
 }
 
 /* -- Detail Sections ------------------------------------------------- */
@@ -400,24 +312,6 @@ html, body {
 
 /* -- Responsive ------------------------------------------------------ */
 
-@media (max-width: 1200px) {
-  .datos-detail {
-    width: 350px;
-    min-width: 350px;
-  }
-}
-
-@media (max-width: 992px) {
-  .datos-layout {
-    flex-direction: column;
-  }
-
-  .datos-detail {
-    width: 100%;
-    min-width: 0;
-  }
-}
-
 @media (max-width: 768px) {
   .sidebar {
     width: 60px;
@@ -435,14 +329,41 @@ html, body {
   }
 }
 
+/* Acciones propias de cada vista dentro del Workspace. */
+.workspace-inline-actions {
+  position: absolute;
+  right: var(--spacing-md);
+  bottom: var(--spacing-md);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  --layout-x: 0px;
+  --layout-y: 0px;
+}
 
-/* Status bar primary action */
-.app-footer{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
-.app-footer > #app-footer-status{align-self:center;line-height:1.2}
-footer.app-footer > button.app-footer-action{position:relative!important;top:-7px!important;right:auto!important;bottom:auto!important;transform:none!important;align-self:center!important;margin:0!important;justify-self:end;line-height:1.2}
-.app-footer-action[hidden]{display:none}
+.workspace-inline-actions > button,
+.workspace-inline-actions .ds-footer-controls,
+.workspace-inline-actions .label-batch-controls {
+  translate: var(--layout-x, 0px) var(--layout-y, 0px);
+}
 
-
-.topbar-heading{display:flex;align-items:center;gap:var(--spacing-sm)}
-.topbar-heading-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--color-primary);flex-shrink:0}
-.topbar-heading-icon svg{width:28px;height:28px}
+.topbar-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+.topbar-heading-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+.topbar-heading-icon svg {
+  width: 28px;
+  height: 28px;
+}

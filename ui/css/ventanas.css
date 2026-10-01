@@ -1,139 +1,531 @@
 /* Phase 6 — Windows view styles, aligned with the existing design tokens */
-.windows-page{display:flex;flex:1;flex-direction:column;gap:12px;padding:4px 0 4px;min-height:0;overflow:hidden}
-.windows-mode-tabs{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:10px;min-width:0}
-.windows-source{margin-left:0;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:nowrap;white-space:nowrap;min-width:0;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
-.windows-source strong{color:var(--color-text-primary);margin-right:12px}
-.windows-config,.windows-charts .panel,.windows-list-panel{background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow-sm)}
-.windows-config,.windows-charts{flex-shrink:0}
-.windows-config-head,.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.windows-config-head h2{font-size:16px;margin:0;color:var(--color-text-primary)}
-.windows-config-head p{margin:4px 0 0;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
-.windows-controls{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
-.windows-controls>label{display:flex;flex-direction:column;gap:6px;color:var(--color-text-secondary);font-size:var(--font-size-sm);min-width:130px}
-.windows-controls .form-input,.windows-controls .form-select{min-height:34px}
-.windows-controls fieldset{border:1px solid var(--color-border);border-radius:var(--radius-md);display:flex;gap:12px;padding:8px 10px;color:var(--color-text-secondary);font-size:var(--font-size-sm)}
-.windows-controls fieldset legend{font-size:11px;padding:0 4px}
-.windows-controls fieldset label{display:flex;align-items:center;gap:5px}
-.windows-hint{color:var(--color-text-muted);font-size:12px;flex-basis:100%;margin:0}
-.windows-charts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.windows-charts .panel{min-width:0}
-.panel-heading{font-size:14px;color:var(--color-text-primary);margin-bottom:6px}
-.panel-heading span{font-size:12px;color:var(--color-text-muted);font-weight:400}
-.windows-canvas{display:block;width:100%;height:150px;touch-action:none}
-.windows-list-panel .panel-heading>div{display:flex;align-items:center;gap:6px}
-.windows-list-panel{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
-.windows-list-panel .table-responsive{flex:1;min-height:0;max-height:none;overflow-y:auto;overflow-x:auto;direction:rtl;scrollbar-gutter:stable}
-.windows-list-panel .panel-heading{flex-shrink:0}
-.windows-list-panel .table-responsive table{direction:ltr}
-.windows-list-panel table{width:100%;border-collapse:collapse;font-size:12px}
-.windows-list-panel th,.windows-list-panel td{padding:3px 7px;line-height:1.1;border-bottom:1px solid var(--color-border);text-align:left;white-space:nowrap}
-.windows-list-panel tbody tr{height:25px}
-.windows-list-panel td .form-select{min-height:23px;height:23px;padding:1px 22px 1px 7px;font-size:12px}
-.windows-list-panel th{color:var(--color-text-secondary);font-weight:600;background:#f8fafc}
-.status-pill{display:inline-block;padding:4px 8px;border-radius:5px;background:#f1f5f9;color:#475569;font-size:11px}
-.status-pill.accepted{background:var(--color-success-bg);color:#047857}
-.status-pill.review{background:var(--color-warning-bg);color:#92400e}
-.status-pill.blocked{background:var(--color-danger-bg);color:#b91c1c}
-@media(max-width:1250px){.windows-mode-tabs{grid-template-columns:auto auto;}.windows-source{grid-column:1/-1;justify-content:flex-start}}
-@media(max-width:1050px){.windows-charts{grid-template-columns:1fr}}
+.windows-page {
+  display: grid;
+  grid-template-rows: auto auto minmax(150px, 1fr) minmax(110px, 0.5fr);
+  gap: 8px;
+  padding: 2px 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.windows-mode-tabs {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.windows-source {
+  margin-left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.windows-source strong {
+  color: var(--color-text-primary);
+  margin-right: 12px;
+}
+.windows-config,
+.windows-charts .panel,
+.windows-list-panel {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.windows-config,
+.windows-charts {
+  min-height: 0;
+}
+.windows-config-head,
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.windows-config-head h2 {
+  font-size: 16px;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+.windows-config-head p {
+  margin: 4px 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.windows-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.windows-controls > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  min-width: 130px;
+}
+.windows-controls .form-input,
+.windows-controls .form-select {
+  min-height: 34px;
+}
+.windows-controls fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: 12px;
+  padding: 8px 10px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.windows-controls fieldset legend {
+  font-size: 11px;
+  padding: 0 4px;
+}
+.windows-controls fieldset label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.windows-hint {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  flex-basis: 100%;
+  margin: 0;
+}
+.windows-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.windows-charts .panel {
+  min-width: 0;
+}
+.panel-heading {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+}
+.panel-heading span {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+.windows-canvas {
+  display: block;
+  width: 100%;
+  height: 150px;
+  touch-action: none;
+}
+.windows-list-panel .panel-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.windows-list-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.windows-list-panel .table-responsive {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: auto;
+  direction: rtl;
+  scrollbar-gutter: stable;
+}
+.windows-list-panel .panel-heading {
+  flex-shrink: 0;
+}
+.windows-list-panel .table-responsive table {
+  direction: ltr;
+}
+.windows-list-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.windows-list-panel th,
+.windows-list-panel td {
+  padding: 3px 7px;
+  line-height: 1.1;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  white-space: nowrap;
+}
+.windows-list-panel tbody tr {
+  height: 25px;
+}
+.windows-list-panel td .form-select {
+  min-height: 23px;
+  height: 23px;
+  padding: 1px 22px 1px 7px;
+  font-size: 12px;
+}
+.windows-list-panel th {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  background: #f8fafc;
+}
+.status-pill {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+}
+.status-pill.accepted {
+  background: var(--color-success-bg);
+  color: #047857;
+}
+.status-pill.review {
+  background: var(--color-warning-bg);
+  color: #92400e;
+}
+.status-pill.blocked {
+  background: var(--color-danger-bg);
+  color: #b91c1c;
+}
+@media (max-width: 1250px) {
+  .windows-mode-tabs {
+    grid-template-columns: auto auto;
+  }
+  .windows-source {
+    grid-column: 1/-1;
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 1050px) {
+  .windows-charts {
+    grid-template-columns: 1fr;
+  }
+}
 
-.windows-source{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.windows-file-select{width:clamp(190px,18vw,300px);min-width:190px;max-width:300px;flex:0 1 auto}
-.windows-source .form-select{min-height:34px}
-.windows-source strong{margin:0 4px;white-space:nowrap}
-.windows-source button{flex:0 0 auto}
-
+.windows-source {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.windows-file-select {
+  width: clamp(190px, 18vw, 300px);
+  min-width: 190px;
+  max-width: 300px;
+  flex: 0 1 auto;
+}
+.windows-source .form-select {
+  min-height: 34px;
+}
+.windows-source strong {
+  margin: 0 4px;
+  white-space: nowrap;
+}
+.windows-source button {
+  flex: 0 0 auto;
+}
 
 /* Footer controls: keep selection naming, save and continue aligned in one row. */
-.app-footer #win-footer-controls{
-  flex:1 1 auto;
-  min-width:0;
-  margin-left:auto;
-  justify-content:flex-end;
-  gap:8px;
+.windows-inline-actions {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
-.app-footer #win-footer-controls label{
-  flex:0 0 auto;
-  white-space:nowrap;
-  font-size:13px;
+
+#win-footer-controls {
+  --x: 24px;
+  --y: calc(100% - 35px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  pointer-events: auto;
 }
-.app-footer #win-footer-controls input{
-  flex:0 1 220px;
-  width:220px;
-  min-width:120px;
-  max-width:22vw;
+
+#btn-continue-labeling {
+  --x: calc(100% - 215px);
+  --y: calc(100% - 35px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  pointer-events: auto;
 }
-.app-footer #win-footer-controls span{
-  flex:1 1 140px;
-  min-width:0;
-  max-width:230px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+
+.windows-inline-actions #win-footer-controls {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: auto;
+  justify-content: flex-end;
+  gap: 8px;
 }
-.app-footer #btn-continue-labeling{
-  flex:0 0 auto;
-  margin-left:8px;
-  white-space:nowrap;
+.windows-inline-actions #win-footer-controls label {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 13px;
 }
-@media(max-width:1100px){
-  .app-footer #win-footer-controls span{display:none}
-  .app-footer #win-footer-controls input{flex-basis:170px;max-width:20vw}
+.windows-inline-actions #win-footer-controls input {
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 120px;
+  max-width: 22vw;
 }
-@media(max-width:760px){
-  .app-footer #win-footer-controls label{display:none}
-  .app-footer #win-footer-controls input{flex:1 1 120px;max-width:none}
-  .app-footer #btn-continue-labeling{padding:8px 10px;font-size:13px}
+.windows-inline-actions #win-footer-controls span {
+  flex: 1 1 140px;
+  min-width: 0;
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.windows-inline-actions #btn-continue-labeling {
+  flex: 0 0 auto;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+@media (max-width: 1100px) {
+  .windows-inline-actions #win-footer-controls span {
+    display: none;
+  }
+  .windows-inline-actions #win-footer-controls input {
+    flex-basis: 170px;
+    max-width: 20vw;
+  }
+}
+@media (max-width: 760px) {
+  .windows-inline-actions #win-footer-controls label {
+    display: none;
+  }
+  .windows-inline-actions #win-footer-controls input {
+    flex: 1 1 120px;
+    max-width: none;
+  }
+  .windows-inline-actions #btn-continue-labeling {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
 }
 
 /* Compact status bar: reserve the final position for Continue. */
-.app-footer #win-footer-controls{
-  flex:0 1 auto;
-  width:auto;
-  margin-left:auto;
-  justify-content:flex-start;
-  gap:8px;
+.windows-inline-actions #win-footer-controls {
+  flex: 0 1 auto;
+  width: auto;
+  margin-left: auto;
+  justify-content: flex-start;
+  gap: 8px;
 }
-.app-footer #win-footer-controls #win-version-note{display:none}
-.app-footer #win-footer-controls input{
-  flex:0 1 190px;
-  width:190px;
-  min-width:130px;
-  max-width:18vw;
+.windows-inline-actions #win-footer-controls #win-version-note {
+  display: none;
 }
-.app-footer #btn-continue-labeling{margin-left:8px}
-
+.windows-inline-actions #win-footer-controls input {
+  flex: 0 1 190px;
+  width: 190px;
+  min-width: 130px;
+  max-width: 18vw;
+}
+.windows-inline-actions #btn-continue-labeling {
+  margin-left: 8px;
+}
 
 /* Density pass: compact Windows workspace to fit controls, charts and tables. */
-.windows-page{gap:8px;padding:2px 0}
-.windows-config,.windows-charts .panel,.windows-list-panel{padding:10px;border-radius:8px}
-.windows-config-head,.panel-heading{gap:8px;margin-bottom:7px}
-.windows-config-head h2{font-size:14px}
-.windows-config-head p{font-size:12px;margin-top:2px}
-.windows-mode-tabs{gap:7px}
-.windows-mode-tabs>.btn,.windows-controls>.btn{min-height:30px;padding:6px 10px;font-size:12px;line-height:1.2}
-.windows-source{gap:6px;font-size:12px}
-.windows-source strong{font-size:12px}
-.windows-source .form-select{min-height:29px;font-size:12px;padding-top:4px;padding-bottom:4px}
-.windows-controls{gap:9px}
-.windows-controls>label{gap:3px;font-size:12px;min-width:112px}
-.windows-controls .form-input,.windows-controls .form-select{min-height:29px;height:29px;padding:4px 8px;font-size:12px}
-.windows-controls fieldset{gap:8px;padding:5px 8px;font-size:12px}
-.windows-controls fieldset legend{font-size:10px}
-.windows-controls fieldset label{gap:4px}
-.windows-charts{gap:8px}
-.windows-charts .panel{padding:9px}
-.windows-charts .panel-heading{font-size:12px;margin-bottom:3px}
-.panel-heading span{font-size:11px}
-.windows-canvas{height:118px}
-.windows-list-panel .panel-heading{font-size:12px}
-.windows-list-panel .panel-heading>div{gap:4px}
-.windows-list-panel table{font-size:11px}
-.windows-list-panel th,.windows-list-panel td{padding:2px 6px;line-height:1.05}
-.windows-list-panel tbody tr{height:22px}
-.windows-list-panel td .form-select{min-height:21px;height:21px;padding:1px 20px 1px 6px;font-size:11px}
-.windows-list-panel .btn,.windows-list-panel .btn-sm{min-height:25px;padding:3px 8px;font-size:11px}
-.windows-list-panel .table-responsive{font-size:11px}
-.status-pill{padding:2px 6px;font-size:10px}
-.app-footer #win-footer-controls label{font-size:11px}
-@media(max-width:1050px){.windows-charts .panel{padding:8px}}
+.windows-page {
+  gap: 8px;
+  padding: 2px 0;
+}
+.windows-config,
+.windows-charts .panel,
+.windows-list-panel {
+  padding: 10px;
+  border-radius: 8px;
+}
+.windows-config-head,
+.panel-heading {
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.windows-config-head h2 {
+  font-size: 14px;
+}
+.windows-config-head p {
+  font-size: 12px;
+  margin-top: 2px;
+}
+.windows-mode-tabs {
+  gap: 7px;
+}
+.windows-mode-tabs > .btn,
+.windows-controls > .btn {
+  min-height: 30px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+.windows-source {
+  gap: 6px;
+  font-size: 12px;
+}
+.windows-source strong {
+  font-size: 12px;
+}
+.windows-source .form-select {
+  min-height: 29px;
+  font-size: 12px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.windows-controls {
+  gap: 9px;
+}
+.windows-controls > label {
+  gap: 3px;
+  font-size: 12px;
+  min-width: 112px;
+}
+.windows-controls .form-input,
+.windows-controls .form-select {
+  min-height: 29px;
+  height: 29px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.windows-controls fieldset {
+  gap: 8px;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+.windows-controls fieldset legend {
+  font-size: 10px;
+}
+.windows-controls fieldset label {
+  gap: 4px;
+}
+.windows-charts {
+  gap: 8px;
+}
+.windows-charts .panel {
+  padding: 9px;
+}
+.windows-charts .panel-heading {
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+.panel-heading span {
+  font-size: 11px;
+}
+.windows-canvas {
+  height: 118px;
+}
+.windows-list-panel .panel-heading {
+  font-size: 12px;
+}
+.windows-list-panel .panel-heading > div {
+  gap: 4px;
+}
+.windows-list-panel table {
+  font-size: 11px;
+}
+.windows-list-panel th,
+.windows-list-panel td {
+  padding: 2px 6px;
+  line-height: 1.05;
+}
+.windows-list-panel tbody tr {
+  height: 22px;
+}
+.windows-list-panel td .form-select {
+  min-height: 21px;
+  height: 21px;
+  padding: 1px 20px 1px 6px;
+  font-size: 11px;
+}
+.windows-list-panel .btn,
+.windows-list-panel .btn-sm {
+  min-height: 25px;
+  padding: 3px 8px;
+  font-size: 11px;
+}
+.windows-list-panel .table-responsive {
+  font-size: 11px;
+}
+.status-pill {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+.windows-inline-actions #win-footer-controls label {
+  font-size: 11px;
+}
+@media (max-width: 1050px) {
+  .windows-charts .panel {
+    padding: 8px;
+  }
+}
+@media (max-height: 760px) {
+  .windows-page {
+    grid-template-rows: auto auto minmax(120px, 1fr) minmax(90px, 0.45fr);
+  }
+}
+@media (max-width: 760px) {
+  .windows-page {
+    grid-template-rows: auto auto minmax(160px, 1fr) minmax(120px, 0.55fr);
+    overflow: auto;
+  }
+  .windows-charts {
+    grid-template-columns: 1fr;
+  }
+}
+/* Coordenadas de las regiones principales de Ventanas. */
+.windows-config {
+  --x: 0px;
+  --y: 0px;
+  --w: 100%;
+  --h: 140px;
+}
+
+.windows-charts {
+  --x: 0px;
+  --y: 150px;
+  --w: 100%;
+  --h: 160px;
+}
+
+.windows-extracted-region {
+  --x: 0px;
+  --y: 320px;
+  --w: 100%;
+  --h: 200px;
+}
+
+.windows-saved-region {
+  --x: 0px;
+  --y: 530px;
+  --w: 100%;
+  --h: 160px;
+}
+.windows-page {
+  display: block;
+  overflow: visible;
+}
+
+.windows-page > .windows-config,
+.windows-page > .windows-charts,
+.windows-page > .windows-list-panel {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+}

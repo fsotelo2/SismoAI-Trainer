@@ -1,98 +1,572 @@
-.labeling-view{height:100%;display:flex;flex-direction:column;gap:12px;color:var(--text-primary,#172554);min-height:0}.label-toolbar{display:flex;align-items:center;gap:12px;padding:4px 8px}.label-navigation{display:flex;align-items:center;gap:16px}.label-toolbar .form-select{max-width:220px}.label-dirty{margin-left:auto;color:#64748b;font-size:13px}.label-layout{display:grid;grid-template-columns:minmax(190px,250px) minmax(350px,1fr) minmax(250px,320px);gap:10px;flex:1;min-height:0}.label-list-panel,.label-signal-panel,.label-editor{border:1px solid var(--border-color,#dbe3ee);border-radius:8px;background:var(--surface,#fff);min-height:0;overflow:hidden}.label-list-panel,.label-editor{display:flex;flex-direction:column}.label-list-panel>header,.label-signal-panel>header,.label-editor>header{padding:12px 14px;border-bottom:1px solid var(--border-color,#dbe3ee);display:flex;justify-content:space-between;align-items:center}.label-window-list{overflow:auto;flex:1}.label-window-row{display:flex;width:100%;flex-direction:column;gap:3px;text-align:left;padding:10px 12px;border:0;border-bottom:1px solid #edf1f5;background:transparent;cursor:pointer;color:inherit}.label-window-row.active{background:#eaf2ff;border-left:3px solid #2563eb}.label-row-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.label-row-secondary{align-self:flex-start;color:#2563eb;font-weight:600;font-size:12px;padding-left:2px}.label-window-row small{color:#64748b}.label-row-status{font-size:12px;align-self:flex-end}.label-row-status.pending{color:#64748b}.label-row-status.labeled{color:#059669}.label-row-status.nonsismic{color:#f97316}.label-row-secondary{color:#f97316}.label-row-status.review{color:#d97706}.label-signal-panel{display:flex;flex-direction:column}.label-sensors{display:flex;gap:12px;font-size:13px}.label-chart-wrap{padding:12px;overflow:auto;flex:1}.label-chart-title{font-size:13px;margin:6px 0;color:#475569}.label-chart-title:first-child{color:#2563eb}.label-chart-wrap canvas{width:100%;height:150px;display:block}.label-signal-note{font-size:12px;color:#64748b;padding:8px}.label-info{padding:12px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:12px;line-height:1.8}.label-editor-content{padding:14px;overflow:auto;display:flex;flex-direction:column;gap:10px}.label-field-title{font-weight:600;font-size:13px;margin-top:6px}.label-field-title small{font-weight:400;color:#64748b}.label-class-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.label-class{border:1px solid #cbd5e1;border-radius:8px;background:white;padding:12px 5px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer}.label-class span{font-size:28px}.label-class small{color:#64748b}.label-class.tremor span{color:#059669}.label-class.nonsismic span{color:#f97316}.label-class.chosen{outline:2px solid #2563eb;background:#eff6ff}.label-status-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.label-status-options button{padding:10px 5px;border:1px solid #cbd5e1;background:white;border-radius:7px;cursor:pointer}.label-status-options button.selected{background:#2563eb;color:white;border-color:#2563eb}#label-observations{resize:vertical;min-height:90px;border:1px solid #cbd5e1;border-radius:6px;padding:10px;font:inherit}.label-char-count{text-align:right;font-size:12px;color:#64748b;margin-top:-8px}.label-save-next{margin-top:12px;width:100%}.label-message{font-size:12px;color:#475569;min-height:16px}.label-empty{padding:16px;color:#64748b;font-size:13px}.label-footer{border-top:1px solid var(--border-color,#dbe3ee);padding:8px 12px;color:#64748b;font-size:12px}@media(max-width:1000px){.label-layout{grid-template-columns:190px minmax(300px,1fr)}.label-editor{grid-column:1/-1;max-height:420px}}
+/* Etiquetado: estructura general y regiones del workspace. */
+.label-toolbar {
+  --x: 0px;
+  --y: 0px;
+  --w: 100%;
+  --h: 48px;
+}
+
+.label-layout {
+  --x: 0px;
+  --y: 53px;
+  --w: 100%;
+  --h: 460px;
+}
+
+.label-footer {
+  --x: 0px;
+  --y: 520px;
+  --w: 100%;
+  --h: 32px;
+}
+
+.label-batches-panel {
+  --x: 0px;
+  --y: 550px;
+  --w: 100%;
+  --h: 144px;
+}
+
+.label-list-panel {
+  --x: 0px;
+  --y: 0px;
+  --w: calc(22% - 7px);
+  --h: 100%;
+}
+
+.label-signal-panel {
+  --x: calc(22% + 10px);
+  --y: 0px;
+  --w: calc(50% - 10px);
+  --h: 100%;
+}
+
+.label-editor {
+  --x: calc(72% + 10px);
+  --y: 0px;
+  --w: calc(28% - 10px);
+  --h: 460px;
+}
+
+.labeling-view {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto minmax(150px, 230px);
+  gap: 8px;
+  color: var(--text-primary, #172554);
+  min-height: 0;
+  overflow: hidden;
+}
+.label-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+}
+
+/* Área central: lista de ventanas, señales y editor. */
+.label-navigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.label-toolbar .form-select {
+  max-width: 220px;
+}
+.label-layout {
+  display: grid;
+  grid-template-columns: minmax(190px, 250px) minmax(350px, 1fr) minmax(
+      250px,
+      320px
+    );
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+.label-list-panel,
+.label-signal-panel,
+.label-editor {
+  border: 1px solid var(--border-color, #dbe3ee);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.label-list-panel,
+.label-editor {
+  display: flex;
+  flex-direction: column;
+}
+.label-list-panel > header,
+.label-signal-panel > header,
+.label-editor > header {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color, #dbe3ee);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.label-list-header {
+  font-size: 14px;
+}
+.label-bulk-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-color, #dbe3ee);
+  color: #64748b;
+  font-size: 11px;
+}
+.label-select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #334155;
+  cursor: pointer;
+}
+.label-window-list {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Filas y estados de la lista de ventanas. */
+.label-window-row {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  text-align: left;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid #edf1f5;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+}
+.label-window-row.active {
+  background: #eaf2ff;
+  border-left: 3px solid #2563eb;
+}
+.label-row-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.label-row-heading b {
+  font-size: 14px;
+}
+.label-row-select {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  cursor: pointer;
+}
+.label-row-select input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #2563eb;
+}
+.label-row-secondary {
+  align-self: flex-start;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 12px;
+  padding-left: 2px;
+}
+.label-window-row small {
+  color: #64748b;
+  font-size: 11px;
+}
+.label-row-status {
+  font-size: 11px;
+  align-self: flex-end;
+}
+.label-row-status.pending {
+  color: #64748b;
+}
+.label-row-status.labeled {
+  color: #059669;
+}
+.label-row-status.nonsismic {
+  color: #f97316;
+}
+.label-row-secondary {
+  color: #f97316;
+}
+.label-row-status.review {
+  color: #d97706;
+}
+.label-signal-panel {
+  display: flex;
+  flex-direction: column;
+}
+.label-sensors {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+}
+.label-chart-wrap {
+  padding: 6px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+.label-chart-title {
+  font-size: 13px;
+  margin: 6px 0;
+  color: #475569;
+}
+.label-chart-title:first-child {
+  color: #2563eb;
+}
+.label-chart-wrap canvas {
+  width: 100%;
+  height: 120px;
+  display: block;
+}
+.label-signal-note {
+  font-size: 12px;
+  color: #64748b;
+  padding: 8px;
+}
+.label-info {
+  padding: 12px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+/* Controles internos del editor de etiquetas. */
+.label-editor-content {
+  padding: 5px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+.label-field-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-top: 6px;
+}
+.label-field-title small {
+  font-weight: 400;
+  color: #64748b;
+}
+.label-class-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.label-class {
+  /* Ajuste manual del elemento dentro de su distribución actual. */
+  --layout-x: 0px;
+  --layout-y: 0px;
+  width: 100%;
+  height: 80px;
+  box-sizing: border-box;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  padding: 2px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.label-class span {
+  font-size: 28px;
+}
+.label-class small {
+  color: #64748b;
+}
+.label-class.tremor span {
+  color: #059669;
+}
+.label-class.nonsismic span {
+  color: #f97316;
+}
+.label-class.chosen {
+  outline: 2px solid #2563eb;
+  background: #eff6ff;
+}
+.label-status-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.label-status-options button {
+  padding: 10px 5px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.label-status-options button.selected {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+#label-observations {
+  resize: vertical;
+  min-height: 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px;
+  font: inherit;
+}
+.label-char-count {
+  text-align: right;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: -4px;
+}
+.label-save-next {
+  margin-top: 12px;
+  width: 100%;
+}
+.label-message {
+  font-size: 12px;
+  color: #475569;
+  min-height: 16px;
+}
+.label-empty {
+  padding: 16px;
+  color: #64748b;
+  font-size: 13px;
+}
+.label-footer {
+  border-top: 1px solid var(--border-color, #dbe3ee);
+  padding: 4px 6px;
+  color: #64748b;
+  font-size: 12px;
+}
+@media (max-width: 1000px) {
+  .label-layout {
+    grid-template-columns: 190px minmax(300px, 1fr);
+  }
+  .label-editor {
+    grid-column: 1/-1;
+    max-height: 420px;
+  }
+}
 
 /* Etiquetados guardados: misma presentación de panel y tabla que Ventanas */
-.labeling-view{
-  display:flex;
-  flex:1;
-  flex-direction:column;
-  min-height:0;
-  overflow:hidden;
+.labeling-view {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto minmax(150px, 230px);
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
 }
-.label-layout{flex:1 1 0;min-height:0}
-.labeling-view>.label-batches-panel{
-  display:flex;
-  flex-direction:column;
-  flex:0 0 230px;
-  min-height:150px;
-  min-width:0;
-  overflow:hidden;
-  padding:10px;
-  border:1px solid var(--color-border);
-  border-radius:var(--radius-lg);
-  background:var(--color-bg-card);
-  box-shadow:var(--shadow-sm);
+.label-layout {
+  min-height: 0;
 }
-.label-batches-panel .panel-heading{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  flex-shrink:0;
-  margin:0 0 7px;
-  font-size:12px;
-  color:var(--color-text-primary);
-}
-.label-batches-panel .label-batch-save-controls{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  flex-wrap:wrap;
-  margin:0 0 7px;
-}
-.label-batches-panel .label-batch-save-controls label{
-  flex:0 0 auto;
-  font-size:12px;
-  color:var(--color-text-secondary);
-}
-.label-batches-panel .label-batch-save-controls .form-input{
-  flex:0 1 230px;
-  width:230px;
-  min-width:150px;
-  max-width:32vw;
-  min-height:29px;
-  height:29px;
-  padding:4px 8px;
-  font-size:12px;
-}
-.label-batches-panel .label-batch-save-controls .btn{
-  min-height:25px;
-  padding:3px 8px;
-  font-size:11px;
-}
-.label-batches-panel #label-batch-feedback{flex-shrink:0;margin:0 0 5px}
-.label-batches-panel .table-responsive{
-  flex:1;
-  min-height:0;
-  max-height:none;
-  overflow-y:auto;
-  overflow-x:auto;
-}
-.label-batches-panel table.data-table{
-  width:100%;
-  min-width:560px;
-  border-collapse:collapse;
-  table-layout:auto;
-  font-size:11px;
-}
-.label-batches-panel table.data-table th,
-.label-batches-panel table.data-table td{
-  padding:2px 6px;
-  line-height:1.1;
-  border-bottom:1px solid var(--color-border);
-  text-align:left;
-  white-space:nowrap;
-  vertical-align:middle;
-}
-.label-batches-panel table.data-table th{
-  color:var(--color-text-secondary);
-  font-weight:600;
-  background:#f8fafc;
-}
-.label-batches-panel table.data-table tbody tr{height:25px}
-.label-batches-panel table.data-table td code{font-size:11px}
-@media(max-width:760px){
-  .label-batches-panel .label-batch-save-controls .form-input{flex:1 1 100%;width:100%;max-width:none}
+.labeling-view > .label-batches-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Reserve a compact bottom management panel; keep labeling workspace above it. */
-.labeling-view>.label-batches-panel{flex:0 0 230px;min-height:150px}
+/* Tabla inferior de etiquetados guardados. */
+.label-batches-panel .panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  margin: 0 0 7px;
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+.label-batches-panel .label-batch-save-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 0 0 4px;
+}
+.label-batches-panel .label-batch-save-controls label {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.label-batches-panel .label-batch-save-controls .form-input {
+  flex: 0 1 230px;
+  width: 230px;
+  min-width: 150px;
+  max-width: 32vw;
+  min-height: 29px;
+  height: 29px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.label-batches-panel .label-batch-save-controls .btn {
+  min-height: 25px;
+  padding: 3px 8px;
+  font-size: 11px;
+}
+.label-batches-panel #label-batch-feedback {
+  flex-shrink: 0;
+  margin: 0 0 5px;
+}
+.label-batches-panel .table-responsive {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+.label-batches-panel table.data-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 11px;
+}
+.label-batches-panel table.data-table th,
+.label-batches-panel table.data-table td {
+  padding: 2px 6px;
+  line-height: 1.1;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.label-batches-panel table.data-table th {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  background: #f8fafc;
+}
+.label-batches-panel table.data-table tbody tr {
+  height: 25px;
+}
+.label-batches-panel table.data-table td code {
+  font-size: 11px;
+}
+@media (max-width: 760px) {
+  .label-batches-panel .label-batch-save-controls .form-input {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .label-layout {
+    overflow: auto;
+  }
+  .labeling-view {
+    overflow: auto;
+  }
+  .labeling-view > .label-batches-panel {
+    min-height: 150px;
+  }
+}
+.labeling-inline-actions {
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.label-batch-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+#label-batch-footer {
+  --x: 24px;
+  --y: calc(100% - 35px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  pointer-events: auto;
+}
+
+.label-batch-controls label {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+#label-batch-name {
+  width: 230px;
+  max-width: 24vw;
+  padding: 7px 9px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  background: var(--color-bg-card);
+  font: inherit;
+}
+
+.label-batch-controls .btn {
+  white-space: nowrap;
+}
+
+/* Botón inferior propio de Etiquetado. La posición del grupo se controla
+   en .labeling-inline-actions; estos valores permiten ajustar el botón sin
+   modificar los demás controles del grupo. */
+#btn-continue-dataset {
+  --x: calc(100% - 185px);
+  --y: calc(100% - 35px);
+  --layout-x: 0px;
+  --layout-y: 0px;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: auto;
+  height: auto;
+  pointer-events: auto;
+}
+.labeling-view {
+  overflow: visible;
+}
+
+.labeling-view > .label-toolbar,
+.labeling-view > .label-layout,
+.labeling-view > .label-footer,
+.labeling-view > .label-batches-panel {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+}
+
+.label-layout {
+  display: block;
+}
+
+.label-layout > .label-list-panel,
+.label-layout > .label-signal-panel,
+.label-layout > .label-editor {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+}

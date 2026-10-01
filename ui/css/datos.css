@@ -1,0 +1,137 @@
+/* Posicionamiento de controles propios de la vista Datos. */
+.datos-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 400px);
+  gap: var(--spacing-md);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.datos-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  max-width: none;
+  max-height: none;
+}
+
+.datos-panel .card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.datos-panel .card-body,
+.datos-detail .card-body {
+  flex: 1;
+  overflow: auto;
+}
+
+.datos-detail {
+  min-width: 0;
+  font-size: var(--font-size-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  max-width: none;
+  max-height: none;
+}
+
+.datos-detail .card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.datos-detail .card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.datos-detail .card-title {
+  font-size: var(--font-size-base);
+}
+
+.datos-detail .table {
+  font-size: var(--font-size-sm);
+}
+
+.datos-detail .table td,
+.datos-detail .table th {
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.datos-detail h3 {
+  font-size: var(--font-size-base);
+}
+
+.datos-detail h4 {
+  font-size: var(--font-size-sm);
+}
+
+.datos-detail p {
+  font-size: var(--font-size-xs);
+}
+
+.datos-panel {
+  --x: 0px;
+  --y: 0px;
+  --w: calc(66.666% - 8px);
+  --h: 700px;
+}
+
+.datos-detail {
+  --x: calc(66.666% + 8px);
+  --y: 0px;
+  --w: calc(33.334% - 8px);
+  --h: 700px;
+}
+
+.datos-inline-actions {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#btn-footer-analysis {
+  --x: calc(100% - 130px);
+  --y: calc(100% - 35px);
+  --layout-x: 0px;
+  --layout-y: 0px;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: auto;
+  height: auto;
+  pointer-events: auto;
+}
+
+@media (max-width: 1200px) {
+  .datos-detail {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 992px) {
+  .datos-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(300px, 1fr) minmax(240px, auto);
+  }
+
+  .datos-detail {
+    min-width: 0;
+  }
+}

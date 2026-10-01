@@ -21,4 +21,11 @@ class DatasetServiceTests(unittest.TestCase):
         with self.assertRaises(DatasetError): build_manifest([x])
     def test_rejects_bad_ratios(self):
         with self.assertRaises(DatasetError): build_manifest([item("W1",1)],(.6,.2,.1))
+    def test_single_event_still_allocates_all_windows(self):
+        items=[item(f"W{i}",0,i%2) for i in range(18)]
+        m=build_manifest(items,(.7,.15,.15),seed=7)
+        counts=[len(m["splits"][p]) for p in ("train","validation","test")]
+        self.assertEqual(counts,[12,3,3])
+        self.assertEqual(sum(counts),18)
+        self.assertTrue(any("un evento independiente" in w for w in m["warnings"]))
 if __name__=="__main__": unittest.main()

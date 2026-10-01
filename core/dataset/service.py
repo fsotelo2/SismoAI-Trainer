@@ -26,6 +26,16 @@ def _group_key(window):
         raise DatasetError("Hay ventanas sin evento de origen; no se puede evitar fuga entre particiones.")
     return f'{window.get("source_file", "")}::{event}'
 
+def _target_counts(total, ratios):
+    """Allocate every window exactly once using largest remainders."""
+    raw = [total * ratio for ratio in ratios]
+    counts = [math.floor(value) for value in raw]
+    for index in sorted(range(len(raw)), key=lambda i: raw[i] - counts[i], reverse=True):
+        if sum(counts) >= total:
+            break
+        counts[index] += 1
+    return counts
+
 def build_manifest(items, ratios=(0.70, 0.15, 0.15), seed=42):
     if len(ratios) != 3 or any(isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x) or x < 0 for x in ratios) or abs(sum(ratios)-1)>1e-6:
         raise DatasetError("Los porcentajes train/validation/test deben sumar 100%.")
@@ -39,19 +49,30 @@ def build_manifest(items, ratios=(0.70, 0.15, 0.15), seed=42):
                 or label.get("quality_review") != "confirmed"):
             raise DatasetError("Todas las ventanas deben tener etiqueta binaria guardada y revisión confirmada.")
         groups[_group_key(w)].append(item)
-    # Stable deterministic group assignment, approximately respecting requested proportions.
+    # Preserve event isolation whenever there are enough independent events.
     ordered=sorted(groups, key=lambda k: hashlib.sha256(f"{seed}:{k}".encode()).hexdigest())
     targets=[ratios[0]*len(items),ratios[1]*len(items),ratios[2]*len(items)]
     counts=[0,0,0]; parts=[[],[],[]]
-    for key in ordered:
-        group=groups[key]
-        idx=min(range(3), key=lambda j: (counts[j]-targets[j], j))
-        parts[idx].extend(group); counts[idx]+=len(group)
+    if len(groups) == 1 and len(items) > 1:
+        # A single event cannot be isolated across all three partitions.
+        # Split windows so the requested dataset is usable, and report the trade-off.
+        target_counts = _target_counts(len(items), ratios)
+        offset = 0
+        for index, target in enumerate(target_counts):
+            parts[index].extend(items[offset:offset + target])
+            offset += target
+    else:
+        for key in ordered:
+            group=groups[key]
+            idx=min(range(3), key=lambda j: (counts[j]-targets[j], j))
+            parts[idx].extend(group); counts[idx]+=len(group)
     def summarize(rows):
         return {"windows":len(rows),"classes":dict(Counter(str(x["label"]["class_code"]) for x in rows)),
                 "events":len({_group_key(x["window"]) for x in rows})}
     warnings=[]
     if len(groups)<10: warnings.append("Pocos eventos independientes: las métricas pueden ser inestables.")
+    if len(groups) == 1 and len(items) > 1:
+        warnings.append("Solo hay un evento independiente; las ventanas se repartieron individualmente y pueden compartir origen entre particiones.")
     overall=Counter(str(x["label"]["class_code"]) for x in items)
     if len(overall)<2: warnings.append("El conjunto contiene una sola clase.")
     for name,rows in zip(("train","validation","test"),parts):
