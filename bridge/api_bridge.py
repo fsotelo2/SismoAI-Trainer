@@ -1108,11 +1108,16 @@ class ApiBridge:
         try:
             workspace = self.get_labeling_workspace()
             items = workspace.get("items", [])
-            if not items or any(not x.get("label") for x in items):
-                return {"success": False, "error": "Todas las ventanas deben estar etiquetadas antes de guardar."}
-            source_id = (self._active_window_selection or {}).get("id")
-            if not source_id and self._active_label_batch:
-                source_id = self._active_label_batch.get("source_id")
+            if not items or any(
+                not x.get("label")
+                or x["label"].get("class_code") not in (0, 1)
+                or x["label"].get("quality_review") != "confirmed"
+                for x in items
+            ):
+                return {"success": False, "error": "Todas las ventanas deben tener clase binaria y revisión confirmada antes de guardar."}
+            source_id = ((self._active_label_batch or {}).get("source_id")
+                         if self._active_label_batch else
+                         (self._active_window_selection or {}).get("id"))
             manifest, path = pipeline_manifests.create_manifest(
                 os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados"),
                 "labels", name, items, source_id=source_id)
