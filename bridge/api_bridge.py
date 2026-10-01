@@ -1395,23 +1395,30 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": [], "counts": {}}
 
-    def get_window_signal(self, window_id: str) -> dict:
-        """Load the source event channels and crop them to one window interval."""
+    def get_window_signal(self, window_id: str, window_ref=None) -> dict:
+        """Read signal using the selected manifest record, not a globally reused W-### ID."""
         try:
-            window = next((w for w in self._window_records if w.window_id == window_id), None)
+            entries = (self._active_label_batch or {}).get("records", []) or self._active_label_items
+            entry = next((x for x in entries
+                          if (x.get("window") or {}).get("window_id") == window_id
+                          and (not window_ref or (x.get("window") or {}).get("window_ref") == window_ref)), None)
+            window = dict(entry.get("window")) if entry else None
+            if window is None and not self._active_window_selection:
+                window_obj = next((w for w in self._window_records if w.window_id == window_id), None)
+                window = window_obj.to_dict() if window_obj else None
             if window is None:
-                return {"success": False, "error": "Ventana no encontrada."}
+                return {"success": False, "error": "Ventana no encontrada en el manifiesto activo."}
             try:
-                event_index = int(window.source_event_id)
+                event_index = int(window.get("source_event_id"))
             except (TypeError, ValueError):
                 return {"success": False, "error": "La ventana no tiene un índice de evento válido."}
-            start, end = window.start_us / 1_000_000.0, window.end_us / 1_000_000.0
+            start, end = float(window.get("start_us", 0)) / 1e6, float(window.get("end_us", 0)) / 1e6
             result = {}
             for sensor, channel in (("GEO", "velocity"), ("MPU", "magnitude")):
-                if sensor not in window.sensors:
+                if sensor not in (window.get("sensors") or []):
                     result[sensor] = {"times": [], "amplitudes": []}
                     continue
-                series = self.get_channel_series(window.source_file, event_index, channel)
+                series = self.get_channel_series(window.get("source_file"), event_index, channel)
                 if "error" in series:
                     result[sensor] = {"times": [], "amplitudes": [], "error": series["error"]}
                     continue
@@ -1419,7 +1426,7 @@ class ApiBridge:
                          if start <= t < end]
                 result[sensor] = {"times": [p[0] for p in pairs],
                                   "amplitudes": [p[1] for p in pairs]}
-            return {"success": True, "window_id": window_id, "signals": result}
+            return {"success": True, "window_id": window_id, "window_ref": window.get("window_ref"), "signals": result}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
