@@ -65,6 +65,11 @@ async function refresh(){
  const r=await Bridge.getDatasetWorkspace();
  if(!r||!r.success){setText('ds-summary',r?.error||'No se pudo cargar Etiquetado.');return;}
  items=r.items||[];
+ const batchSelect=$('ds-label-batch');
+ if(batchSelect){
+   const batches=r.label_batches||[],activeId=r.active_label_batch?.id||'';
+   batchSelect.innerHTML='<option value="">Seleccionar etiquetado…</option>'+batches.map(b=>'<option value="'+esc(b.filename)+'" '+(b.id===activeId?'selected':'')+'>'+esc(b.name)+' · '+esc(b.count)+' ventanas</option>').join('');
+ }
  const conf=items.filter(x=>l(x).quality_review==='confirmed'&&[0,1].includes(l(x).class_code));
  const a=conf.filter(x=>l(x).class_code===0).length,b=conf.filter(x=>l(x).class_code===1).length;
  const events=new Set(items.map(eventKey).filter(k=>!k.endsWith('::'))).size;
@@ -121,6 +126,9 @@ document.addEventListener('click',async e=>{
 });
 document.addEventListener('change',e=>{
  if(e.target.id==='ds-filter')filterRows();
+ if(e.target.id==='ds-label-batch'&&e.target.value){
+   Bridge.selectLabelBatch(e.target.value).then(r=>{if(r?.success)refresh();else setText('ds-summary',r?.error||'No se pudo cargar el lote.');});
+ }
  const numbers=['ds-train','ds-val','ds-test'],ranges=['ds-train-range','ds-val-range','ds-test-range'];
  let i=numbers.indexOf(e.target.id),fromRange=false;
  if(i<0){i=ranges.indexOf(e.target.id);fromRange=true;}
