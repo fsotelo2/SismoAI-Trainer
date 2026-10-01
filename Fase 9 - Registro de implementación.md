@@ -64,3 +64,11 @@ python -m unittest discover -s tests -v
 ```
 
 La verificación visual/integral requiere abrir la aplicación de escritorio en el PC. En particular, comprobar carga del menú, lectura del Dataset activo, guardado de configuración, inicio del worker, progreso, persistencia y visualización de resultados.
+
+
+## Ajustes de interfaz y carga de Dataset
+
+- Se retiró la selección de destino ESP32-S3 de la vista Modelos; el alcance actual es entrenamiento local en PC.
+- Se eliminó la dependencia del campo `target` en la validación del backend para guardar e iniciar experimentos.
+- Se añadió un tiempo máximo de espera y mensajes visibles al consultar el Dataset, la biblioteca de experimentos y el estado de entrenamiento, para evitar que la vista permanezca indefinidamente en estado de carga.
+- Pendiente: validar en ejecución local el flujo Dataset → Modelos con un Dataset real y confirmar la respuesta del puente PyWebView.
