@@ -118,7 +118,7 @@ const App = (() => {
 
     if (action === 'footer-continue-labeling') { if(window.saveWindowSelectionAndContinue) await window.saveWindowSelectionAndContinue(); return; }
 
-    if (action === 'footer-continue-dataset') { await navigateTo('dataset'); return; }
+    if (action === 'footer-continue-dataset') { if(window.saveLabelBatchAndContinue) await window.saveLabelBatchAndContinue(); return; }
 
     if (action === 'analyze-file') {
       const fileName = target.getAttribute('data-file');
@@ -290,6 +290,8 @@ const App = (() => {
     currentView = viewName;
     const datasetFooter=document.getElementById('ds-footer-controls');
     if(datasetFooter) datasetFooter.hidden=viewName!=='dataset';
+    const labelFooter=document.getElementById('label-batch-footer');
+    if(labelFooter) labelFooter.hidden=viewName!=='etiquetado';
     const windowsFooter=document.getElementById('win-footer-controls');
     if(windowsFooter) windowsFooter.hidden=viewName!=='ventanas';
     const continueLabelingBtn = document.getElementById('btn-continue-labeling');
