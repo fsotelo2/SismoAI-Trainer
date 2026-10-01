@@ -114,7 +114,12 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
         optimizer = torch.optim.AdamW(model.parameters(), lr=float(training["learning_rate"]))
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=float(training["learning_rate"]))
-    criterion = nn.CrossEntropyLoss()
+    if training.get("class_weighting"):
+        counts = np.bincount(np.asarray(y_train, dtype=np.int64), minlength=2).astype(np.float32)
+        weights = np.where(counts > 0, len(y_train) / np.maximum(counts, 1) / 2.0, 0.0)
+        criterion = nn.CrossEntropyLoss(weight=torch.tensor(weights, dtype=torch.float32))
+    else:
+        criterion = nn.CrossEntropyLoss()
     xt = torch.from_numpy(np.asarray(x_train, dtype=np.float32))
     yt = torch.from_numpy(np.asarray(y_train, dtype=np.int64))
     xv = torch.from_numpy(np.asarray(x_val, dtype=np.float32))
