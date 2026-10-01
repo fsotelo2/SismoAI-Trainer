@@ -1032,7 +1032,8 @@ class ApiBridge:
     def _dataset_filename(name):
         """Convert a display name into a safe, portable JSON filename."""
         value = str(name or "").strip()[:80]
-        value = re.sub(r'[<>:"/\\\\|?*\\x00-\\x1f]', "_", value)
+        invalid = set('<>:"/\\|?*')
+        value = "".join("_" if char in invalid or ord(char) < 32 else char for char in value)
         value = value.rstrip(" .")
         return (value or "Dataset_sin_nombre") + ".json"
 
