@@ -31,6 +31,7 @@ from core.windowing import persistence as window_persistence
 from core.labeling.service import LabelingService
 from core.labeling.models import LabelingError
 from core.dataset.service import build_manifest, save_manifest, DatasetError
+from core.pipeline import manifests as pipeline_manifests
 
 
 def _sanitize_nan(obj):
@@ -56,6 +57,8 @@ class ApiBridge:
         self._window_sequence = 0
         self._restore_windows()
         self._labeling = LabelingService()
+        self._window_selection_dir = os.path.join(os.path.dirname(self._window_path), 'window_selections')
+        self._active_window_selection = None
         self._legacy_global_dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
         self._dataset_dir = ""
         self._dataset_path = ""
@@ -1288,12 +1291,43 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
+    def create_window_selection(self, name):
+        try:
+            records = [item.to_dict() for item in self._window_records
+                       if item.selection_status == "include"]
+            manifest, path = pipeline_manifests.create_manifest(
+                self._window_selection_dir, "windows", name, records)
+            self._active_window_selection = manifest
+            return {"success": True, "selection": manifest, "filename": os.path.basename(path)}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def get_window_selections(self):
+        try:
+            return {"success": True, "items": pipeline_manifests.list_manifests(
+                self._window_selection_dir, "windows")}
+        except Exception as exc:
+            return {"success": False, "error": str(exc), "items": []}
+
+    def select_window_selection(self, filename):
+        try:
+            manifest = pipeline_manifests.load_manifest(
+                self._window_selection_dir, "windows", filename)
+            self._active_window_selection = manifest
+            return {"success": True, "selection": manifest}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
     def get_labeling_workspace(self) -> dict:
         """Return windows with their current labels and aggregate counts."""
         try:
-            windows = [item.to_dict() for item in self._window_records
-                       if item.selection_status == "include"]
-            items = self._labeling.list_labels(windows)
+            if self._active_window_selection:
+                windows = self._active_window_selection.get("records", [])
+                items = [{"window": dict(window), "label": None} for window in windows]
+            else:
+                windows = [item.to_dict() for item in self._window_records
+                           if item.selection_status == "include"]
+                items = self._labeling.list_labels(windows)
             counts = {"total": len(items), "pending": 0, "labeled": 0, "review": 0}
             for item in items:
                 label = item.get("label")
