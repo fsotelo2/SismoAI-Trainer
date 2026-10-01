@@ -59,6 +59,7 @@ class ApiBridge:
         self._labeling = LabelingService()
         self._window_selection_dir = os.path.join(os.path.dirname(self._window_path), 'window_selections')
         self._active_window_selection = None
+        self._active_label_batch = None
         self._legacy_global_dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
         self._dataset_dir = ""
         self._dataset_path = ""
@@ -1101,12 +1102,44 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc), "datasets": [], "active_dataset": None}
 
+    def create_label_batch(self, name):
+        try:
+            workspace = self.get_labeling_workspace()
+            items = workspace.get("items", [])
+            if not items or any(not x.get("label") for x in items):
+                return {"success": False, "error": "Todas las ventanas deben estar etiquetadas antes de guardar."}
+            source_id = (self._active_window_selection or {}).get("id")
+            if not source_id and self._active_label_batch:
+                source_id = self._active_label_batch.get("source_id")
+            manifest, path = pipeline_manifests.create_manifest(
+                os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados"),
+                "labels", name, items, source_id=source_id)
+            self._active_label_batch = manifest
+            return {"success": True, "batch": manifest, "filename": os.path.basename(path)}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def get_label_batches(self):
+        folder = os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados")
+        return {"success": True, "items": pipeline_manifests.list_manifests(folder, "labels")}
+
+    def select_label_batch(self, filename):
+        try:
+            folder = os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados")
+            self._active_label_batch = pipeline_manifests.load_manifest(folder, "labels", filename)
+            return {"success": True, "batch": self._active_label_batch}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
     def get_dataset_workspace(self) -> dict:
         try:
-            items = self._labeling.list_labels([
-                item.to_dict() for item in self._window_records
-                if item.selection_status == "include"
-            ])
+            if self._active_label_batch:
+                items = [dict(x) for x in self._active_label_batch.get("records", [])]
+            else:
+                items = self._labeling.list_labels([
+                    item.to_dict() for item in self._window_records
+                    if item.selection_status == "include"
+                ])
             counts = {"total": len(items), "labeled": 0, "pending": 0, "classes": {"0": 0, "1": 0}, "events": 0}
             events = set()
             for item in items:
@@ -1227,6 +1260,8 @@ class ApiBridge:
                 raise DatasetError(workspace.get("error", "No se pudo leer Etiquetado."))
             ratios = ratios or [0.70, 0.15, 0.15]
             manifest = build_manifest(workspace["items"], tuple(ratios), seed)
+            manifest["source_label_batch_id"] = (self._active_label_batch or {}).get("id")
+            manifest["source_selection_id"] = (self._active_label_batch or {}).get("source_id")
             if name is not None:
                 manifest["name"] = str(name).strip()[:80] or "Dataset_sin_nombre"
             else:
@@ -1298,9 +1333,19 @@ class ApiBridge:
         try:
             records = [item.to_dict() for item in self._window_records
                        if item.selection_status == "include"]
+            manifest_id = None
+            # IDs are local to the immutable selection; the composite ref is globally unique.
+            for record in records:
+                record["window_ref"] = None
             manifest, path = pipeline_manifests.create_manifest(
                 self._window_selection_dir, "windows", name, records)
+            for record in manifest["records"]:
+                record["window_ref"] = manifest["id"] + "::" + str(record.get("window_id"))
+            # Persist the refs in the saved file after UUID creation.
+            from core.pipeline.manifests import _atomic_json
+            _atomic_json(path, manifest)
             self._active_window_selection = manifest
+            self._active_label_batch = None
             return {"success": True, "selection": manifest, "filename": os.path.basename(path)}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1322,9 +1367,11 @@ class ApiBridge:
             return {"success": False, "error": str(exc)}
 
     def get_labeling_workspace(self) -> dict:
-        """Return windows with their current labels and aggregate counts."""
+        """Return the records of the selected immutable window selection."""
         try:
-            if self._active_window_selection:
+            if self._active_label_batch:
+                items = [dict(x) for x in self._active_label_batch.get("records", [])]
+            elif self._active_window_selection:
                 windows = self._active_window_selection.get("records", [])
                 items = [{"window": dict(window), "label": None} for window in windows]
             else:
