@@ -12,6 +12,14 @@ import uuid
 class DatasetError(ValueError):
     pass
 
+def _event_index(value):
+    """Return the source event's zero-based index when the ID is numeric."""
+    try:
+        index = int(value)
+        return index if index >= 0 else None
+    except (TypeError, ValueError):
+        return None
+
 def _group_key(window):
     event = window.get("source_event_id")
     if event is None or str(event).strip() == "":
@@ -51,9 +59,24 @@ def build_manifest(items, ratios=(0.70, 0.15, 0.15), seed=42):
             warnings.append(f"La partición {name} no contiene ambas clases.")
     return {"schema":"sismoai-dataset","schema_version":1,"dataset_id":str(uuid.uuid4()),
       "created_at":datetime.now(timezone.utc).isoformat(),"seed":seed,"ratios":list(ratios),
-      "splits":{name:[{"window_id":x["window"]["window_id"],"source_file":x["window"].get("source_file"),
-        "source_event_id":x["window"].get("source_event_id"),"class_code":x["label"]["class_code"]} for x in rows]
-        for name,rows in zip(("train","validation","test"),parts)},
+      "splits":{name:[{
+        "window_id":x["window"]["window_id"],
+        "source_file":x["window"].get("source_file"),
+        "source_event_id":x["window"].get("source_event_id"),
+        "event_index":_event_index(x["window"].get("source_event_id")),
+        "start_us":x["window"].get("start_us"),
+        "end_us":x["window"].get("end_us"),
+        "duration_us":((x["window"].get("end_us") or 0)-(x["window"].get("start_us") or 0)),
+        "time_reference":"event_relative",
+        "sensors":list(x["window"].get("sensors") or []),
+        "sample_ranges":x["window"].get("sample_ranges") or {},
+        "sampling_info":x["window"].get("sampling_info") or {},
+        "source_hash":x["window"].get("source_hash"),
+        "event_interval":x["window"].get("event_interval"),
+        "origin_mode":x["window"].get("origin_mode"),
+        "window_config":x["window"].get("window_config") or {},
+        "class_code":x["label"]["class_code"]
+      } for x in rows] for name,rows in zip(("train","validation","test"),parts)},
       "summary":{"all":summarize(items),"train":summarize(parts[0]),"validation":summarize(parts[1]),"test":summarize(parts[2])},
       "warnings":warnings}
 
