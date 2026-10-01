@@ -67,6 +67,7 @@ const Bridge = (() => {
     selectWindowSelection: (filename) => call('select_window_selection', filename),
     createLabelBatch: (name) => call('create_label_batch', name),
     getLabelBatches: () => call('get_label_batches'),
+    deleteLabelBatch: (filename) => call('delete_label_batch', filename),
     selectLabelBatch: (filename) => call('select_label_batch', filename),
     getDatasetWorkspace: () => call('get_dataset_workspace'),
     getDatasetCatalog: () => call('get_dataset_catalog'),
