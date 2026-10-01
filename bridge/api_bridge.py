@@ -1072,6 +1072,27 @@ class ApiBridge:
             save_manifest(desired, data)
         self._dataset_path = desired
 
+    def get_dataset_catalog(self) -> dict:
+        """Return saved Dataset manifests without depending on labeling/window workspace."""
+        try:
+            datasets = self._list_dataset_manifests()
+            active = self._active_dataset
+            active_path = self._dataset_path
+            # Restore from disk if the in-memory selection is absent or stale.
+            if not active or not active.get("dataset_id"):
+                self._restore_dataset()
+                active = self._active_dataset
+                active_path = self._dataset_path
+            return {
+                "success": True,
+                "datasets": datasets,
+                "active_dataset": active,
+                "manifest_path": active_path,
+                "dataset_dir": self._dataset_dir,
+            }
+        except Exception as exc:
+            return {"success": False, "error": str(exc), "datasets": [], "active_dataset": None}
+
     def get_dataset_workspace(self) -> dict:
         try:
             items = self._labeling.list_labels([
