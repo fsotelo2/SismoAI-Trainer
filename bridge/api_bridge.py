@@ -1373,3 +1373,111 @@ class ApiBridge:
             return {"success": True, "experiment_id": record["experiment_id"]}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
+
+
+    def get_model_training_state(self) -> dict:
+        state = getattr(self, "_model_training_state", None)
+        if state is None:
+            return {"success": True, "status": "idle", "epoch": 0, "epochs": 0}
+        return {"success": True, **state}
+
+    def start_model_training(self, config: dict, dataset_id: str) -> dict:
+        """Prepare manifest-referenced windows and launch one background PC training job."""
+        import threading
+        import numpy as np
+        try:
+            if getattr(self, "_model_training_thread", None) and self._model_training_thread.is_alive():
+                return {"success": False, "error": "Ya existe un entrenamiento en ejecución."}
+            if not self._active_dataset or str(self._active_dataset.get("dataset_id")) != str(dataset_id):
+                raise ValueError("El dataset activo cambió. Actualiza la vista.")
+            if not isinstance(config, dict) or config.get("target") != "esp32s3":
+                raise ValueError("Configuración o destino no válido.")
+            # The training configuration must be registered before execution.
+            registry = self.get_model_experiments().get("experiments", [])
+            record = next((x for x in reversed(registry)
+                           if x.get("dataset_id") == str(dataset_id)
+                           and x.get("config") == config), None)
+            if record is None:
+                saved = self.save_model_experiment(
+                    config, dataset_id, self._active_dataset.get("name", "Dataset")
+                )
+                if not saved.get("success"):
+                    raise ValueError(saved.get("error", "No se pudo registrar el experimento."))
+                registry = self.get_model_experiments().get("experiments", [])
+                record = next(x for x in reversed(registry)
+                              if x.get("experiment_id") == saved.get("experiment_id"))
+            if record.get("status") == "trained":
+                raise ValueError("Esta configuración ya tiene una ejecución registrada; guarda una nueva configuración para repetirla.")
+            manifest = self._active_dataset
+            splits = manifest.get("splits") or {}
+            window_by_id = {w.window_id: w for w in self._window_records}
+            sensor_mode = config.get("input", "geo_mpu")
+            sensors = {"geo_mpu": ("GEO", "MPU"), "geo": ("GEO",), "mpu": ("MPU",)}.get(sensor_mode)
+            if not sensors:
+                raise ValueError("Selección de señales no reconocida.")
+            points = 256
+            arrays = {}
+            for split_name in ("train", "validation", "test"):
+                rows = splits.get(split_name, [])
+                xs, ys = [], []
+                for item in rows:
+                    wid = item.get("window_id")
+                    window = window_by_id.get(wid)
+                    if window is None:
+                        raise ValueError("No se encontró la ventana del dataset: " + str(wid))
+                    signal = self.get_window_signal(wid)
+                    if not signal.get("success"):
+                        raise ValueError(signal.get("error", "No se pudo leer una ventana."))
+                    channels = []
+                    for sensor in sensors:
+                        channel = (signal.get("signals") or {}).get(sensor) or {}
+                        if channel.get("error") or len(channel.get("amplitudes") or []) < 2:
+                            raise ValueError("La ventana " + str(wid) + " no tiene muestras válidas de " + sensor + ".")
+                        values = np.asarray(channel["amplitudes"], dtype=np.float32)
+                        times = np.asarray(channel["times"], dtype=np.float64)
+                        if not np.all(np.isfinite(values)) or len(times) != len(values):
+                            raise ValueError("Datos no finitos o desalineados en ventana " + str(wid) + ".")
+                        target = np.linspace(float(times[0]), float(times[-1]), points)
+                        values = np.interp(target, times, values).astype(np.float32)
+                        std = float(values.std())
+                        values = (values - float(values.mean())) / (std if std > 1e-8 else 1.0)
+                        channels.append(values)
+                    xs.append(np.stack(channels))
+                    ys.append(int(item.get("class_code")))
+                arrays[split_name] = (np.stack(xs).astype(np.float32) if xs else np.empty((0,len(sensors),points),dtype=np.float32),
+                                      np.asarray(ys,dtype=np.int64))
+            output_dir = os.path.join(os.path.dirname(self._dataset_path), "models",
+                                      str(record["experiment_id"]))
+            self._model_training_state = {"status":"preparing","epoch":0,
+                "epochs":int((config.get("training") or {}).get("epochs",0)),
+                "experiment_id":record["experiment_id"],"error":None,"progress":None}
+            def worker():
+                try:
+                    from core.models.trainer import train_experiment
+                    def on_progress(p):
+                        self._model_training_state.update(status="running",epoch=p["epoch"],progress=p)
+                    result=train_experiment(config,arrays,output_dir,on_progress)
+                    self._model_training_state.update(status="completed",result=result,
+                        epoch=result["epochs_completed"],error=None)
+                    self._update_model_record(record["experiment_id"],{"status":"trained","training_result":result})
+                except Exception as exc:
+                    self._model_training_state.update(status="error",error=str(exc))
+                    self._update_model_record(record["experiment_id"],{"status":"error","error":str(exc)})
+            self._model_training_thread=threading.Thread(target=worker,name="SismoAI-ModelTraining",daemon=True)
+            self._model_training_thread.start()
+            return {"success":True,"experiment_id":record["experiment_id"],"status":"preparing",
+                    "samples":{k:len(v[1]) for k,v in arrays.items()}}
+        except Exception as exc:
+            return {"success":False,"error":str(exc)}
+
+    def _update_model_record(self, experiment_id: str, changes: dict) -> None:
+        registry=self.get_model_experiments().get("experiments",[])
+        for item in registry:
+            if item.get("experiment_id")==experiment_id:
+                item.update(changes);break
+        path=self._models_registry_path()
+        os.makedirs(os.path.dirname(path),exist_ok=True)
+        temp=path+".tmp"
+        with open(temp,"w",encoding="utf-8") as stream:
+            json.dump(registry,stream,ensure_ascii=False,indent=2,allow_nan=False)
+        os.replace(temp,path)
