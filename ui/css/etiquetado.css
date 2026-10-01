@@ -12,8 +12,8 @@
 .labeling-view>.label-batches-panel{
   display:flex;
   flex-direction:column;
-  flex:1 1 0;
-  min-height:0;
+  flex:0 0 230px;
+  min-height:150px;
   min-width:0;
   overflow:hidden;
   padding:10px;
@@ -93,3 +93,6 @@
 @media(max-width:760px){
   .label-batches-panel .label-batch-save-controls .form-input{flex:1 1 100%;width:100%;max-width:none}
 }
+
+/* Reserve a compact bottom management panel; keep labeling workspace above it. */
+.labeling-view>.label-batches-panel{flex:0 0 230px;min-height:150px}
