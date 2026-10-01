@@ -43,3 +43,45 @@
 .windows-source strong{margin:0 4px;white-space:nowrap}
 .windows-source button{flex:0 0 auto}
 
+
+/* Footer controls: keep selection naming, save and continue aligned in one row. */
+.app-footer #win-footer-controls{
+  flex:1 1 auto;
+  min-width:0;
+  margin-left:auto;
+  justify-content:flex-end;
+  gap:8px;
+}
+.app-footer #win-footer-controls label{
+  flex:0 0 auto;
+  white-space:nowrap;
+  font-size:13px;
+}
+.app-footer #win-footer-controls input{
+  flex:0 1 220px;
+  width:220px;
+  min-width:120px;
+  max-width:22vw;
+}
+.app-footer #win-footer-controls span{
+  flex:1 1 140px;
+  min-width:0;
+  max-width:230px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.app-footer #btn-continue-labeling{
+  flex:0 0 auto;
+  margin-left:8px;
+  white-space:nowrap;
+}
+@media(max-width:1100px){
+  .app-footer #win-footer-controls span{display:none}
+  .app-footer #win-footer-controls input{flex-basis:170px;max-width:20vw}
+}
+@media(max-width:760px){
+  .app-footer #win-footer-controls label{display:none}
+  .app-footer #win-footer-controls input{flex:1 1 120px;max-width:none}
+  .app-footer #btn-continue-labeling{padding:8px 10px;font-size:13px}
+}
