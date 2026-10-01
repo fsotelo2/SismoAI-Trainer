@@ -55,10 +55,12 @@ class ApiBridge:
         self._window_sequence = 0
         self._restore_windows()
         self._labeling = LabelingService()
-        self._dataset_dir = os.path.join(os.path.dirname(self._window_path), 'Dataset')
-        self._dataset_path = os.path.join(self._dataset_dir, 'dataset_activo.json')
-        self._legacy_dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
+        self._legacy_global_dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
+        self._dataset_dir = ""
+        self._dataset_path = ""
+        self._legacy_dataset_path = ""
         self._active_dataset = None
+        self._configure_dataset_paths()
         self._restore_dataset()
 
         # Wire callbacks for potential future async notifications
@@ -101,6 +103,9 @@ class ApiBridge:
                 return {"path": "", "file_count": 0, "status": "error"}
 
             self._project.select_folder(folder)
+            self._configure_dataset_paths()
+            self._active_dataset = None
+            self._restore_dataset()
 
             # Wait for scan to complete (simplified: synchronous check)
             import time
@@ -133,6 +138,7 @@ class ApiBridge:
             return {
                 "state": self._project.state,
                 "folder_path": self._project.folder_path,
+                "dataset_manifest_path": self._dataset_path,
                 "file_count": self._project.file_count_text,
                 "event_count": self._project.event_count_text,
                 "available_text": self._project.available_text,
@@ -1008,10 +1014,28 @@ class ApiBridge:
     # 7. Human window labeling
     # ------------------------------------------------------------------
 
+    def _configure_dataset_paths(self):
+        """Use the selected project folder as the root for Dataset artifacts."""
+        project_root = self._project.folder_path
+        if project_root:
+            root = os.path.abspath(os.path.expanduser(project_root))
+            self._dataset_dir = os.path.join(root, "Dataset")
+            self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
+            self._legacy_dataset_path = os.path.join(root, "dataset.json")
+        else:
+            # Until a project is selected, keep the application-level fallback.
+            base = os.path.dirname(self._window_path)
+            self._dataset_dir = os.path.join(base, "Dataset")
+            self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
+            self._legacy_dataset_path = os.path.join(base, "dataset.json")
+
     def _restore_dataset(self):
         # Prefer the canonical Dataset folder; migrate the previous root-level file
         # transparently so existing local projects keep their active dataset.
-        for candidate in (self._dataset_path, self._legacy_dataset_path):
+        candidates = [self._dataset_path, self._legacy_dataset_path]
+        if not self._project.folder_path:
+            candidates.append(self._legacy_global_dataset_path)
+        for candidate in candidates:
             try:
                 with open(candidate, encoding="utf-8") as stream:
                     data = json.load(stream)
