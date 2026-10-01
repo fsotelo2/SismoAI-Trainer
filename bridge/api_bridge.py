@@ -1550,6 +1550,13 @@ class ApiBridge:
             if not registry_result.get("success"):
                 raise ValueError("No se pudo leer el registro de experimentos: " + registry_result.get("error", "error desconocido"))
             registry = registry_result.get("experiments", [])
+            # Reuse the existing experiment when the dataset and full configuration match.
+            existing = next((item for item in reversed(registry)
+                if isinstance(item, dict)
+                and item.get("dataset_id") == str(dataset_id)
+                and item.get("config") == config), None)
+            if existing is not None:
+                return {"success": True, "experiment_id": existing.get("experiment_id"), "existing": True}
             import uuid
             from datetime import datetime
             record = {
@@ -1559,6 +1566,7 @@ class ApiBridge:
                 "dataset_id": str(dataset_id),
                 "dataset_name": str(dataset_name),
                 "config": config,
+                "runs": [],
             }
             registry.append(record)
             path = self._models_registry_path()
@@ -1571,6 +1579,42 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
+
+    def delete_model_experiment(self, experiment_id: str) -> dict:
+        """Delete one saved experiment record without deleting model weight files."""
+        try:
+            experiment_id = str(experiment_id or "").strip()
+            if not experiment_id:
+                raise ValueError("Identificador de experimento no válido.")
+            thread = getattr(self, "_model_training_thread", None)
+            state = getattr(self, "_model_training_state", {}) or {}
+            if thread and thread.is_alive() and state.get("experiment_id") == experiment_id:
+                raise ValueError("No se puede eliminar un experimento mientras está entrenando.")
+            lock = getattr(self, "_model_registry_lock", None)
+            if lock is None:
+                import threading
+                self._model_registry_lock = threading.RLock()
+                lock = self._model_registry_lock
+            with lock:
+                result = self.get_model_experiments()
+                if not result.get("success"):
+                    raise ValueError("No se pudo leer el registro: " + result.get("error", "error desconocido"))
+                registry = result.get("experiments", [])
+                updated = [item for item in registry
+                           if not isinstance(item, dict) or item.get("experiment_id") != experiment_id]
+                if len(updated) == len(registry):
+                    raise ValueError("Experimento no encontrado.")
+                path = self._models_registry_path()
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                temp = path + ".tmp"
+                with open(temp, "w", encoding="utf-8") as stream:
+                    json.dump(updated, stream, ensure_ascii=False, indent=2, allow_nan=False)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.replace(temp, path)
+            return {"success": True, "experiment_id": experiment_id}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
 
     def get_model_training_state(self) -> dict:
         state = getattr(self, "_model_training_state", None)
@@ -1613,8 +1657,6 @@ class ApiBridge:
                                    if x.get("experiment_id") == saved.get("experiment_id")), None)
                 if record is None:
                     raise ValueError("No se encontró el experimento recién registrado.")
-                if record.get("status") == "trained":
-                    raise ValueError("Esta configuración ya tiene una ejecución registrada; guarda una nueva configuración para repetirla.")
                 # Freeze the manifest/config references for this run. Window records are
                 # copied as a lookup; signal loading remains in the worker.
                 import copy
@@ -1685,7 +1727,12 @@ class ApiBridge:
                                 self._model_training_state.update(status="running",
                                     epoch=progress["epoch"], progress=progress)
                         result = train_experiment(config_snapshot, arrays, output_dir, on_progress)
-                        self._update_model_record(experiment_id, {"status": "trained", "training_result": result})
+                        finished_at = __import__("datetime").datetime.now().astimezone().isoformat(timespec="seconds")
+                        current = self.get_model_experiments().get("experiments", [])
+                        prior = next((x for x in current if x.get("experiment_id") == experiment_id), {})
+                        runs = list(prior.get("runs", []))
+                        runs.append({"run_number": len(runs) + 1, "finished_at": finished_at, "training_result": result})
+                        self._update_model_record(experiment_id, {"status": "trained", "training_result": result, "runs": runs, "error": None})
                         with self._model_training_lock:
                             self._model_training_state.update(status="completed", result=result,
                                 epoch=result["epochs_completed"], error=None)
