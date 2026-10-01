@@ -1,5 +1,37 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.5.0] — Entrenamiento de modelos y estructura oficial del workspace
+
+**Fecha:** 2026-10-01  
+**Rama de integración:** `main`  
+**Rama de origen:** `Fase-9-Modelos`  
+**Versión anterior:** 0.4.0  
+**Tipo:** MINOR
+
+**Justificación:** se incorpora la fase 9, correspondiente al módulo de Modelos y su integración con el Dataset preparado. Se consolida además la estructura de interfaz actualmente validada como oficial.
+
+**Cambios**
+
+- **Added:** módulo Modelos integrado en la navegación y conectado con el Dataset activo.
+- **Added:** flujo de configuración y entrenamiento de modelos, con registro de resultados y artefactos asociados.
+- **Added:** integración de backend, puente de aplicación y componentes de interfaz para la fase 9.
+- **Changed:** actualización de la estructura visual del workspace y de la distribución de las vistas, incluyendo Ventanas, Etiquetado, Dataset y Modelos.
+- **Added:** documentación de arquitectura del layout y registros de implementación y validación de la fase 9.
+
+**Verificación**
+
+- Fase 9 validada funcionalmente por el usuario en ejecución local.
+- No se declara una nueva ejecución automatizada de pruebas como parte de esta integración.
+
+**Compatibilidad**
+
+- La fase 9 consume el Dataset preparado en la fase anterior.
+- Se conserva como oficial la implementación actual de la interfaz validada en la rama de origen.
+
+---
+
+# SismoAI Trainer — Historial de versiones
+
 ## [v0.4.0] — Preparación y generación de Dataset
 
 **Fecha:** 2026-09-30  
