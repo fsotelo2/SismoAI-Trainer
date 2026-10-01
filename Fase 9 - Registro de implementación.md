@@ -75,3 +75,13 @@ La verificación visual/integral requiere abrir la aplicación de escritorio en 
 
 - Se añadió un traspaso directo del manifiesto recién generado desde Dataset hacia Modelos, evitando depender de una segunda consulta al puente para mostrar el Dataset activo.
 - Si falla la generación, se reactiva el botón «Generar dataset» y se muestra el error devuelto por el puente.
+
+
+## Persistencia del Dataset para Modelos
+
+- `Generar Dataset` guarda el manifiesto activo en `Dataset/dataset_activo.json`, dentro del directorio de datos persistentes de la aplicación.
+- El JSON incluye `dataset_id`, `name`, `seed`, `ratios`, `splits` (train/validation/test), `summary`, `warnings` y `model_contract`.
+- `model_contract` define clasificación binaria, clases 0/1, framework PyTorch, modos de entrada, forma de tensor, 256 puntos por ventana, normalización y particiones requeridas.
+- Modelos consume el manifiesto activo desde el backend; las filas del manifiesto referencian ventanas persistidas por `window_id`, y el backend obtiene sus señales fuente al preparar el entrenamiento.
+- En el primer arranque con un manifiesto antiguo en `dataset.json`, se intenta migrarlo al nuevo destino sin eliminar el archivo anterior.
+- Pendiente de validación local: confirmar que la ruta de datos y la restauración funcionan en la instalación del usuario y ejecutar entrenamiento de extremo a extremo.
