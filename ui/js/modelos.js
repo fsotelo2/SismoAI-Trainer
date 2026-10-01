@@ -12,7 +12,7 @@ const d=r?.active_dataset||r?.dataset||r?.manifest||null,b=$('models-dataset-bad
 dataset=null;
 const available=Array.isArray(r?.datasets)?r.datasets:[];
 selector.innerHTML=available.length?available.map(x=>'<option value="'+esc(x.filename)+'"'+(d&&x.dataset_id===d.dataset_id?' selected':'')+'>'+esc(x.name||x.filename)+' · '+esc(formatDate(x.created_at))+'</option>').join(''):'<option value="">No hay archivos Dataset disponibles</option>';
-selector.disabled=available.length===0;
+selector.disabled=available.length===0;const deleteButton=$('models-delete-dataset');if(deleteButton)deleteButton.disabled=available.length===0;
 if(!r?.success){
  b.textContent='Error de consulta';b.className='badge badge-warning';
  $('models-dataset-summary').textContent=r?.error||'No se pudo consultar la carpeta Dataset.';
