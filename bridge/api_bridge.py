@@ -11,6 +11,7 @@ Usage in JavaScript:
 import os
 import json
 import math
+import re
 from typing import Optional
 
 from core.project.service import ProjectService
@@ -1015,38 +1016,60 @@ class ApiBridge:
     # ------------------------------------------------------------------
 
     def _configure_dataset_paths(self):
-        """Use the selected project folder as the root for Dataset artifacts."""
+        """Use the selected project folder as root; manifests are named after datasets."""
         project_root = self._project.folder_path
         if project_root:
             root = os.path.abspath(os.path.expanduser(project_root))
             self._dataset_dir = os.path.join(root, "Dataset")
-            self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
             self._legacy_dataset_path = os.path.join(root, "dataset.json")
         else:
-            # Until a project is selected, keep the application-level fallback.
             base = os.path.dirname(self._window_path)
             self._dataset_dir = os.path.join(base, "Dataset")
-            self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
             self._legacy_dataset_path = os.path.join(base, "dataset.json")
+        self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
+
+    @staticmethod
+    def _dataset_filename(name):
+        """Convert a display name into a safe, portable JSON filename."""
+        value = str(name or "").strip()[:80]
+        value = re.sub(r'[<>:"/\\\\|?*\\x00-\\x1f]', "_", value)
+        value = value.rstrip(" .")
+        return (value or "Dataset_sin_nombre") + ".json"
 
     def _restore_dataset(self):
-        # Prefer the canonical Dataset folder; migrate the previous root-level file
-        # transparently so existing local projects keep their active dataset.
-        candidates = [self._dataset_path, self._legacy_dataset_path]
+        # Load the most recently created valid named manifest in this project.
+        candidates = []
+        try:
+            if os.path.isdir(self._dataset_dir):
+                candidates = [
+                    os.path.join(self._dataset_dir, filename)
+                    for filename in os.listdir(self._dataset_dir)
+                    if filename.lower().endswith(".json")
+                ]
+        except OSError:
+            candidates = []
+        candidates.extend([self._legacy_dataset_path])
         if not self._project.folder_path:
             candidates.append(self._legacy_global_dataset_path)
+        valid = []
         for candidate in candidates:
             try:
                 with open(candidate, encoding="utf-8") as stream:
                     data = json.load(stream)
                 if data.get("schema") == "sismoai-dataset" and data.get("schema_version") == 1:
-                    self._active_dataset = data
-                    if candidate != self._dataset_path:
-                        save_manifest(self._dataset_path, data)
-                    return
+                    valid.append((str(data.get("created_at", "")), candidate, data))
             except (OSError, ValueError, TypeError):
                 continue
-        self._active_dataset = None
+        if not valid:
+            self._active_dataset = None
+            self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
+            return
+        _, candidate, data = max(valid, key=lambda item: item[0])
+        self._active_dataset = data
+        desired = os.path.join(self._dataset_dir, self._dataset_filename(data.get("name")))
+        if os.path.abspath(candidate) != os.path.abspath(desired):
+            save_manifest(desired, data)
+        self._dataset_path = desired
 
     def get_dataset_workspace(self) -> dict:
         try:
@@ -1095,6 +1118,7 @@ class ApiBridge:
                 "classes": {"0": "TEMBLOR", "1": "NO_SISMICO"},
                 "required_splits": ["train", "validation", "test"],
             }
+            self._dataset_path = os.path.join(self._dataset_dir, self._dataset_filename(manifest["name"]))
             save_manifest(self._dataset_path, manifest)
             self._active_dataset = manifest
             return {"success": True, "dataset": manifest, "manifest_path": self._dataset_path}
