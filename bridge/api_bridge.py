@@ -60,6 +60,7 @@ class ApiBridge:
         self._window_selection_dir = os.path.join(os.path.dirname(self._window_path), 'window_selections')
         self._active_window_selection = None
         self._active_label_batch = None
+        self._active_label_items = []
         self._legacy_global_dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
         self._dataset_dir = ""
         self._dataset_path = ""
@@ -1127,6 +1128,7 @@ class ApiBridge:
         try:
             folder = os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados")
             self._active_label_batch = pipeline_manifests.load_manifest(folder, "labels", filename)
+            self._active_label_items = self._active_label_batch.get("records", [])
             return {"success": True, "batch": self._active_label_batch}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1344,6 +1346,7 @@ class ApiBridge:
             _atomic_json(path, manifest)
             self._active_window_selection = manifest
             self._active_label_batch = None
+            self._active_label_items = [{"window": dict(w), "label": None} for w in manifest["records"]]
             return {"success": True, "selection": manifest, "filename": os.path.basename(path)}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1361,6 +1364,7 @@ class ApiBridge:
                 self._window_selection_dir, "windows", filename)
             self._active_window_selection = manifest
             self._active_label_batch = None
+            self._active_label_items = [{"window": dict(w), "label": None} for w in manifest["records"]]
             return {"success": True, "selection": manifest}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1371,8 +1375,7 @@ class ApiBridge:
             if self._active_label_batch:
                 items = [dict(x) for x in self._active_label_batch.get("records", [])]
             elif self._active_window_selection:
-                windows = self._active_window_selection.get("records", [])
-                items = [{"window": dict(window), "label": None} for window in windows]
+                items = self._active_label_items
             else:
                 items = []
             counts = {"total": len(items), "pending": 0, "labeled": 0, "review": 0}
@@ -1419,10 +1422,7 @@ class ApiBridge:
     def save_window_label(self, window_id: str, payload: dict, window_ref=None) -> dict:
         """Save annotation in the active batch, using the selection-scoped reference."""
         try:
-            target_items = (self._active_label_batch or {}).get("records", [])
-            if not target_items and self._active_window_selection:
-                target_items = [{"window": w, "label": None}
-                                for w in self._active_window_selection.get("records", [])]
+            target_items = (self._active_label_batch or {}).get("records", []) or self._active_label_items
             entry = next((x for x in target_items
                           if (x.get("window") or {}).get("window_id") == window_id
                           and (not window_ref or (x.get("window") or {}).get("window_ref") == window_ref)), None)
