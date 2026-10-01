@@ -1435,8 +1435,14 @@ class ApiBridge:
                             raise ValueError("La ventana " + str(wid) + " no tiene muestras válidas de " + sensor + ".")
                         values = np.asarray(channel["amplitudes"], dtype=np.float32)
                         times = np.asarray(channel["times"], dtype=np.float64)
-                        if not np.all(np.isfinite(values)) or len(times) != len(values):
+                        if (not np.all(np.isfinite(values)) or not np.all(np.isfinite(times))
+                                or len(times) != len(values)):
                             raise ValueError("Datos no finitos o desalineados en ventana " + str(wid) + ".")
+                        if np.any(np.diff(times) <= 0):
+                            raise ValueError("Los tiempos deben ser estrictamente crecientes en ventana " + str(wid) + ".")
+                        code = item.get("class_code")
+                        if isinstance(code, bool) or not isinstance(code, (int, np.integer)) or code not in (0, 1):
+                            raise ValueError("Código de clase inválido en ventana " + str(wid) + ".")
                         target = np.linspace(float(times[0]), float(times[-1]), points)
                         values = np.interp(target, times, values).astype(np.float32)
                         std = float(values.std())
