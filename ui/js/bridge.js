@@ -64,6 +64,7 @@ const Bridge = (() => {
     getDatasetCatalog: () => call('get_dataset_catalog'),
     selectDataset: (filename) => call('select_dataset', filename),
     getModelExperiments: () => call('get_model_experiments'),
+    deleteModelExperiment: (experimentId) => call('delete_model_experiment', experimentId),
     saveModelExperiment: (config, datasetId, datasetName) => call('save_model_experiment', config, datasetId, datasetName),
     startModelTraining: (config, datasetId) => call('start_model_training', config, datasetId),
     getModelTrainingState: () => call('get_model_training_state'),
