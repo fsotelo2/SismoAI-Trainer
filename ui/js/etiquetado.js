@@ -69,12 +69,23 @@
     const item=current();if(!item)return;
     const l=item.label||{};
     if(l.class_code!==0&&l.class_code!==1){$('label-message').textContent='Selecciona una clase principal antes de guardar.';return;}
-    const r=await Bridge.saveWindowLabel(selectedId,{class_code:l.class_code,disturbance:l.class_code===1?(l.disturbance||null):null,quality_review:l.quality_review||'pending',observations:l.observations||''});
+    const r=await Bridge.saveWindowLabel(selectedId,{class_code:l.class_code,disturbance:l.class_code===1?(l.disturbance||null):null,quality_review:l.quality_review||'pending',observations:l.observations||''},item.window.window_ref);
     if(!r?.success){$('label-message').textContent=r?.error||'No se pudo guardar.';return;}
     item.label=r.label;item._savedLabel=JSON.parse(JSON.stringify(r.label));dirty=false;updateDatasetButton();$('label-dirty').textContent='Sin cambios';$('label-message').textContent='Etiqueta guardada.';
     if(next){const i=filtered.findIndex(x=>x.window.window_id===selectedId);selectedId=filtered[(i+1)%filtered.length]?.window.window_id||selectedId;}
     await load();
   }
+  window.saveLabelBatchAndContinue=async function(){
+    if(!items.length||!items.every(x=>x._savedLabel&&(x._savedLabel.class_code===0||x._savedLabel.class_code===1)&&x._savedLabel.quality_review==='confirmed')){
+      $('label-message').textContent='Guarda y confirma todas las etiquetas antes de continuar.';return;
+    }
+    const name=$('label-batch-name')?.value?.trim();
+    if(!name){$('label-message').textContent='Escribe un nombre para el lote de etiquetado.';return;}
+    const r=await Bridge.createLabelBatch(name);
+    if(!r?.success){$('label-message').textContent=r?.error||'No se pudo guardar el lote.';return;}
+    $('label-message').textContent='Lote guardado: '+r.batch.name+' · ID '+r.batch.id.slice(0,8);
+    await App.navigateTo('dataset');
+  };
   async function load(){
     $('label-window-list').innerHTML='<p class="label-empty">Cargando ventanas…</p>';
     const r=await Bridge.getLabelingWorkspace();
@@ -116,6 +127,7 @@
     const review=e.target.closest('[data-label-review]');if(review){updateSelected({quality_review:review.dataset.labelReview});return;}
     const act=e.target.closest('[data-label-action]')?.dataset.labelAction;if(!act)return;
     if(act==='save')await save(false);
+    if(act==='save-batch'){await window.saveLabelBatchAndContinue();}
     if(act==='save-next')await save(true);
     if(act==='prev'||act==='next'){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;discardChanges();const i=filtered.findIndex(x=>x.window.window_id===selectedId),d=act==='next'?1:-1;selectedId=filtered[(i+d+filtered.length)%filtered.length]?.window.window_id||selectedId;dirty=false;renderList();renderEditor();}
   });
