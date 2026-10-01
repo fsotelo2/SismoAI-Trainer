@@ -6,6 +6,7 @@ ESP32-S3 compatibility is not implied by successful PC training.
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import random
 import time
@@ -130,8 +131,10 @@ def _validate_arrays(arrays: dict) -> None:
 def train_experiment(config: dict, arrays: dict, output_dir: str,
                      progress: Callable[[dict], None] | None = None) -> dict:
     torch, nn = _torch()
+    if not isinstance(config, dict) or not isinstance(config.get("training"), dict):
+        raise ValueError("La configuración de entrenamiento no es válida.")
     training = config["training"]
-    seed = int(training["seed"])
+    seed = int(training.get("seed", 42))
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
     torch.set_num_threads(max(1, min(4, os.cpu_count() or 1)))
     _validate_arrays(arrays)
@@ -140,8 +143,6 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     x_test, y_test = arrays["test"]
     if len(x_train) == 0 or len(x_val) == 0:
         raise ValueError("Train y Validation deben contener muestras.")
-    if not isinstance(training, dict):
-        raise ValueError("La configuración de entrenamiento no es válida.")
     epochs = int(training.get("epochs", 0))
     batch_size = int(training.get("batch_size", 0))
     learning_rate = float(training.get("learning_rate", 0))
@@ -234,9 +235,10 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
         final_val_loss=float(criterion(model(xv),yv).item())
     metrics["train"]["loss"]=final_train_loss
     metrics["validation"]["loss"]=final_val_loss
+    digest = hashlib.sha256(weights.read_bytes()).hexdigest()
     result={"status":"trained","created_at":datetime.now(timezone.utc).isoformat(),
             "epochs_completed":len(history),"history":history,"metrics":metrics,
-            "weights_path":str(weights),"weights_bytes":weights.stat().st_size,
+            "weights_path":str(weights),"weights_bytes":weights.stat().st_size,"weights_sha256":digest,\n            "config":config,
             "input_shape":original_shape,"preprocessing":"resample lineal a 256 puntos; z-score por ventana y canal" + ("; seis estadísticas por canal" if config["architecture"] == "feature_classifier" else ""),
             "elapsed_seconds":time.time()-start}
     with open(out/"training_result.json","w",encoding="utf-8") as f:
