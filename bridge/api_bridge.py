@@ -1606,6 +1606,20 @@ class ApiBridge:
         """Return the complete persisted window registry across files and events."""
         return [item.to_dict() for item in self._window_records]
 
+    def begin_window_session(self) -> dict:
+        """Start a fresh extraction session and restart visible IDs without deleting saved manifests."""
+        previous_records = self._window_records
+        previous_sequence = self._window_sequence
+        self._window_records = []
+        self._window_sequence = 0
+        try:
+            self._persist_windows()
+            return {"success": True, "sequence": 0}
+        except Exception as exc:
+            self._window_records = previous_records
+            self._window_sequence = previous_sequence
+            return {"success": False, "error": str(exc)}
+
     def clear_windows(self) -> dict:
         """Clear extracted windows and restart their visible IDs from W-001."""
         previous_records = self._window_records
