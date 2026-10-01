@@ -62,6 +62,7 @@ const Bridge = (() => {
     getLabelingWorkspace: () => call('get_labeling_workspace'),
     getDatasetWorkspace: () => call('get_dataset_workspace'),
     getDatasetCatalog: () => call('get_dataset_catalog'),
+    deleteDataset: (filename) => call('delete_dataset', filename),
     selectDataset: (filename) => call('select_dataset', filename),
     getModelExperiments: () => call('get_model_experiments'),
     deleteModelExperiment: (experimentId) => call('delete_model_experiment', experimentId),
