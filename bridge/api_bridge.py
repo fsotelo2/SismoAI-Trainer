@@ -1362,6 +1362,7 @@ class ApiBridge:
             manifest = pipeline_manifests.load_manifest(
                 self._window_selection_dir, "windows", filename)
             self._active_window_selection = manifest
+            self._active_label_batch = None
             return {"success": True, "selection": manifest}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
