@@ -59,6 +59,7 @@ const Bridge = (() => {
     generateWindows: (params) => call('generate_windows', params),
     addManualWindow: (params) => call('add_manual_window', params),
     getWindows: () => call('get_windows'),
+    beginWindowSession: () => call('begin_window_session'),
     getLabelingWorkspace: () => call('get_labeling_workspace'),
     createWindowSelection: (name) => call('create_window_selection', name),
     getWindowSelections: () => call('get_window_selections'),
