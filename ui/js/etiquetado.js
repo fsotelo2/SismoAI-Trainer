@@ -84,7 +84,14 @@
     const r=await Bridge.createLabelBatch(name);
     if(!r?.success){$('label-message').textContent=r?.error||'No se pudo guardar el lote.';return;}
     $('label-message').textContent='Lote guardado: '+r.batch.name+' · ID '+r.batch.id.slice(0,8);
+    await refreshLabelBatches();
   };
+  async function refreshLabelBatches(){
+    const body=$('label-batch-rows');if(!body)return;
+    const r=await Bridge.getLabelBatches(),list=r?.items||[];
+    if(!r?.success){body.innerHTML='<tr><td colspan="4">No se pudieron cargar los etiquetados.</td></tr>';return;}
+    body.innerHTML=list.length?list.map(x=>'<tr><td>'+esc(x.name)+'</td><td><code>'+esc(x.id)+'</code></td><td>'+esc(x.count)+'</td><td><button class="btn btn-secondary btn-sm" data-label-action="delete-batch" data-filename="'+esc(x.filename)+'">Eliminar</button></td></tr>').join(''):'<tr><td colspan="4">No hay etiquetados guardados.</td></tr>';
+  }
   async function load(){
     $('label-window-list').innerHTML='<p class="label-empty">Cargando ventanas…</p>';
     const selections=await Bridge.getWindowSelections();
@@ -95,7 +102,7 @@
     }
     const r=await Bridge.getLabelingWorkspace();
     if(!r?.success){$('label-window-list').innerHTML='<p class="label-empty">'+esc(r?.error||'No se pudo cargar.')+'</p>';return;}
-    items=r.items||[];updateDatasetButton();items.forEach(x=>{x._savedLabel=x.label?JSON.parse(JSON.stringify(x.label)):null;});renderCounts(r.counts);filter();
+    items=r.items||[];updateDatasetButton();items.forEach(x=>{x._savedLabel=x.label?JSON.parse(JSON.stringify(x.label)):null;});renderCounts(r.counts);filter();await refreshLabelBatches();
   }
   function draw(canvasId,ts,ys,color){
     const canvas=$(canvasId);if(!canvas)return;
@@ -135,6 +142,15 @@
     if(act==='save')await save(false);
     if(act==='save-batch'){await window.saveLabelBatch();}
     if(act==='save-next')await save(true);
+    if(act==='refresh-batches')await refreshLabelBatches();
+    if(act==='delete-batch'){
+      const filename=e.target.closest('[data-label-action]')?.dataset.filename;
+      if(!filename||!confirm('¿Eliminar el etiquetado guardado "'+filename+'"? Esta acción no se puede deshacer.'))return;
+      const result=await Bridge.deleteLabelBatch(filename);
+      if(!result?.success){$('label-message').textContent=result?.error||'No se pudo eliminar el etiquetado.';return;}
+      $('label-message').textContent='Etiquetado eliminado: '+filename;
+      await refreshLabelBatches();
+    }
     if(act==='prev'||act==='next'){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;discardChanges();const i=filtered.findIndex(x=>x.window.window_id===selectedId),d=act==='next'?1:-1;selectedId=filtered[(i+d+filtered.length)%filtered.length]?.window.window_id||selectedId;dirty=false;renderList();renderEditor();}
   });
   let boundRoot=null;
