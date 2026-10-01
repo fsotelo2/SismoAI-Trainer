@@ -1664,6 +1664,7 @@ class ApiBridge:
                 config_snapshot = copy.deepcopy(config)
                 window_by_id = {w.window_id: w for w in list(self._window_records)}
                 experiment_id = record["experiment_id"]
+                self._update_model_record(experiment_id, {"status": "running", "error": None})
                 output_dir = os.path.join(os.path.dirname(self._dataset_path), "models", str(experiment_id))
                 self._model_training_state = {
                     "status": "preparing", "epoch": 0,
