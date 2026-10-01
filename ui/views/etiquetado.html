@@ -43,6 +43,12 @@
   <footer class="label-footer"><span id="label-summary">0 ventanas · 0 pendientes · 0 etiquetadas · 0 en revisión</span></footer>
   <section class="panel label-batches-panel">
     <div class="panel-heading"><strong>Etiquetados guardados</strong><button class="btn btn-secondary btn-sm" data-label-action="refresh-batches">Actualizar</button></div>
+    <div class="label-batch-save-controls">
+      <label for="label-batch-name">Nombre del etiquetado</label>
+      <input id="label-batch-name" class="form-input" type="text" maxlength="80" placeholder="Etiquetado_v01">
+      <button class="btn btn-primary" data-label-action="save-batch">Guardar etiquetado</button>
+    </div>
+    <div id="label-batch-feedback" class="label-message" role="alert" aria-live="assertive"></div>
     <div class="table-responsive"><table class="data-table"><thead><tr><th>Nombre</th><th>ID único</th><th>Ventanas</th><th>Acción</th></tr></thead><tbody id="label-batch-rows"><tr><td colspan="4">Cargando etiquetados…</td></tr></tbody></table></div>
   </section>
 </section>
