@@ -76,23 +76,31 @@
     await load();
   }
   window.saveLabelBatch=async function(){
-    if(!items.length||!items.every(x=>x._savedLabel&&(x._savedLabel.class_code===0||x._savedLabel.class_code===1)&&x._savedLabel.quality_review==='confirmed')){
-      $('label-message').textContent='Guarda y confirma todas las etiquetas antes de continuar.';return;
-    }
     const name=$('label-batch-name')?.value?.trim();
-    if(!name){$('label-message').textContent='Escribe un nombre para el lote de etiquetado.';return;}
+    const feedback=$('label-batch-feedback');
+    const showError=(message)=>{if(feedback)feedback.textContent=message;$('label-message').textContent=message;};
+    if(!name){showError('Escribe un nombre para el lote de etiquetado.');$('label-batch-name')?.focus();return;}
+    const filename=(name.toLowerCase().endsWith('.json')?name:name+'.json').toLocaleLowerCase();
+    const existing=await Bridge.getLabelBatches();
+    if(existing?.success&&(existing.items||[]).some(x=>String(x.filename||'').toLocaleLowerCase()===filename||String(x.name||'').trim().toLocaleLowerCase()===name.toLocaleLowerCase())){
+      showError('Ya existe un etiquetado con ese nombre. Usa otro nombre.');
+      $('label-batch-name')?.focus();$('label-batch-name')?.select();return;
+    }
+    if(!items.length||!items.every(x=>x._savedLabel&&(x._savedLabel.class_code===0||x._savedLabel.class_code===1)&&x._savedLabel.quality_review==='confirmed')){
+      showError('Guarda y confirma todas las etiquetas antes de continuar.');return;
+    }
+    if(feedback)feedback.textContent='';
     const r=await Bridge.createLabelBatch(name);
     if(!r?.success){
       const message=r?.error||'No se pudo guardar el lote.';
-      $('label-message').textContent=message;
+      showError(message);
       if(message.toLowerCase().includes('ya existe')||message.toLowerCase().includes('mismo nombre')){
-        alert(message+' Usa otro nombre para guardar el etiquetado.');
-        $('label-batch-name')?.focus();
-        $('label-batch-name')?.select();
+        $('label-batch-name')?.focus();$('label-batch-name')?.select();
       }
       return;
     }
     $('label-message').textContent='Lote guardado: '+r.batch.name+' · ID '+r.batch.id.slice(0,8);
+    if(feedback)feedback.textContent='Etiquetado guardado correctamente: '+r.filename;
     await refreshLabelBatches();
   };
   async function refreshLabelBatches(){
