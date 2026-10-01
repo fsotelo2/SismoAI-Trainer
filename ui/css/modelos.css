@@ -81,3 +81,12 @@
 }
 
 .models-library .models-row-actions{white-space:nowrap;min-width:220px}.models-library .models-row-actions .btn{font-size:10px;padding:4px 7px}.models-library .table-container{overflow-x:auto}.models-library table{min-width:900px}
+
+/* Modal de detalle del experimento */
+.models-experiment-dialog{box-sizing:border-box;width:min(760px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:85vh;overflow:auto;margin:auto;padding:20px 22px;border:1px solid var(--color-border);border-radius:10px;background:var(--color-bg-card);color:var(--color-text-primary);box-shadow:var(--shadow-lg);}
+.models-experiment-dialog::backdrop{background:rgba(15,23,42,.48);}
+.models-experiment-dialog>form:first-child{position:sticky;top:-20px;z-index:1;margin:-20px -22px 14px;padding:14px 22px;background:var(--color-bg-card);border-bottom:1px solid var(--color-border);}
+.models-experiment-dialog h2{font-size:18px;font-weight:650;color:var(--color-text-primary);}
+.models-experiment-dialog h3{margin:16px 0 8px;font-size:14px;color:var(--color-text-primary);}
+.models-experiment-dialog p{margin:8px 0;color:var(--color-text-secondary);font-size:13px;}
+.models-experiment-dialog pre{box-sizing:border-box;margin:8px 0;padding:12px;border:1px solid var(--color-border);border-radius:6px;background:var(--color-bg-hover);color:var(--color-text-primary);}
