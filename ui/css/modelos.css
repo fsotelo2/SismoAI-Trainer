@@ -90,3 +90,5 @@
 .models-experiment-dialog h3{margin:16px 0 8px;font-size:14px;color:var(--color-text-primary);}
 .models-experiment-dialog p{margin:8px 0;color:var(--color-text-secondary);font-size:13px;}
 .models-experiment-dialog pre{box-sizing:border-box;margin:8px 0;padding:12px;border:1px solid var(--color-border);border-radius:6px;background:var(--color-bg-hover);color:var(--color-text-primary);}
+
+.models-dataset-controls{display:flex;align-items:stretch;gap:8px}.models-dataset-controls .form-select{flex:1;min-width:0}.models-dataset-controls .btn{flex:0 0 auto;white-space:nowrap}@media(max-width:560px){.models-dataset-controls{flex-wrap:wrap}.models-dataset-controls .btn{width:100%}}
