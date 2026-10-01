@@ -1034,7 +1034,6 @@ class ApiBridge:
             self._dataset_dir = os.path.join(base, "Dataset")
             self._window_selection_dir = os.path.join(base, "Ventanas")
             self._legacy_dataset_path = os.path.join(base, "dataset.json")
-        os.makedirs(self._window_selection_dir, exist_ok=True)
         self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
 
     @staticmethod
