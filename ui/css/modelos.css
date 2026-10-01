@@ -1,5 +1,4 @@
 .models-view{display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0;padding-bottom:4px}
-.models-target strong{display:block;font-size:14px}.models-target small{display:block;color:var(--color-text-muted);font-size:11px;margin-top:2px}.models-target .badge{margin-left:auto}
 .models-config-grid{display:grid;grid-template-columns:minmax(280px,1.35fr) minmax(250px,.95fr) minmax(280px,1.15fr);gap:12px;align-items:stretch}
 .models-card{padding:12px;min-width:0;display:flex;flex-direction:column;gap:8px}
 .models-card-heading{display:flex;align-items:flex-start;gap:10px;min-width:0}.models-card-heading>div{flex:1;min-width:0}.models-card-heading h2{font-size:15px;font-weight:600;margin:2px 0 2px}.models-card-heading p{font-size:11px;color:var(--color-text-muted);line-height:1.35}
@@ -24,4 +23,3 @@
 .models-library .models-card-heading{align-items:center}.models-library .models-card-heading button{margin-left:auto}
 .models-library table{font-size:11px}.models-library th,.models-library td{padding:6px 8px}
 @media(max-width:1150px){.models-config-grid{grid-template-columns:1fr 1fr}.models-config-grid>.models-card:first-child{grid-column:1/-1}}
-@media(max-width:800px){.models-config-grid,.models-results-grid{grid-template-columns:1fr}.models-config-grid>.models-card:first-child{grid-column:auto}.models-target{flex-wrap:wrap}}
