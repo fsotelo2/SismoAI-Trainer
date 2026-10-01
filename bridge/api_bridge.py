@@ -1136,10 +1136,7 @@ class ApiBridge:
             if self._active_label_batch:
                 items = [dict(x) for x in self._active_label_batch.get("records", [])]
             else:
-                items = self._labeling.list_labels([
-                    item.to_dict() for item in self._window_records
-                    if item.selection_status == "include"
-                ])
+                items = []
             counts = {"total": len(items), "labeled": 0, "pending": 0, "classes": {"0": 0, "1": 0}, "events": 0}
             events = set()
             for item in items:
@@ -1340,6 +1337,7 @@ class ApiBridge:
             manifest, path = pipeline_manifests.create_manifest(
                 self._window_selection_dir, "windows", name, records)
             for record in manifest["records"]:
+                record["selection_id"] = manifest["id"]
                 record["window_ref"] = manifest["id"] + "::" + str(record.get("window_id"))
             # Persist the refs in the saved file after UUID creation.
             from core.pipeline.manifests import _atomic_json
@@ -1376,9 +1374,7 @@ class ApiBridge:
                 windows = self._active_window_selection.get("records", [])
                 items = [{"window": dict(window), "label": None} for window in windows]
             else:
-                windows = [item.to_dict() for item in self._window_records
-                           if item.selection_status == "include"]
-                items = self._labeling.list_labels(windows)
+                items = []
             counts = {"total": len(items), "pending": 0, "labeled": 0, "review": 0}
             for item in items:
                 label = item.get("label")
@@ -1430,8 +1426,7 @@ class ApiBridge:
             entry = next((x for x in target_items
                           if (x.get("window") or {}).get("window_id") == window_id
                           and (not window_ref or (x.get("window") or {}).get("window_ref") == window_ref)), None)
-            window = dict(entry.get("window")) if entry else next(
-                (w.to_dict() for w in self._window_records if w.window_id == window_id), None)
+            window = dict(entry.get("window")) if entry else None
             if window is None:
                 return {"success": False, "error": "Ventana no encontrada en el conjunto activo."}
             label = self._labeling.save_label(window, payload)
