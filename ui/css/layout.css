@@ -125,6 +125,73 @@ body {
   height: 18px;
 }
 
+/* Sidebar: aumentar jerarquía visual y distribuir navegación a lo largo del panel. */
+.sidebar-logo-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.sidebar-logo-icon svg {
+  width: 36px;
+  height: 36px;
+}
+
+.sidebar-logo span {
+  font-size: 20px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 8px;
+  padding: 18px 12px 24px;
+}
+
+.nav-item {
+  flex: 0 0 auto;
+  min-height: 68px;
+  gap: 14px;
+  padding: 14px 16px;
+  font-size: 24px;
+  border-radius: 10px;
+}
+
+.nav-item-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+}
+
+.nav-item-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+@media (max-width: 768px) {
+  .sidebar-nav {
+    gap: 8px;
+    padding: 14px 6px;
+  }
+
+  .nav-item {
+    min-height: 60px;
+    justify-content: center;
+    padding: 12px 6px;
+  }
+
+  .nav-item-icon {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+  }
+
+  .nav-item-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
 /* -- Main Content ---------------------------------------------------- */
 
 .main-content {
