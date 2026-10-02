@@ -2312,7 +2312,8 @@ class ApiBridge:
             return {"success": False, "error": str(exc)}
 
     def export_model_pipeline(self, experiment_id: str, export_name: str,
-                              output_directory: str = "", verify: bool = True) -> dict:
+                              output_directory: str = "", verify: bool = True,
+                              calibration_count: int = 200) -> dict:
         """Run the complete ONNX -> INT8 -> Test evaluation -> bundle workflow."""
         try:
             registry = self.get_model_experiments()
@@ -2339,7 +2340,7 @@ class ApiBridge:
                 config,
                 exported["input_shape"][1:],
                 record.get("dataset_id"),
-                200,
+                calibration_count,
             )
             exported["quantization"] = "int8_static_ptq"
             exported["pipeline_report_path"] = os.path.join(
