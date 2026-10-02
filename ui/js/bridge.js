@@ -87,6 +87,8 @@ const Bridge = (() => {
     startModelTraining: (config, datasetId) =>
       call("start_model_training", config, datasetId),
     getModelTrainingState: () => call("get_model_training_state"),
+    exportModelOnnx: (experimentId, name, directory, verify) =>
+      call("export_model_onnx", experimentId, name, directory, verify),
     generateDataset: (ratios, seed, name) =>
       call("generate_dataset", ratios, seed, name),
     getWindowSignal: (windowId, windowRef) =>
