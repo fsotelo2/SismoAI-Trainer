@@ -216,7 +216,7 @@
   pointer-events:none;
 }
 #btn-generate-export-package {
-  --x: calc(100% - 190px);
+  --x: calc(100% - 270px);
   --y: calc(100% - 35px);
   position: absolute;
   left: var(--x);
