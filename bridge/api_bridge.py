@@ -2269,6 +2269,7 @@ class ApiBridge:
                 raise ValueError("El registro no contiene architecture_path.")
             model_dir = os.path.dirname(os.path.abspath(architecture_path))
             models_root = os.path.abspath(os.path.dirname(self._models_registry_path()))
+            project_root = os.path.dirname(models_root)
             if os.path.commonpath([models_root, model_dir]) != models_root:
                 raise ValueError("La ruta del modelo está fuera de Modelos.")
             name = str(export_name or "").strip()
@@ -2276,8 +2277,15 @@ class ApiBridge:
                 raise ValueError("Nombre de exportación no válido.")
             if output_directory:
                 destination = os.path.abspath(os.path.expanduser(output_directory))
+                try:
+                    if os.path.commonpath([models_root, destination]) == models_root:
+                        raise ValueError("El directorio de salida no puede estar dentro de Modelos.")
+                except ValueError as path_error:
+                    if "no puede estar dentro de Modelos" in str(path_error):
+                        raise
+                    raise ValueError("Directorio de salida no válido.") from path_error
             else:
-                destination = os.path.join(models_root, "exports", name)
+                destination = os.path.join(project_root, "Exportaciones", name)
             os.makedirs(destination, exist_ok=True)
             from core.models.exporter import export_onnx
             report = export_onnx(model_dir, destination, name, bool(verify))
@@ -2296,7 +2304,7 @@ class ApiBridge:
         """Read persisted ONNX export reports from the project's Modelos/exports folder."""
         try:
             from pathlib import Path
-            root = Path(os.path.dirname(self._models_registry_path())).resolve() / "exports"
+            root = Path(os.path.dirname(os.path.dirname(self._models_registry_path()))).resolve() / "Exportaciones"
             if not root.is_dir():
                 return {"success": True, "exports": []}
             experiments = (self.get_model_experiments() or {}).get("experiments", [])
