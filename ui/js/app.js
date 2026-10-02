@@ -779,7 +779,7 @@ const App = (() => {
       "ui/css/components.css",
       "ui/css/variables.css",
     ].filter(Boolean);
-    const matchingSelector = candidates.find((selector) =>
+    const matchingSelector = [...candidates].reverse().find((selector) =>
       sources.some((source) => stylesheetContainsSelector(source, selector)),
     );
     if (matchingSelector) return matchingSelector;
