@@ -7,3 +7,6 @@
 /.venv-espressif
 *.pyc
 *.pyc
+/build
+/dist
+/installer-output
