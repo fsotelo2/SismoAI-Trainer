@@ -894,6 +894,15 @@
   pointer-events: none;
 }
 
+#btn-continue-exportar {
+  --x: calc(100% - 190px);
+  --y: calc(100% - 35px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  pointer-events: auto;
+}
+
 /* Modal de validación integrado con la identidad visual de la aplicación. */
 .models-validation-dialog {
   width: min(480px, calc(100vw - 32px));
