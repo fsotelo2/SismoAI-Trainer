@@ -901,8 +901,22 @@ const App = (() => {
   }
 
   async function refreshProjectState() {
-    const state = await Bridge.getProjectState();
+    const [state, windows, labels, datasets, models, exports] = await Promise.all([
+      Bridge.getProjectState(),
+      Bridge.getWindowSelections(),
+      Bridge.getLabelBatches(),
+      Bridge.getDatasetCatalog(),
+      Bridge.getModelExperiments(),
+      Bridge.getExportHistory(),
+    ]);
     projectState = state;
+    state.resource_counts = {
+      windows: windows?.success ? (windows.items || []).length : null,
+      labels: labels?.success ? (labels.items || []).length : null,
+      datasets: datasets?.success ? (datasets.datasets || []).length : null,
+      models: models?.success ? (models.experiments || []).length : null,
+      exports: exports?.success ? (exports.exports || []).length : null,
+    };
 
     const container = document.getElementById("view-container");
     if (!container) return;
@@ -944,6 +958,18 @@ const App = (() => {
 
     const summaryEventCountEl = document.getElementById("summary-event-count");
     if (summaryEventCountEl) summaryEventCountEl.textContent = eventCount;
+
+    const counts = state.resource_counts || {};
+    [
+      ["summary-window-count", counts.windows],
+      ["summary-label-count", counts.labels],
+      ["summary-dataset-count", counts.datasets],
+      ["summary-model-count", counts.models],
+      ["summary-export-count", counts.exports],
+    ].forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value == null ? "—" : String(value);
+    });
   }
 
   // ===================================================================
