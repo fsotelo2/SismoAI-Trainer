@@ -48,7 +48,7 @@
     const body=$("export-history-body");if(!body)return;
     if(!rows?.length){body.innerHTML='<tr><td colspan="8">Aún no hay exportaciones registradas.</td></tr>';return;}
     body.innerHTML=rows.map((x,i)=>'<tr><td>'+esc(x.name)+'</td><td>'+esc(x.experiment_name||x.experiment_id||"—")+
-      '</td><td>ONNX</td><td>Sin cuantización</td><td>'+esc(x.bytes?Math.ceil(x.bytes/1024)+" KB":"—")+
+      '</td><td>ONNX</td><td>'+esc(x.quantization==='int8_dynamic'?'INT8 dinámico':'Sin cuantización')+'</td><td>'+esc(x.bytes?Math.ceil(x.bytes/1024)+" KB":"—")+
       '</td><td>'+esc(x.created_at||"—")+'</td><td><span class="export-status-ok">Completado</span></td><td><button class="btn btn-secondary btn-sm" data-export-view="'+i+'">Ver</button></td></tr>').join("");
     body._exportRows=rows;
   }
