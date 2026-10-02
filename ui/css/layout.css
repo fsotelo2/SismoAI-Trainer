@@ -125,70 +125,81 @@ body {
   height: 18px;
 }
 
-/* Sidebar: aumentar jerarquía visual y distribuir navegación a lo largo del panel. */
-.sidebar-logo-icon {
-  width: 23px;
-  height: 23px;
+/* Sidebar: escala compacta y navegación proporcionada. */
+.sidebar {
+  width: 200px;
+  min-width: 200px;
 }
 
-.sidebar-logo-icon svg {
-  width: 27px;
-  height: 27px;
+.sidebar .sidebar-logo-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
 }
 
-.sidebar-logo span {
-  font-size: 15px;
+.sidebar .sidebar-logo-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
-.sidebar-nav {
+.sidebar .sidebar-logo span {
+  font-size: 14px;
+}
+
+.sidebar .sidebar-nav {
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  gap: 6px;
-  padding: 14px 9px 18px;
+  justify-content: flex-start;
+  gap: 5px;
+  padding: 12px 8px;
 }
 
-.nav-item {
+.sidebar .nav-item {
   flex: 0 0 auto;
-  min-height: 51px;
-  gap: 11px;
-  padding: 11px 12px;
-  font-size: 18px;
+  min-height: 44px;
+  gap: 10px;
+  padding: 9px 10px;
+  font-size: 16px;
   border-radius: 8px;
 }
 
-.nav-item-icon {
-  width: 26px;
-  height: 26px;
-  flex: 0 0 26px;
+.sidebar .nav-item-icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
 }
 
-.nav-item-icon svg {
-  width: 30px;
-  height: 30px;
+.sidebar .nav-item-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 @media (max-width: 768px) {
-  .sidebar-nav {
-    gap: 8px;
-    padding: 14px 6px;
+  .sidebar {
+    width: 60px;
+    min-width: 60px;
   }
 
-  .nav-item {
-    min-height: 45px;
+  .sidebar .sidebar-nav {
+    gap: 6px;
+    padding: 10px 5px;
+  }
+
+  .sidebar .nav-item {
+    min-height: 40px;
     justify-content: center;
-    padding: 9px 5px;
+    padding: 8px 4px;
   }
 
-  .nav-item-icon {
-    width: 30px;
-    height: 30px;
-    flex-basis: 30px;
+  .sidebar .nav-item-icon {
+    width: 22px;
+    height: 22px;
+    flex-basis: 22px;
   }
 
-  .nav-item-icon svg {
-    width: 21px;
-    height: 21px;
+  .sidebar .nav-item-icon svg {
+    width: 20px;
+    height: 20px;
   }
 }
 
