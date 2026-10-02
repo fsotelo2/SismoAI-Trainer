@@ -5,3 +5,5 @@
 /Reference/Exportar
 /Reference/Exportaciones
 /.venv-espressif
+*.pyc
+*.pyc
