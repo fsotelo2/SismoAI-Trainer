@@ -18,6 +18,10 @@
 }
 .export-card {
   position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
   display: flex;
   flex-direction: column;
   gap: 8px;
