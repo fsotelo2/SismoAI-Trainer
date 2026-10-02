@@ -2241,3 +2241,51 @@ class ApiBridge:
                 item for item in registry
                 if item.get("experiment_id") == experiment_id
             ))
+
+    # ------------------------------------------------------------------
+    # Phase 10 — ONNX export
+    # ------------------------------------------------------------------
+    def export_model_onnx(self, experiment_id: str, export_name: str,
+                          output_directory: str = "", verify: bool = True) -> dict:
+        """Export a validated trained CNN to ONNX and persist its report."""
+        try:
+            experiment_id = str(experiment_id or "").strip()
+            if not experiment_id:
+                raise ValueError("Selecciona un experimento.")
+            registry = self.get_model_experiments()
+            if not registry.get("success"):
+                raise ValueError(registry.get("error", "No se pudo consultar Modelos."))
+            record = next((x for x in registry.get("experiments", [])
+                           if x.get("experiment_id") == experiment_id), None)
+            if record is None or record.get("status") != "trained":
+                raise ValueError("El experimento debe estar entrenado.")
+            validation = self.validate_model_experiment(experiment_id)
+            if not validation.get("success"):
+                raise ValueError("El modelo no superó la validación estructural: " +
+                                 validation.get("error", "error desconocido"))
+            result = record.get("training_result") or {}
+            architecture_path = result.get("architecture_path")
+            if not architecture_path:
+                raise ValueError("El registro no contiene architecture_path.")
+            model_dir = os.path.dirname(os.path.abspath(architecture_path))
+            models_root = os.path.abspath(os.path.dirname(self._models_registry_path()))
+            if os.path.commonpath([models_root, model_dir]) != models_root:
+                raise ValueError("La ruta del modelo está fuera de Modelos.")
+            name = str(export_name or "").strip()
+            if not name or len(name) > 100 or any(c in name for c in '/\\\\'):
+                raise ValueError("Nombre de exportación no válido.")
+            if output_directory:
+                destination = os.path.abspath(os.path.expanduser(output_directory))
+            else:
+                destination = os.path.join(models_root, "exports", name)
+            os.makedirs(destination, exist_ok=True)
+            from core.models.exporter import export_onnx
+            report = export_onnx(model_dir, destination, name, bool(verify))
+            report["experiment_id"] = experiment_id
+            report_path = os.path.join(destination, name + ".export.json")
+            with open(report_path, "w", encoding="utf-8") as stream:
+                json.dump(report, stream, ensure_ascii=False, indent=2)
+            return {"success": True, "export": report, "report_path": report_path}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
