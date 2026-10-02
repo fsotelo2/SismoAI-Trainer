@@ -1049,6 +1049,8 @@ class ApiBridge:
             self._window_selection_dir = os.path.join(base, "Ventanas")
             self._export_dir = os.path.join(base, "Exportaciones")
             self._legacy_dataset_path = os.path.join(base, "dataset.json")
+            for folder in (self._window_selection_dir, self._dataset_dir, self._export_dir):
+                os.makedirs(folder, exist_ok=True)
         self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
 
     @staticmethod
@@ -2276,7 +2278,10 @@ class ApiBridge:
             if not name or len(name) > 100 or any(c in name for c in '/\\\\'):
                 raise ValueError("Nombre de exportación no válido.")
             if output_directory:
-                destination = os.path.abspath(os.path.expanduser(output_directory))
+                requested_directory = os.path.expanduser(str(output_directory).strip())
+                destination = (os.path.abspath(os.path.join(project_root, requested_directory))
+                               if not os.path.isabs(requested_directory)
+                               else os.path.abspath(requested_directory))
                 try:
                     if os.path.commonpath([models_root, destination]) == models_root:
                         raise ValueError("El directorio de salida no puede estar dentro de Modelos.")
