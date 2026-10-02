@@ -100,8 +100,13 @@ class ApiBridge:
         """
         try:
             import webview
+            initial_dir = os.path.join(os.path.expanduser("~"), "Documents")
+            if not os.path.isdir(initial_dir):
+                initial_dir = os.path.expanduser("~")
+
             result = webview.windows[0].create_file_dialog(
-                webview.FOLDER_DIALOG
+                webview.FOLDER_DIALOG,
+                directory=initial_dir
             )
             if not result:
                 return {"path": "", "file_count": 0, "status": "cancelled"}
