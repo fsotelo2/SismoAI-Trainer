@@ -141,6 +141,55 @@ class ModelDatasetCatalogTests(unittest.TestCase):
             self.assertIn("no contiene un manifiesto", res["error"])
 
 
+class ModelArchitecturePersistenceTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        try:
+            import torch  # noqa: F401
+        except ImportError:
+            raise unittest.SkipTest("PyTorch no instalado; prueba omitida.")
+
+    def test_architecture_manifest_reconstructs_equivalent_model(self):
+        import torch
+        rng = np.random.default_rng(11)
+        x = rng.normal(size=(8, 2, 32)).astype(np.float32)
+        y = np.asarray([0, 1] * 4, dtype=np.int64)
+        config = {"name": "cnn_test", "architecture": "1d_cnn",
+                  "training": {"seed": 9, "epochs": 2, "batch_size": 4,
+                    "learning_rate": 0.001, "optimizer": "adam",
+                    "early_stopping": False, "save_best": True,
+                    "class_weighting": False}}
+        from core.models.trainer import reconstruct_model
+        with tempfile.TemporaryDirectory() as tmp:
+            result = train_experiment(config, {
+                "train": (x, y), "validation": (x[:4], y[:4]),
+                "test": (x[4:], y[4:]),
+            }, tmp, model_id="experiment-uuid")
+            root = Path(tmp)
+            self.assertTrue((root / "architecture.json").is_file())
+            self.assertTrue((root / "weights.pt").is_file())
+            self.assertTrue((root / "training_result.json").is_file())
+            manifest = json.loads((root / "architecture.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["model_id"], "experiment-uuid")
+            self.assertEqual(manifest["input_shape"], [2, 32])
+            rebuilt, loaded_manifest = reconstruct_model(root, "experiment-uuid")
+            original, _ = reconstruct_model(root)
+            sample = torch.from_numpy(x[:2])
+            with torch.no_grad():
+                torch.testing.assert_close(original(sample), rebuilt(sample), rtol=1e-5, atol=1e-6)
+            self.assertEqual(loaded_manifest["architecture"], "1d_cnn")
+
+    def test_reconstruction_rejects_missing_and_invalid_architecture(self):
+        from core.models.trainer import reconstruct_model
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError, "Falta architecture.json"):
+                reconstruct_model(tmp)
+            Path(tmp, "architecture.json").write_text("{invalid", encoding="utf-8")
+            Path(tmp, "weights.pt").write_bytes(b"placeholder")
+            with self.assertRaisesRegex(ValueError, "no es válido"):
+                reconstruct_model(tmp)
+
+
 if __name__ == "__main__":
     unittest.main()
 

@@ -244,7 +244,9 @@
               (m && Number.isFinite(Number(m.accuracy))
                 ? (100 * m.accuracy).toFixed(1) + "% val."
                 : "—") +
-              '</td><td class="models-row-actions"><button class="btn btn-secondary" data-model-action="detail" data-id="' +
+              '</td><td class="models-row-actions"><button class="btn btn-secondary" data-model-action="validate" data-id="' +
+              id +
+              '"' + (x.status === "trained" ? "" : ' disabled title="Disponible después del entrenamiento"') + '>Validar</button> <button class="btn btn-secondary" data-model-action="detail" data-id="' +
               id +
               '">Detalle</button> <button class="btn btn-secondary" data-model-action="load" data-id="' +
               id +
@@ -329,6 +331,49 @@
     if (!r?.success)
       throw new Error(r?.error || "No se pudo leer el registro.");
     return (r.experiments || []).find((x) => x.experiment_id === id);
+  }
+  function showValidationDialog(result, error) {
+    let dlg = document.getElementById("models-validation-dialog");
+    if (!dlg) {
+      dlg = document.createElement("dialog");
+      dlg.id = "models-validation-dialog";
+      dlg.className = "models-experiment-dialog models-validation-dialog";
+      document.body.appendChild(dlg);
+    }
+    const ok = !error && !!result?.success;
+    const architecture = result?.architecture || "—";
+    dlg.innerHTML =
+      '<div class="models-dialog-header"><div><h2>Resultado de validación</h2><p>' +
+      (ok ? "Validación completada" : "Validación fallida") +
+      '</p></div><button class="btn btn-secondary" type="button" aria-label="Cerrar" data-validation-x>×</button></div>' +
+      (ok
+        ? '<div class="models-validation-summary"><div><span>Arquitectura</span><strong>' +
+          esc(names[architecture] || architecture) +
+          '</strong></div><div><span>Entrada</span><strong>' +
+          esc(JSON.stringify(result.input_shape ?? "—")) +
+          '</strong></div><div><span>Salida</span><strong>' +
+          esc(JSON.stringify(result.output_shape ?? "—")) +
+          '</strong></div></div><ul class="models-validation-checks">' +
+          ["Manifest de arquitectura", "Carga estricta de pesos", "Paso de inferencia", "Salida finita"].map((label) =>
+            '<li><span aria-hidden="true">✓</span>' + label + '</li>'
+          ).join("") +
+          '</ul>'
+        : '<p class="models-validation-error">' + esc(error || result?.error || "La validación no se completó.") + '</p>') +
+      '<footer class="models-validation-footer"><button class="btn btn-primary" type="button" data-validation-close>Aceptar</button></footer>';
+    dlg.querySelector("[data-validation-close]")?.addEventListener("click", () => dlg.close());
+    dlg.querySelector("[data-validation-x]")?.addEventListener("click", () => dlg.close());
+    dlg.showModal();
+  }
+  async function validateExperiment(id) {
+    const button = document.querySelector('[data-model-action="validate"][data-id="' + CSS.escape(id) + '"]');
+    if (button) { button.disabled = true; button.textContent = "Validando…"; }
+    try {
+      const r = await Bridge.validateModelExperiment(id);
+      if (!r?.success) throw new Error(r?.error || "La validación no se completó.");
+      showValidationDialog(r, null);
+    } catch (err) {
+      showValidationDialog(null, err?.message || String(err));
+    } finally { await refresh(); }
   }
   function showExperimentDetail(id) {
     getExperiment(id)
@@ -725,6 +770,7 @@
     if (a === "reset") reset();
     if (a === "refresh") refresh();
     if (a === "detail") showExperimentDetail(b.dataset.id);
+    if (a === "validate") validateExperiment(b.dataset.id);
     if (a === "load") loadExperiment(b.dataset.id);
     if (a === "delete") deleteExperiment(b.dataset.id);
   });

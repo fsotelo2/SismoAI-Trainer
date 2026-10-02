@@ -78,6 +78,84 @@ def build_network(architecture: str, channels: int, points: int, classes: int = 
     raise ValueError("Arquitectura no soportada.")
 
 
+
+
+def _architecture_manifest(model, architecture: str, channels: int, points: int,
+                           classes: int, model_id: str) -> dict:
+    """Describe the supported model factory and its concrete modules for reconstruction."""
+    torch, _ = _torch()
+    layers = []
+    for name, module in model.named_modules():
+        if not name:
+            continue
+        item = {"name": name, "type": module.__class__.__name__}
+        if isinstance(module, torch.nn.Conv1d):
+            item.update(in_channels=module.in_channels, out_channels=module.out_channels,
+                        kernel_size=list(module.kernel_size), stride=list(module.stride),
+                        padding=list(module.padding), dilation=list(module.dilation),
+                        groups=module.groups, bias=module.bias is not None)
+        elif isinstance(module, torch.nn.Linear):
+            item.update(in_features=module.in_features, out_features=module.out_features,
+                        bias=module.bias is not None)
+        elif isinstance(module, torch.nn.MaxPool1d):
+            item.update(kernel_size=module.kernel_size, stride=module.stride,
+                        padding=module.padding, dilation=module.dilation,
+                        ceil_mode=module.ceil_mode)
+        elif isinstance(module, torch.nn.AdaptiveAvgPool1d):
+            item["output_size"] = module.output_size
+        layers.append(item)
+    return {"schema": "sismoai-model-architecture", "schema_version": 1,
+            "architecture_version": 1, "model_id": str(model_id),
+            "architecture": architecture, "framework": "pytorch",
+            "factory": "core.models.trainer.build_network",
+            "factory_parameters": {"channels": int(channels), "points": int(points),
+                                   "classes": int(classes)},
+            "input_shape": [int(channels), int(points)],
+            "output_shape": [int(classes)], "layers": layers}
+
+
+def reconstruct_model(model_dir: str | Path, expected_model_id: str | None = None):
+    """Rebuild a registered model and load its checkpoint with strict validation."""
+    torch, _ = _torch()
+    root = Path(model_dir)
+    architecture_path, weights_path = root / "architecture.json", root / "weights.pt"
+    if not architecture_path.is_file():
+        raise ValueError("Falta architecture.json; no se puede reconstruir el modelo.")
+    if not weights_path.is_file():
+        raise ValueError("Falta weights.pt; no se pueden cargar los parámetros.")
+    try:
+        manifest = json.loads(architecture_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("architecture.json no es válido: " + str(exc)) from exc
+    if manifest.get("schema") != "sismoai-model-architecture" or manifest.get("schema_version") != 1:
+        raise ValueError("Formato de architecture.json no compatible.")
+    if expected_model_id is not None and manifest.get("model_id") != str(expected_model_id):
+        raise ValueError("El identificador del modelo no coincide.")
+    if manifest.get("architecture") != "1d_cnn":
+        raise ValueError("Reconstrucción no implementada para esta arquitectura.")
+    params = manifest.get("factory_parameters")
+    if not isinstance(params, dict) or any(k not in params for k in ("channels", "points", "classes")):
+        raise ValueError("Faltan parámetros estructurales en architecture.json.")
+    model = build_network("1d_cnn", int(params["channels"]),
+                          int(params["points"]), int(params["classes"]))
+    expected = _architecture_manifest(model, "1d_cnn", int(params["channels"]),
+        int(params["points"]), int(params["classes"]), str(manifest.get("model_id", "")))
+    if manifest.get("layers") != expected["layers"]:
+        raise ValueError("La definición de capas no coincide con la CNN registrada.")
+    if manifest.get("input_shape") != expected["input_shape"] or manifest.get("output_shape") != expected["output_shape"]:
+        raise ValueError("Las dimensiones registradas no coinciden con la arquitectura.")
+    try:
+        try:
+            state = torch.load(weights_path, map_location="cpu", weights_only=True)
+        except TypeError:
+            state = torch.load(weights_path, map_location="cpu")
+        model.load_state_dict(state, strict=True)
+    except Exception as exc:
+        raise ValueError("Los pesos no corresponden a la arquitectura registrada: " + str(exc)) from exc
+    model.eval()
+    return model, manifest
+
+
 def _metrics(y_true, y_pred, class_count=2):
     cm = [[0 for _ in range(class_count)] for _ in range(class_count)]
     for truth, pred in zip(y_true, y_pred):
@@ -129,7 +207,8 @@ def _validate_arrays(arrays: dict) -> None:
 
 
 def train_experiment(config: dict, arrays: dict, output_dir: str,
-                     progress: Callable[[dict], None] | None = None) -> dict:
+                     progress: Callable[[dict], None] | None = None,
+                     model_id: str | None = None) -> dict:
     torch, nn = _torch()
     if not isinstance(config, dict) or not isinstance(config.get("training"), dict):
         raise ValueError("La configuración de entrenamiento no es válida.")
@@ -243,6 +322,13 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     out=Path(output_dir); out.mkdir(parents=True,exist_ok=True)
     weights=out/"weights.pt"
     torch.save(model.state_dict(),weights)
+    registered_id = str(model_id or config.get("model_id") or config.get("name") or "unnamed")
+    architecture_path = out / "architecture.json"
+    manifest = _architecture_manifest(model, config["architecture"],
+        original_shape[0], original_shape[1], int(model.classifier[-1].out_features)
+        if config["architecture"] == "1d_cnn" else 2, registered_id)
+    with open(architecture_path, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=2, allow_nan=False)
     with torch.no_grad():
         final_train_loss=float(criterion(model(xt),yt).item())
         final_val_loss=float(criterion(model(xv),yv).item())
@@ -252,6 +338,7 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     result={"status":"trained","created_at":datetime.now(timezone.utc).isoformat(),
             "epochs_completed":len(history),"history":history,"metrics":metrics,
             "weights_path":str(weights),"weights_bytes":weights.stat().st_size,"weights_sha256":digest,
+            "model_id":registered_id,"architecture_path":str(architecture_path),
             "config":config,
             "input_shape":original_shape,"preprocessing":"resample lineal a 256 puntos; z-score por ventana y canal" + ("; seis estadísticas por canal" if config["architecture"] == "feature_classifier" else ""),
             "elapsed_seconds":time.time()-start}
