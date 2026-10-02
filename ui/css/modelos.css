@@ -902,3 +902,89 @@
   top: var(--y);
   pointer-events: auto;
 }
+
+/* Modal de validación integrado con la identidad visual de la aplicación. */
+.models-validation-dialog {
+  width: min(480px, calc(100vw - 32px));
+  padding: 0;
+  overflow: hidden;
+}
+.models-validation-dialog > .models-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 18px;
+  background: var(--color-primary, #2454d6);
+  color: #fff;
+  border: 0;
+}
+.models-validation-dialog .models-dialog-header h2 {
+  margin: 0;
+  color: inherit;
+  font-size: 17px;
+  font-weight: 650;
+}
+.models-validation-dialog .models-dialog-header .btn {
+  color: inherit;
+  border-color: rgba(255,255,255,.55);
+  background: transparent;
+}
+.models-validation-summary {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px 10px;
+}
+.models-validation-summary > div {
+  display: grid;
+  grid-template-columns: 105px minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+  font-size: 13px;
+}
+.models-validation-summary span {
+  color: var(--color-text-secondary);
+}
+.models-validation-summary strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+.models-validation-checks {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  margin: 8px 20px 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+.models-validation-checks li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.models-validation-checks li span {
+  color: var(--color-success, #16845d);
+  font-weight: 700;
+}
+.models-validation-error {
+  margin: 18px 20px !important;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: var(--color-bg-hover);
+  overflow-wrap: anywhere;
+}
+.models-validation-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-hover);
+}
