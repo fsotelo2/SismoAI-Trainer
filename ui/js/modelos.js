@@ -244,7 +244,9 @@
               (m && Number.isFinite(Number(m.accuracy))
                 ? (100 * m.accuracy).toFixed(1) + "% val."
                 : "—") +
-              '</td><td class="models-row-actions"><button class="btn btn-secondary" data-model-action="detail" data-id="' +
+              '</td><td class="models-row-actions"><button class="btn btn-secondary" data-model-action="validate" data-id="' +
+              id +
+              '"' + (x.status === "trained" ? "" : ' disabled title="Disponible después del entrenamiento"') + '>Validar</button> <button class="btn btn-secondary" data-model-action="detail" data-id="' +
               id +
               '">Detalle</button> <button class="btn btn-secondary" data-model-action="load" data-id="' +
               id +
@@ -329,6 +331,20 @@
     if (!r?.success)
       throw new Error(r?.error || "No se pudo leer el registro.");
     return (r.experiments || []).find((x) => x.experiment_id === id);
+  }
+  async function validateExperiment(id) {
+    const button = document.querySelector('[data-model-action="validate"][data-id="' + CSS.escape(id) + '"]');
+    if (button) { button.disabled = true; button.textContent = "Validando…"; }
+    try {
+      const r = await Bridge.validateModelExperiment(id);
+      if (!r?.success) throw new Error(r?.error || "La validación no se completó.");
+      alert("Validación completada\n\nArquitectura: " + r.architecture +
+        "\nEntrada: " + JSON.stringify(r.input_shape) +
+        "\nSalida: " + JSON.stringify(r.output_shape) +
+        "\n\n✓ Manifest de arquitectura\n✓ Carga estricta de pesos\n✓ Paso de inferencia\n✓ Salida finita");
+    } catch (err) {
+      alert("Validación fallida\n\n" + (err?.message || String(err)));
+    } finally { await refresh(); }
   }
   function showExperimentDetail(id) {
     getExperiment(id)
@@ -725,6 +741,7 @@
     if (a === "reset") reset();
     if (a === "refresh") refresh();
     if (a === "detail") showExperimentDetail(b.dataset.id);
+    if (a === "validate") validateExperiment(b.dataset.id);
     if (a === "load") loadExperiment(b.dataset.id);
     if (a === "delete") deleteExperiment(b.dataset.id);
   });
