@@ -12,6 +12,7 @@
     activeFilter = "all",
     selectedIds = new Set(),
     hasSavedBatches = false;
+  let savedBatchNames = new Set();
   const esc = (v) =>
     String(v ?? "").replace(
       /[&<>"']/g,
@@ -192,6 +193,16 @@
       ? "Hay etiquetados guardados disponibles"
       : "Guarda un etiquetado antes de continuar a Dataset";
     button.setAttribute("aria-disabled", String(!ready));
+  }
+  function updateSaveBatchButton() {
+    const button = document.querySelector('[data-label-action="save-batch"]');
+    const name =
+      $("label-batch-name")?.value?.trim().replace(/\.json$/i, "").toLocaleLowerCase() || "";
+    if (!button) return;
+    button.disabled = !name || savedBatchNames.has(name);
+    button.title = savedBatchNames.has(name)
+      ? "Ya existe un etiquetado con ese nombre"
+      : "Guardar etiquetado";
   }
   function markDirty() {
     dirty = true;
@@ -395,12 +406,23 @@
       list = r?.items || [];
     if (!r?.success) {
       hasSavedBatches = false;
+      savedBatchNames = new Set();
+      updateSaveBatchButton();
       updateDatasetButton();
       body.innerHTML =
         '<tr><td colspan="4">No se pudieron cargar los etiquetados.</td></tr>';
       return;
     }
     hasSavedBatches = list.length > 0;
+    savedBatchNames = new Set(
+      list.map((x) =>
+        String(x.name || x.filename || "")
+          .trim()
+          .replace(/\.json$/i, "")
+          .toLocaleLowerCase(),
+      ),
+    );
+    updateSaveBatchButton();
     updateDatasetButton();
     body.innerHTML = list.length
       ? list
@@ -664,6 +686,7 @@
       markDirty();
       $("label-char-count").textContent = e.target.value.length;
     });
+    $("label-batch-name")?.addEventListener("input", updateSaveBatchButton);
     $("label-show-geo")?.addEventListener(
       "change",
       () => current() && drawSignals(current()),

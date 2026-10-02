@@ -1,0 +1,381 @@
+/* Overrides for component-specific colors that predate the shared design tokens. */
+
+:root[data-theme="dark"] {
+  --theme-surface-raised: #243247;
+  --theme-surface-inset: #111c2e;
+  --theme-border-strong: #475569;
+  --theme-danger-surface: #451a1a;
+  --theme-info-surface: #172f55;
+  --text-primary: #f1f5f9;
+}
+
+:root[data-theme="dark"] .settings-icon.blue,
+:root[data-theme="dark"] .settings-icon.purple,
+:root[data-theme="dark"] .settings-icon.amber {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+:root[data-theme="dark"] .settings-icon.purple {
+  color: var(--color-accent-purple);
+  background: var(--color-accent-purple-light);
+}
+
+:root[data-theme="dark"] .settings-icon.amber {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
+:root[data-theme="dark"] .category-status {
+  color: #6ee7b7;
+}
+
+:root[data-theme="dark"] .category-status.inactive {
+  color: #fde68a;
+}
+
+:root[data-theme="dark"] .ds-metrics,
+:root[data-theme="dark"] .dataset-view .ds-section-heading,
+:root[data-theme="dark"] .windows-view .windows-summary,
+:root[data-theme="dark"] .windows-view .windows-status-panel,
+:root[data-theme="dark"] .export-pipeline-step {
+  background: var(--theme-surface-inset);
+}
+
+:root[data-theme="dark"] .ds-donut::before {
+  background: var(--color-bg-card);
+}
+
+:root[data-theme="dark"] .ds-alert {
+  background: var(--theme-danger-surface);
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+:root[data-theme="dark"] .ds-alert p {
+  color: #fecaca;
+}
+
+:root[data-theme="dark"] .dataset-view [class*="status"],
+:root[data-theme="dark"] .dataset-view [class*="badge"] {
+  border-color: var(--theme-border-strong);
+}
+
+:root[data-theme="dark"] .etiquetado-view .label-list-item.selected,
+:root[data-theme="dark"] .etiquetado-view .label-window.selected,
+:root[data-theme="dark"] .etiquetado-view .label-editor-toolbar,
+:root[data-theme="dark"] .export-pipeline-step.active {
+  background: var(--color-primary-light);
+}
+
+:root[data-theme="dark"] .label-window-row {
+  border-bottom-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .label-window-row.active,
+:root[data-theme="dark"] .label-class.chosen {
+  background: var(--color-primary-light);
+  border-left-color: var(--color-primary);
+}
+
+:root[data-theme="dark"] .label-select-all,
+:root[data-theme="dark"] .label-chart-title,
+:root[data-theme="dark"] .label-info,
+:root[data-theme="dark"] .label-class,
+:root[data-theme="dark"] .label-status-options button,
+:root[data-theme="dark"] #label-observations {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-card);
+  border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .label-info {
+  background: var(--theme-surface-inset);
+}
+
+:root[data-theme="dark"] .models-dataset-summary,
+:root[data-theme="dark"] .export-summary {
+  background: var(--theme-surface-inset);
+}
+
+:root[data-theme="dark"] .export-pipeline-step b,
+:root[data-theme="dark"] .export-progress-track,
+:root[data-theme="dark"] .windows-list-panel th,
+:root[data-theme="dark"] .status-pill {
+  background: var(--theme-surface-raised);
+  color: var(--color-text-secondary);
+}
+
+:root[data-theme="dark"] .export-info {
+  background: var(--color-primary-light);
+  color: var(--color-text-secondary);
+}
+
+:root[data-theme="dark"] .export-status-ok,
+:root[data-theme="dark"] .status-pill.accepted {
+  color: #6ee7b7;
+}
+
+:root[data-theme="dark"] .status-pill.review {
+  color: #fde68a;
+}
+
+:root[data-theme="dark"] .status-pill.blocked {
+  color: #fca5a5;
+}
+
+:root[data-theme="dark"] .export-pipeline-step.complete b {
+  background: #15803d;
+}
+
+:root[data-theme="dark"] .sismo-confirm-dialog {
+  border-color: var(--theme-border-strong);
+  box-shadow: 0 20px 55px rgb(0 0 0 / 45%);
+}
+
+:root[data-theme="dark"] .sismo-confirm-footer {
+  background: var(--theme-surface-inset);
+  border-top-color: var(--theme-border-strong);
+}
+
+:root[data-theme="dark"] .sismo-confirm-modal {
+  background: rgb(2 6 23 / 72%);
+}
+
+:root[data-theme="dark"] .workspace-inspector,
+:root[data-theme="dark"] .models-modal,
+:root[data-theme="dark"] .modal-content {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border-color: var(--theme-border-strong);
+}
+
+:root[data-theme="dark"] input[type="date"],
+:root[data-theme="dark"] input[type="time"],
+:root[data-theme="dark"] input[type="file"],
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] .analysis-chart-header,
+:root[data-theme="dark"] .analysis-info-header,
+:root[data-theme="dark"] .table th,
+:root[data-theme="dark"] .table-container.scrollable thead {
+  background: var(--theme-surface-raised);
+}
+
+/* Etiquetado defines its own legacy tokens and otherwise falls back to
+   navy-on-navy text in dark mode. */
+:root[data-theme="dark"] .labeling-view {
+  --surface: var(--color-bg-card);
+  --border-color: var(--color-border);
+  --text-primary: var(--color-text-primary);
+  color: var(--color-text-primary);
+}
+
+:root[data-theme="dark"] .label-toolbar,
+:root[data-theme="dark"] .label-list-panel,
+:root[data-theme="dark"] .label-signal-panel,
+:root[data-theme="dark"] .label-editor,
+:root[data-theme="dark"] .label-batches-panel {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .label-select-all,
+:root[data-theme="dark"] .label-window-row,
+:root[data-theme="dark"] .label-editor label,
+:root[data-theme="dark"] .label-field-title,
+:root[data-theme="dark"] .label-message {
+  color: var(--color-text-secondary);
+}
+
+:root[data-theme="dark"] .label-window-row.active {
+  color: var(--color-text-primary);
+}
+
+:root[data-theme="dark"] .label-window-row.active .label-row-secondary,
+:root[data-theme="dark"] .label-row-secondary {
+  color: #93c5fd;
+}
+
+:root[data-theme="dark"] .label-class,
+:root[data-theme="dark"] .label-status-options button,
+:root[data-theme="dark"] .label-editor input,
+:root[data-theme="dark"] .label-editor select,
+:root[data-theme="dark"] .label-editor textarea {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-subtle);
+}
+
+:root[data-theme="dark"] .label-class.chosen {
+  background: var(--color-primary-light);
+}
+
+:root[data-theme="dark"] .label-info,
+:root[data-theme="dark"] .label-footer {
+  background: var(--theme-surface-inset);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+/* Dataset has several native controls with explicit white backgrounds. */
+:root[data-theme="dark"] .dataset-view .form-input,
+:root[data-theme="dark"] .dataset-view .form-select,
+:root[data-theme="dark"] .dataset-view input[type="number"],
+:root[data-theme="dark"] .dataset-view input[type="text"],
+:root[data-theme="dark"] .dataset-view select,
+:root[data-theme="dark"] .dataset-view textarea {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .dataset-view input:disabled,
+:root[data-theme="dark"] .dataset-view select:disabled,
+:root[data-theme="dark"] .dataset-view button:disabled {
+  background: var(--theme-surface-inset);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  opacity: 0.85;
+}
+
+:root[data-theme="dark"] .dataset-view .ds-section,
+:root[data-theme="dark"] .dataset-view .ds-card,
+:root[data-theme="dark"] .dataset-view .ds-subcard,
+:root[data-theme="dark"] .dataset-view .ds-example-table,
+:root[data-theme="dark"] .dataset-view .ds-split-control,
+:root[data-theme="dark"] .dataset-view .ds-split-controls,
+:root[data-theme="dark"] .dataset-view .ds-check,
+:root[data-theme="dark"] .dataset-view .ds-bottom-bar {
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .dataset-view .ds-filter-panel,
+:root[data-theme="dark"] .dataset-view .ds-split-controls,
+:root[data-theme="dark"] .dataset-view .ds-bottom-bar {
+  background: var(--theme-surface-inset);
+}
+
+:root[data-theme="dark"] .dataset-view .ds-split-head input,
+:root[data-theme="dark"] .dataset-view .ds-bottom-bar input {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+:root[data-theme="dark"] .dataset-view .ds-table th,
+:root[data-theme="dark"] .dataset-view .ds-table thead,
+:root[data-theme="dark"] .dataset-view .data-table th,
+:root[data-theme="dark"] .dataset-view .ds-split-control {
+  background: var(--theme-surface-raised);
+  color: var(--color-text-primary);
+}
+
+:root[data-theme="dark"] .dataset-view .ds-table td,
+:root[data-theme="dark"] .dataset-view .data-table td,
+:root[data-theme="dark"] .dataset-view .ds-legend b,
+:root[data-theme="dark"] .dataset-view .ds-section-heading p,
+:root[data-theme="dark"] .dataset-view .ds-split p,
+:root[data-theme="dark"] .dataset-view .ds-split-legend {
+  color: var(--color-text-secondary);
+}
+
+:root[data-theme="dark"] .dataset-view .ds-status-ok,
+:root[data-theme="dark"] .dataset-view .ds-status-ready {
+  color: #6ee7b7;
+}
+
+:root[data-theme="dark"] .dataset-view .ds-status-warning {
+  color: #fde68a;
+}
+
+/* Ventanas keeps explicit geometry so the layout inspector can move every
+   card with --x/--y/--w/--h without clipping the configuration controls. */
+.windows-page {
+  display: block;
+  min-height: 796px;
+  overflow: auto;
+  padding: 2px 0 96px;
+}
+
+.windows-page > .windows-config,
+.windows-page > .windows-charts,
+.windows-page > .windows-list-panel {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  max-width: none;
+  max-height: none;
+}
+
+.windows-config {
+  --x: 0px;
+  --y: 0px;
+  --w: 100%;
+  --h: 145px;
+}
+
+.windows-charts {
+  --x: 0px;
+  --y: 160px;
+  --w: 100%;
+  --h: 180px;
+}
+
+.windows-extracted-region {
+  --x: 0px;
+  --y: 355px;
+  --w: 100%;
+  --h: 180px;
+}
+
+.windows-saved-region {
+  --x: 0px;
+  --y: 550px;
+  --w: 100%;
+  --h: 150px;
+}
+
+:root[data-theme="dark"] #win-selection-name,
+:root[data-theme="dark"] #label-batch-name,
+:root[data-theme="dark"] #ds-name,
+:root[data-theme="dark"] .ds-example-table,
+:root[data-theme="dark"] .ds-example-table .table,
+:root[data-theme="dark"] .ds-saved-region .data-table {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] #win-selection-name::placeholder,
+:root[data-theme="dark"] #label-batch-name::placeholder,
+:root[data-theme="dark"] #ds-name::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+:root[data-theme="dark"] .ds-example-table .table th,
+:root[data-theme="dark"] .ds-saved-region .data-table th {
+  background: var(--theme-surface-raised);
+  color: var(--color-text-primary) !important;
+}
+
+:root[data-theme="dark"] .dataset-view
+  > .ds-section:first-child
+  .ds-overview-grid
+  > article.ds-subcard:last-child
+  .ds-example-table
+  thead
+  th,
+:root[data-theme="dark"] .dataset-view .ds-example-table thead th,
+:root[data-theme="dark"] .dataset-view .ds-saved-region .data-table thead th {
+  background: var(--theme-surface-raised) !important;
+  color: var(--color-text-primary) !important;
+  text-shadow: none;
+}

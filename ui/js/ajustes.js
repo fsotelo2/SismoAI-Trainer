@@ -6,7 +6,10 @@
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   function applyTheme(theme){
     const resolved = theme === "system" ? (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light") : theme;
+    const previous = document.documentElement.dataset.theme;
     document.documentElement.dataset.theme = resolved;
+    if (previous !== resolved)
+      window.dispatchEvent(new CustomEvent("themechange", {detail:{theme:resolved}}));
   }
   function renderTheme(){
     document.querySelectorAll("[data-settings-theme]").forEach(b=>b.classList.toggle("selected",b.dataset.settingsTheme===preferences.theme));

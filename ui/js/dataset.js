@@ -9,7 +9,8 @@
   let items = [],
     filtered = [],
     examplesExpanded = false,
-    hasSavedDatasets = false;
+    hasSavedDatasets = false,
+    savedDatasetNames = new Set();
   const esc = (v) =>
     String(v ?? "").replace(
       /[&<>"']/g,
@@ -63,14 +64,35 @@
     const result = await Bridge.getDatasetCatalog();
     if (!result?.success) {
       hasSavedDatasets = false;
+      savedDatasetNames = new Set();
       renderSavedDatasets([], result?.error || "No se pudieron cargar los datasets.");
+      updateGenerateButton();
       updateContinueButton();
       return;
     }
     const datasets = result.datasets || [];
     hasSavedDatasets = datasets.length > 0;
+    savedDatasetNames = new Set(
+      datasets.map((x) =>
+        String(x.name || x.filename || "")
+          .trim()
+          .replace(/\.json$/i, "")
+          .toLocaleLowerCase(),
+      ),
+    );
     renderSavedDatasets(datasets);
+    updateGenerateButton();
     updateContinueButton();
+  }
+  function updateGenerateButton() {
+    const button = document.querySelector('[data-ds-action="generate"]');
+    const name =
+      $("ds-name")?.value?.trim().replace(/\.json$/i, "").toLocaleLowerCase() || "";
+    if (!button) return;
+    button.disabled = !name || savedDatasetNames.has(name);
+    button.title = savedDatasetNames.has(name)
+      ? "Ya existe un dataset con ese nombre"
+      : "Guardar dataset";
   }
   function updateContinueButton() {
     const button = $("btn-continue-models");
@@ -480,6 +502,9 @@
       const table = $("ds-example-table");
       if (table) table.classList.toggle("is-expanded", examplesExpanded);
     }
+  });
+  document.addEventListener("input", (e) => {
+    if (e.target?.id === "ds-name") updateGenerateButton();
   });
   document.addEventListener("change", (e) => {
     if (e.target.id === "ds-filter") filterRows();

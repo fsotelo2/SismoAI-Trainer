@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 12px;
 }
 .windows-config-head h2 {
@@ -250,7 +250,7 @@
 
 #win-footer-controls {
   --x: 24px;
-  --y: calc(100% - 35px);
+  --y: calc(100% - 72px);
   position: absolute;
   left: var(--x);
   top: var(--y);
@@ -259,7 +259,7 @@
 
 #btn-continue-labeling {
   --x: calc(100% - 215px);
-  --y: calc(100% - 35px);
+  --y: calc(100% - 72px);
   position: absolute;
   left: var(--x);
   top: var(--y);
@@ -354,7 +354,7 @@
 }
 .windows-config-head,
 .panel-heading {
-  gap: 8px;
+  gap: 16px;
   margin-bottom: 7px;
 }
 .windows-config-head h2 {
@@ -492,7 +492,7 @@
   --x: 0px;
   --y: 0px;
   --w: 100%;
-  --h: 140px;
+  --h: 160px;
 }
 
 .windows-charts {
@@ -528,4 +528,41 @@
   top: var(--y);
   width: var(--w);
   height: var(--h);
+}
+
+/* El contenido de configuración crece según sus controles. Mantener las
+   regiones en el flujo evita que gráficos y tablas se dibujen por debajo. */
+.windows-page {
+  display: grid;
+  grid-template-rows: auto auto minmax(200px, auto) minmax(150px, auto);
+  gap: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 0 96px;
+}
+
+.windows-page > .windows-config,
+.windows-page > .windows-charts,
+.windows-page > .windows-list-panel {
+  position: static;
+  left: auto;
+  top: auto;
+  width: auto;
+  height: auto;
+}
+
+.windows-config {
+  min-height: 250px;
+}
+
+.windows-charts {
+  min-height: 200px;
+}
+
+.windows-extracted-region {
+  min-height: 220px;
+}
+
+.windows-saved-region {
+  min-height: 160px;
 }
