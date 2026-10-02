@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-def _load_test_arrays(manifest_path: str, config: dict):
+def _load_split_arrays(manifest_path: str, config: dict, split_name: str):
     """Load the held-out test split using the same resampling and per-window z-score as training."""
     import numpy as np
 
@@ -19,9 +19,9 @@ def _load_test_arrays(manifest_path: str, config: dict):
     manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
     if manifest.get("schema") != "sismoai-dataset" or manifest.get("schema_version") != 1:
         raise ValueError("El Dataset activo no tiene un manifiesto compatible.")
-    rows = (manifest.get("splits") or {}).get("test") or []
+    rows = (manifest.get("splits") or {}).get(split_name) or []
     if not rows:
-        raise ValueError("La partición Test está vacía; no se puede evaluar el modelo.")
+        raise ValueError("La partición " + split_name + " está vacía; no se puede procesar.")
     sensor_mode = config.get("input", "geo_mpu")
     sensors = {"geo_mpu": ("GEO", "MPU"), "geo": ("GEO",), "mpu": ("MPU",)}.get(sensor_mode)
     if not sensors:
@@ -31,12 +31,12 @@ def _load_test_arrays(manifest_path: str, config: dict):
     for item in rows:
         rel = item.get("snapshot")
         if not rel:
-            raise ValueError("Falta la copia física de una ventana del conjunto Test: " + str(item.get("window_id")))
+            raise ValueError("Falta la copia física de una ventana de " + split_name + ": " + str(item.get("window_id")))
         path = (root / rel).resolve()
         if os.path.commonpath([str(root), str(path)]) != str(root):
             raise ValueError("Ruta de snapshot fuera del Dataset.")
         if not path.is_file():
-            raise ValueError("No existe el snapshot de Test: " + str(path))
+            raise ValueError("No existe el snapshot de " + split_name + ": " + str(path))
         channels = []
         with np.load(path, allow_pickle=False) as stored:
             for sensor in sensors:
@@ -69,12 +69,14 @@ def _accuracy(pred, truth):
 
 def run_post_onnx_stages(onnx_path: str, output_dir: str, export_name: str,
                          dataset_manifest_path: str, config: dict,
-                         expected_input_shape: list) -> dict:
+                         expected_input_shape: list, expected_dataset_id: str,
+                         calibration_count: int = 200) -> dict:
     """Run quantization, held-out test evaluation, and create a portable deployment bundle."""
     import numpy as np
     import onnx
     import onnxruntime as ort
-    from onnxruntime.quantization import quantize_dynamic, QuantType
+    from onnxruntime.quantization import (quantize_static, QuantFormat, QuantType,
+                                          CalibrationMethod, CalibrationDataReader)
 
     source = Path(onnx_path).resolve()
     out = Path(output_dir).resolve()
@@ -83,9 +85,35 @@ def run_post_onnx_stages(onnx_path: str, output_dir: str, export_name: str,
     out.mkdir(parents=True, exist_ok=True)
     quant_path = out / (export_name + ".int8.onnx")
 
-    # Stage 2: dynamic INT8 quantization. This method does not require calibration data.
-    quantize_dynamic(str(source), str(quant_path), weight_type=QuantType.QInt8,
-                     op_types_to_quantize=["Conv", "Gemm"])
+    # Stage 2: static post-training INT8 quantization calibrated only on Train.
+    manifest = json.loads(Path(dataset_manifest_path).read_text(encoding="utf-8"))
+    if str(manifest.get("dataset_id")) != str(expected_dataset_id):
+        raise ValueError("El Dataset activo no corresponde al experimento entrenado.")
+    x_cal, _ = _load_split_arrays(dataset_manifest_path, config, "train")
+    if tuple(x_cal.shape[1:]) != tuple(int(v) for v in expected_input_shape):
+        raise ValueError("La forma de calibración no coincide con el modelo.")
+    count = max(1, min(int(calibration_count), len(x_cal)))
+    indices = np.linspace(0, len(x_cal)-1, count, dtype=np.int64)
+    x_cal = x_cal[indices]
+    class Reader(CalibrationDataReader):
+        def __init__(self, samples, input_name):
+            self.samples = samples
+            self.input_name = input_name
+            self.index = 0
+        def get_next(self):
+            if self.index >= len(self.samples):
+                return None
+            sample = self.samples[self.index:self.index+1]
+            self.index += 1
+            return {self.input_name: sample}
+        def rewind(self):
+            self.index = 0
+    original_session = ort.InferenceSession(str(source), providers=["CPUExecutionProvider"])
+    input_name = original_session.get_inputs()[0].name
+    quantize_static(str(source), str(quant_path), Reader(x_cal, input_name),
+                    quant_format=QuantFormat.QDQ, activation_type=QuantType.QUInt8,
+                    weight_type=QuantType.QInt8, calibrate_method=CalibrationMethod.MinMax,
+                    op_types_to_quantize=["Conv", "Gemm"])
     quant_graph = onnx.load(str(quant_path))
     onnx.checker.check_model(quant_graph)
     quant_session = ort.InferenceSession(str(quant_path), providers=["CPUExecutionProvider"])
@@ -93,7 +121,7 @@ def run_post_onnx_stages(onnx_path: str, output_dir: str, export_name: str,
     quant_bytes = quant_path.stat().st_size
 
     # Stage 3: evaluate original and quantized graphs on the reserved Test split.
-    x_test, y_test = _load_test_arrays(dataset_manifest_path, config)
+    x_test, y_test = _load_split_arrays(dataset_manifest_path, config, "test")
     expected = tuple(int(v) for v in expected_input_shape)
     if tuple(x_test.shape[1:]) != expected:
         raise ValueError("La forma de entrada del conjunto Test no coincide con el modelo.")
@@ -125,14 +153,14 @@ def run_post_onnx_stages(onnx_path: str, output_dir: str, export_name: str,
         "target": "esp32s3",
         "stages": {
             "onnx": {"status": "completed", "path": str(source)},
-            "quantization": {"status": "completed", "method": "onnxruntime_dynamic_int8",
+            "quantization": {"status": "completed", "method": "onnxruntime_static_ptq_int8", "calibration_split": "train", "calibration_samples": int(count),
                              "path": str(quant_path), "bytes": quant_bytes},
             "evaluation": evaluation,
             "package": {"status": "completed", "type": "portable_model_bundle",
                         "executable": False},
         },
         "limitations": [
-            "La cuantización INT8 dinámica de ONNX no garantiza compatibilidad con ESP32-S3.",
+            "La cuantización INT8 estática de ONNX no garantiza compatibilidad con ESP32-S3.",
             "El paquete contiene artefactos y metadatos; no es firmware ni binario ejecutable.",
             "La compilación final requiere conversión y runtime compatibles con el entorno ESP-IDF/ESP-DL."
         ],
