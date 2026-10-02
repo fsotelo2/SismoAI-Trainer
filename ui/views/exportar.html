@@ -12,7 +12,7 @@
         </select>
       </div>
       <div class="export-summary" id="export-model-summary">
-        Selecciona un experimento para consultar arquitectura, dataset, dimensiones y estado.
+        Selecciona un experimento para consultar arquitectura, dataset, dimensiones, accuracy y estado de validación.
       </div>
     </section>
 
@@ -72,7 +72,7 @@
         <label class="form-label" for="export-quantization">Método de cuantización</label>
         <select id="export-quantization" class="form-select">
           <option value="none">Sin cuantización (solo ONNX)</option>
-          <option value="int8_ptq">INT8 — PTQ (requiere calibración)</option>
+          <option value="int8_ptq" disabled>INT8 (ESP-PPQ) — pendiente de integración</option>
         </select>
       </div>
       <div class="form-group">
@@ -82,7 +82,7 @@
         </select>
       </div>
       <label class="export-check"><input id="export-equivalence" type="checkbox" checked/> Verificar equivalencia PyTorch vs ONNX</label>
-      <p class="export-note">Los formatos finales de empaquetado dependerán del runtime seleccionado para ESP32-S3.</p>
+      <p class="export-note">La versión actual genera ONNX y verifica equivalencia numérica. INT8/PTQ y el empaquetado ejecutable ESP32-S3 aún no están integrados.</p>
     </section>
 
     <section class="card export-card export-card-execution" data-export-region="5">
@@ -97,13 +97,13 @@
         <div class="export-pipeline-step"><b>4</b><span>Paquete</span></div>
       </div>
       <div class="export-toolbar">
-        <button class="btn btn-primary" type="button" disabled>▶ Iniciar exportación</button>
-        <button class="btn btn-secondary" type="button" disabled>Restablecer</button>
-        <span class="export-muted">Pendiente de integración</span>
+        <button class="btn btn-primary" id="btn-start-export" type="button" disabled>▶ Iniciar exportación</button>
+        <button class="btn btn-secondary" id="btn-reset-export" type="button">Restablecer</button>
+        <span class="export-muted" id="export-stage-message">Selecciona un modelo para iniciar.</span>
       </div>
       <div class="export-progress-head"><span>Progreso</span><strong>Sin iniciar</strong></div>
       <div class="export-progress-track"><i></i></div>
-      <p class="export-muted">La ejecución se habilitará cuando estén conectados los servicios de conversión.</p>
+      <p class="export-muted" id="export-progress-message">La conversión ONNX se ejecuta después de validar la reconstrucción del modelo.</p>
       <label class="form-label" for="export-log">Registro de proceso</label>
       <textarea id="export-log" class="form-input export-log" readonly>Esperando integración del proceso de exportación.</textarea>
     </section>
@@ -130,16 +130,16 @@
   <section class="card export-history" data-export-region="history">
     <header class="export-card-heading">
       <div><h2>Exportaciones guardadas</h2><p>Historial de paquetes y conversiones generadas.</p></div>
-      <button class="btn btn-secondary btn-sm" type="button" disabled>↻ Actualizar</button>
+      <button class="btn btn-secondary btn-sm" id="btn-refresh-export-history" type="button">↻ Actualizar</button>
     </header>
     <div class="table-container">
       <table class="table">
         <thead><tr><th>Nombre</th><th>Experimento</th><th>Formato</th><th>Cuantización</th><th>Tamaño</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
-        <tbody><tr><td colspan="8">Aún no hay exportaciones registradas.</td></tr></tbody>
+        <tbody id="export-history-body"><tr><td colspan="8">Consultando exportaciones...</td></tr></tbody>
       </table>
     </div>
   </section>
   <div class="workspace-inline-actions export-inline-actions">
-    <button class="btn btn-primary" id="btn-generate-export-package" type="button" disabled>Generar paquete para ESP32-S3 →</button>
+    <button class="btn btn-primary" id="btn-generate-export-package" type="button" disabled>Exportar modelo ONNX →</button>
   </div>
 </section>
