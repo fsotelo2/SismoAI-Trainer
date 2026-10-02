@@ -850,3 +850,26 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* La tarjeta de información debe mostrar su contenido completo sin scroll interno. */
+.settings-grid {
+  min-height: 800px;
+}
+.settings-grid > .settings-info {
+  --y: 625px;
+  --h: 170px;
+  overflow: hidden;
+}
+.settings-view .settings-info-grid {
+  overflow: visible;
+}
+@media (max-width: 1050px) {
+  .settings-grid {
+    min-height: 1200px;
+  }
+  .settings-grid > .settings-info {
+    --y: 1035px;
+    --h: 150px;
+  }
+}
