@@ -1,5 +1,38 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v1.0.0] — Primera versión consolidada de SismoAI Trainer
+
+**Fecha:** 2026-10-02  
+**Rama:** `main`  
+**Versión anterior:** 0.8.0  
+**Tipo:** MAJOR
+
+**Justificación:** se establece la versión 1.0.0 como primera entrega consolidada de SismoAI Trainer, integrando en `main` las fases de desarrollo del flujo de trabajo, desde la inspección de datos sísmicos hasta la exportación de artefactos para despliegue, junto con la configuración general de la aplicación.
+
+**Alcance consolidado**
+- **Added:** módulo Proyecto para seleccionar la carpeta de datos y consultar el estado del proyecto, los archivos BIN detectados y los eventos registrados.
+- **Added:** módulo Datos para inspeccionar los archivos BIN y su información asociada.
+- **Added:** módulo Análisis para explorar señales y herramientas de análisis.
+- **Added:** módulo Ventanas para configurar, generar y persistir ventanas derivadas de las señales, conservando su trazabilidad.
+- **Added:** módulo Etiquetado para asignar y persistir clases y estados de anotación de ventanas.
+- **Added:** módulo Dataset para organizar ventanas etiquetadas y generar particiones reproducibles para entrenamiento, validación y prueba.
+- **Added:** módulo Modelos para configurar y ejecutar entrenamientos, registrar experimentos y guardar artefactos; incluye reconstrucción y validación estructural de modelos registrados.
+- **Added:** módulo Exportar para generar artefactos de exportación, incluyendo ONNX y el flujo ESP-DL/ESP-PPQ para objetivos compatibles como ESP32-S3.
+- **Added:** módulo Ajustes para administrar apariencia, preferencias generales y subcategorías de la clase NO_SISMICO.
+- **Changed:** navegación y estructura visual integradas para el conjunto de módulos de la aplicación.
+- **Changed:** resumen del módulo Proyecto ampliado a siete indicadores: archivos BIN, eventos, ventanas, etiquetados, datasets, modelos y exportaciones.
+
+**Verificación**
+- Las fases funcionales principales se reportaron como validadas por el usuario durante su implementación e integración.
+- La versión consolida las funcionalidades registradas en las entradas anteriores; no se declara una nueva ejecución completa de pruebas automatizadas ni una validación integral de extremo a extremo para este commit.
+- La generación de artefactos de exportación no implica por sí misma validación de rendimiento predictivo ni ejecución en hardware ESP32-S3.
+
+**Compatibilidad y límites**
+- La versión 1.0.0 representa la consolidación del flujo de trabajo implementado en el repositorio; no implica que todas las capacidades futuras estén completadas.
+- La exportación para ESP32-S3 produce artefactos para integración en el entorno de despliegue correspondiente, no firmware ejecutable directamente desde la aplicación.
+
+---
+
 ## [v0.8.0] — Ajustes y configuración de la aplicación
 
 **Fecha:** 2026-10-02  
