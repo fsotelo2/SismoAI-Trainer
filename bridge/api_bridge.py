@@ -2338,8 +2338,10 @@ class ApiBridge:
                 self._dataset_path,
                 config,
                 exported["input_shape"][1:],
+                record.get("dataset_id"),
+                200,
             )
-            exported["quantization"] = "int8_dynamic"
+            exported["quantization"] = "int8_static_ptq"
             exported["pipeline_report_path"] = os.path.join(
                 os.path.dirname(exported["onnx_path"]), str(export_name).strip() + ".pipeline.json")
             with open(onnx_result["report_path"], "w", encoding="utf-8") as stream:
