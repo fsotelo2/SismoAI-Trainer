@@ -2138,7 +2138,7 @@ class ApiBridge:
                             with self._model_training_lock:
                                 self._model_training_state.update(status="running",
                                     epoch=progress["epoch"], progress=progress)
-                        result = train_experiment(config_snapshot, arrays, output_dir, on_progress)
+                        result = train_experiment(config_snapshot, arrays, output_dir, on_progress, model_id=experiment_id)
                         finished_at = __import__("datetime").datetime.now().astimezone().isoformat(timespec="seconds")
                         current = self.get_model_experiments().get("experiments", [])
                         prior = next((x for x in current if x.get("experiment_id") == experiment_id), {})
