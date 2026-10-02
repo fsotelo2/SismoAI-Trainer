@@ -138,6 +138,12 @@ def reconstruct_model(model_dir: str | Path, expected_model_id: str | None = Non
         raise ValueError("Faltan parámetros estructurales en architecture.json.")
     model = build_network("1d_cnn", int(params["channels"]),
                           int(params["points"]), int(params["classes"]))
+    expected = _architecture_manifest(model, "1d_cnn", int(params["channels"]),
+        int(params["points"]), int(params["classes"]), str(manifest.get("model_id", "")))
+    if manifest.get("layers") != expected["layers"]:
+        raise ValueError("La definición de capas no coincide con la CNN registrada.")
+    if manifest.get("input_shape") != expected["input_shape"] or manifest.get("output_shape") != expected["output_shape"]:
+        raise ValueError("Las dimensiones registradas no coinciden con la arquitectura.")
     try:
         try:
             state = torch.load(weights_path, map_location="cpu", weights_only=True)
