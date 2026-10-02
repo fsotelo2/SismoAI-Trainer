@@ -14,6 +14,24 @@ import math
 import re
 from typing import Optional
 
+def _get_documents_folder() -> str:
+    """Return the user's actual Windows Documents folder, including redirections."""
+    if os.name == "nt":
+        try:
+            import winreg
+
+            key_path = r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path) as key:
+                path, _ = winreg.QueryValueEx(key, "Personal")
+            path = os.path.expandvars(path)
+            if os.path.isdir(path):
+                return path
+        except (OSError, ImportError):
+            pass
+
+    fallback = os.path.join(os.path.expanduser("~"), "Documents")
+    return fallback if os.path.isdir(fallback) else os.path.expanduser("~")
+
 from core.project.service import ProjectService
 from core.datos.service import DataService
 from core.analysis.service import AnalysisService
@@ -100,9 +118,7 @@ class ApiBridge:
         """
         try:
             import webview
-            initial_dir = os.path.join(os.path.expanduser("~"), "Documents")
-            if not os.path.isdir(initial_dir):
-                initial_dir = os.path.expanduser("~")
+            initial_dir = _get_documents_folder()
 
             result = webview.windows[0].create_file_dialog(
                 webview.FOLDER_DIALOG,
