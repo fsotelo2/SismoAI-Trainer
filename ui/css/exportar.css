@@ -216,7 +216,7 @@
   --x: 0px;
   --y: calc(100% - 190px);
   --w: 100%;
-  --h: 145px;
+  --h: 190px;
   padding: 5px 6px;
   overflow:auto;
 }
