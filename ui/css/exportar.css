@@ -49,17 +49,17 @@
   --h: calc((100% - 10px) / 2 - 20px);
 }
 .export-card-advanced {
-  --x: 0px; --y: calc(50% + 5px);
+  --x: 0px; --y: calc((100% - 10px) / 2 - 15px);
   --w: calc((100% - 20px) / 3);
   --h: calc((100% - 10px) / 2 - 20px);
 }
 .export-card-execution {
-  --x: calc((100% + 10px) / 3); --y: calc(50% + 5px);
+  --x: calc((100% + 10px) / 3); --y: calc((100% - 10px) / 2 - 15px);
   --w: calc((100% - 20px) / 3);
   --h: calc((100% - 10px) / 2 - 20px);
 }
 .export-card-results {
-  --x: calc((100% + 10px) * 2 / 3); --y: calc(50% + 5px);
+  --x: calc((100% + 10px) * 2 / 3); --y: calc((100% - 10px) / 2 - 15px);
   --w: calc((100% - 20px) / 3);
   --h: calc((100% - 10px) / 2 - 20px);
 }
@@ -196,7 +196,7 @@
 }
 .export-history {
   --x: 0px;
-  --y: calc(100% - 145px);
+  --y: calc(100% - 165px);
   --w: 100%;
   --h: 112px;
   padding: 10px 12px;
