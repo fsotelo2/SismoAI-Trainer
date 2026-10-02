@@ -644,3 +644,87 @@
   --w: auto;
   --h: auto;
 }
+
+
+/* Lienzo espacial de Ajustes: tarjetas principales con coordenadas absolutas,
+   siguiendo el modelo de regiones de ui/css/dataset.css. */
+.settings-grid {
+  display: block;
+  position: relative;
+  min-height: 1030px;
+}
+
+.settings-grid > .settings-appearance {
+  --x: 0px;
+  --y: 0px;
+  --w: calc(50% - 7px);
+  --h: 248px;
+}
+
+.settings-grid > .settings-general {
+  --x: calc(50% + 7px);
+  --y: 0px;
+  --w: calc(50% - 7px);
+  --h: 248px;
+}
+
+.settings-grid > .settings-catalog {
+  --x: 0px;
+  --y: 265px;
+  --w: 100%;
+  --h: 550px;
+}
+
+.settings-grid > .settings-info {
+  --x: 0px;
+  --y: 835px;
+  --w: 100%;
+  --h: 180px;
+}
+
+.settings-grid > .settings-card {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  margin: 0;
+  overflow: auto;
+}
+
+/* Elementos internos: desplazamiento y dimensiones independientes dentro
+   de su contenedor, conservando el flujo y la composición interna por defecto. */
+.settings-view [data-layout-ref] {
+  left: var(--x, 0px);
+  top: var(--y, 0px);
+  translate: none;
+  width: var(--w, auto);
+  height: var(--h, auto);
+}
+@media (max-width: 1050px) {
+  .settings-grid {
+    min-height: 1600px;
+  }
+  .settings-grid > .settings-appearance,
+  .settings-grid > .settings-general,
+  .settings-grid > .settings-catalog,
+  .settings-grid > .settings-info {
+    left: var(--x);
+    width: var(--w);
+  }
+  .settings-grid > .settings-general {
+    --x: 0px;
+    --y: 265px;
+    --w: 100%;
+  }
+  .settings-grid > .settings-catalog {
+    --y: 530px;
+    --h: 650px;
+  }
+  .settings-grid > .settings-info {
+    --y: 1200px;
+  }
+  .settings-grid > .settings-appearance {
+    --w: 100%;
+  }
+}
