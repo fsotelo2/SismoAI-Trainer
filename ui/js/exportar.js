@@ -18,7 +18,7 @@
     if(!box)return;
     if(!x){box.textContent="Selecciona un experimento para consultar arquitectura, dataset, dimensiones, accuracy y estado de validación.";setBusy(false);return;}
     const tr=x.training_result||{}, metrics=tr.metrics||{}, cfg=x.config||{};
-    const acc=metrics.accuracy??metrics.validation_accuracy??metrics.val_accuracy;
+    const acc=metrics.validation?.accuracy??metrics.validation_accuracy??metrics.accuracy??metrics.val_accuracy;
     box.innerHTML="<strong>Experimento:</strong> "+esc(cfg.name||x.experiment_id)+
       "<br><strong>Arquitectura:</strong> "+esc(cfg.architecture||"—")+
       "<br><strong>Dataset:</strong> "+esc(x.dataset_name||x.dataset_id||"—")+
@@ -89,7 +89,7 @@
       log("Archivo: "+fmt(x.onnx_path));log("Tamaño: "+fmt(x.bytes)+" bytes");log("SHA-256: "+fmt(x.sha256));
       log("Equivalencia PyTorch/ONNX: "+(x.verified?(x.parity?.passed?"Correcta":"Fallida"):"No solicitada"));
       log(x.note||"");
-      const values=[x.onnx_path,"No aplicado",x.bytes?Math.ceil(x.bytes/1024)+" KB":"—","No evaluados","No estimada","No estimada",fmt(exp?.training_result?.metrics?.accuracy??"No disponible"),"No aplica"];
+      const values=[x.onnx_path,"No aplicado",x.bytes?Math.ceil(x.bytes/1024)+" KB":"—","No evaluados","No estimada","No estimada",fmt(exp?.training_result?.metrics?.validation?.accuracy!==undefined?(exp.training_result.metrics.validation.accuracy*100).toFixed(1)+"%":"No disponible"),"No aplica"];
       document.querySelectorAll(".export-result-list dd").forEach((el,i)=>{if(values[i]!==undefined)el.textContent=values[i];});
       if(progress)progress.textContent="ONNX completado · siguientes etapas pendientes";
       if(track)track.style.width="25%";updateStages(1);
