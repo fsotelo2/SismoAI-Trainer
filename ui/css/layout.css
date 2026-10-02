@@ -125,53 +125,53 @@ body {
   height: 18px;
 }
 
-/* Sidebar: escala compacta y navegación proporcionada. */
+/* Sidebar: escala intermedia para equilibrar legibilidad y espacio. */
 .sidebar {
-  width: 200px;
-  min-width: 200px;
+  width: 220px;
+  min-width: 220px;
 }
 
 .sidebar .sidebar-logo-icon {
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
 }
 
 .sidebar .sidebar-logo-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
 }
 
 .sidebar .sidebar-logo span {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .sidebar .sidebar-nav {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 5px;
-  padding: 12px 8px;
+  gap: 7px;
+  padding: 14px 9px;
 }
 
 .sidebar .nav-item {
   flex: 0 0 auto;
-  min-height: 44px;
-  gap: 10px;
-  padding: 9px 10px;
-  font-size: 16px;
+  min-height: 48px;
+  gap: 11px;
+  padding: 10px 11px;
+  font-size: 17px;
   border-radius: 8px;
 }
 
 .sidebar .nav-item-icon {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
 }
 
 .sidebar .nav-item-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 @media (max-width: 768px) {
