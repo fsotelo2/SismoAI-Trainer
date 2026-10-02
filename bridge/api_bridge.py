@@ -2271,7 +2271,13 @@ class ApiBridge:
                 raise ValueError("El registro no contiene architecture_path.")
             model_dir = os.path.dirname(os.path.abspath(architecture_path))
             models_root = os.path.abspath(os.path.dirname(self._models_registry_path()))
-            project_root = os.path.dirname(models_root)
+            # Resolve relative export destinations against the same canonical
+            # project root used by Ventanas and the other project folders.
+            project_root = self._project.folder_path
+            if project_root:
+                project_root = os.path.abspath(os.path.expanduser(project_root))
+            else:
+                project_root = os.path.dirname(os.path.abspath(self._window_path))
             if os.path.commonpath([models_root, model_dir]) != models_root:
                 raise ValueError("La ruta del modelo está fuera de Modelos.")
             name = str(export_name or "").strip()
