@@ -46,7 +46,7 @@
     <section class="card export-card export-card-calibration" data-export-region="3">
       <header class="export-card-heading">
         <span class="export-step">3</span>
-        <div><h2>Dataset de calibración</h2><p>Se requiere para métodos de cuantización que lo necesiten.</p></div>
+        <div><h2>Dataset de calibración</h2><p>La cuantización dinámica no requiere dataset de calibración.</p></div>
       </header>
       <div class="form-group">
         <label class="form-label" for="export-calibration-dataset">Dataset</label>
@@ -55,7 +55,7 @@
         </select>
       </div>
       <div class="export-summary" id="export-calibration-summary">
-        La calibración se habilitará al elegir un método compatible. El conjunto de prueba se mantiene reservado.
+        No requerido para INT8 dinámico. El conjunto Test se mantiene reservado para evaluación.
       </div>
       <div class="form-group">
         <label class="form-label" for="export-calibration-count">Muestras de calibración</label>
@@ -72,7 +72,7 @@
         <label class="form-label" for="export-quantization">Método de cuantización</label>
         <select id="export-quantization" class="form-select">
           <option value="none">Sin cuantización (solo ONNX)</option>
-          <option value="int8_ptq" disabled>INT8 (ESP-PPQ) — pendiente de integración</option>
+          <option value="int8_dynamic">INT8 dinámico (ONNX Runtime)</option>
         </select>
       </div>
       <div class="form-group">
@@ -82,7 +82,7 @@
         </select>
       </div>
       <label class="export-check"><input id="export-equivalence" type="checkbox" checked/> Verificar equivalencia PyTorch vs ONNX</label>
-      <p class="export-note">La versión actual genera ONNX y verifica equivalencia numérica. INT8/PTQ y el empaquetado ejecutable ESP32-S3 aún no están integrados.</p>
+      <p class="export-note">El flujo genera ONNX, cuantiza pesos a INT8 dinámico, evalúa con Test y crea un paquete portable. No genera firmware.</p>
     </section>
 
     <section class="card export-card export-card-execution" data-export-region="5">
@@ -103,9 +103,9 @@
       </div>
       <div class="export-progress-head"><span>Progreso</span><strong>Sin iniciar</strong></div>
       <div class="export-progress-track"><i></i></div>
-      <p class="export-muted" id="export-progress-message">La conversión ONNX se ejecuta después de validar la reconstrucción del modelo.</p>
+      <p class="export-muted" id="export-progress-message">Se ejecutarán ONNX, cuantización INT8, evaluación con Test y empaquetado.</p>
       <label class="form-label" for="export-log">Registro de proceso</label>
-      <textarea id="export-log" class="form-input export-log" readonly>Esperando integración del proceso de exportación.</textarea>
+      <textarea id="export-log" class="form-input export-log" readonly>Listo para ejecutar las cuatro etapas.</textarea>
     </section>
 
     <section class="card export-card export-card-results" data-export-region="6">
