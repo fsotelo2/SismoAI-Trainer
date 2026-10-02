@@ -42,7 +42,7 @@
     if(act==="edit-category")editor(true,id);
     if(act==="save-category")await saveCategories();
     if(act==="toggle-category"){const next=categories.map(c=>c.id===id?{...c,active:!c.active}:c);const r=await Bridge.saveLabelCategories(next);if(r?.success){categories=r.categories;renderCategories();$("settings-message").textContent="Estado actualizado.";}else $("settings-message").textContent=r?.error||"No se pudo actualizar.";}
-    if(act==="delete-category"){const c=categories.find(x=>x.id===id);if(!c)return;if(!confirm("¿Eliminar la subcategoría "+c.name+"?"))return;const r=await Bridge.saveLabelCategories(categories.filter(x=>x.id!==id));if(r?.success){categories=r.categories;renderCategories();$("settings-message").textContent="Subcategoría eliminada.";}else $("settings-message").textContent=r?.error||"No se pudo eliminar.";}
+    if(act==="delete-category"){const c=categories.find(x=>x.id===id);if(!c)return;if(!(await window.showConfirmDialog({title:"Eliminar subcategoría",subtitle:"Esta acción no se puede deshacer.",message:'¿Deseas eliminar la subcategoría "'+c.name+'"?',confirmLabel:"Eliminar"})))return;const r=await Bridge.saveLabelCategories(categories.filter(x=>x.id!==id));if(r?.success){categories=r.categories;renderCategories();$("settings-message").textContent="Subcategoría eliminada.";}else $("settings-message").textContent=r?.error||"No se pudo eliminar.";}
   });
   window.initSettings=async()=>{
     $("settings-message").textContent="";
