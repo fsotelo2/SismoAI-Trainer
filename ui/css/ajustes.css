@@ -378,3 +378,10 @@
 .settings-view .settings-info-grid {
   min-width: 0;
 }
+/* Controles espaciales individuales editables desde ajustes.css. */
+.settings-view .settings-classes {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
