@@ -80,6 +80,8 @@ const Bridge = (() => {
     getModelExperiments: () => call("get_model_experiments"),
     deleteModelExperiment: (experimentId) =>
       call("delete_model_experiment", experimentId),
+    validateModelExperiment: (experimentId) =>
+      call("validate_model_experiment", experimentId),
     saveModelExperiment: (config, datasetId, datasetName) =>
       call("save_model_experiment", config, datasetId, datasetName),
     startModelTraining: (config, datasetId) =>
