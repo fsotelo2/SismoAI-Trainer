@@ -207,7 +207,8 @@ def _validate_arrays(arrays: dict) -> None:
 
 
 def train_experiment(config: dict, arrays: dict, output_dir: str,
-                     progress: Callable[[dict], None] | None = None,\n                     model_id: str | None = None) -> dict:
+                     progress: Callable[[dict], None] | None = None,
+                     model_id: str | None = None) -> dict:
     torch, nn = _torch()
     if not isinstance(config, dict) or not isinstance(config.get("training"), dict):
         raise ValueError("La configuración de entrenamiento no es válida.")
@@ -336,7 +337,8 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     digest = hashlib.sha256(weights.read_bytes()).hexdigest()
     result={"status":"trained","created_at":datetime.now(timezone.utc).isoformat(),
             "epochs_completed":len(history),"history":history,"metrics":metrics,
-            "weights_path":str(weights),"weights_bytes":weights.stat().st_size,"weights_sha256":digest,\n            "model_id":registered_id,"architecture_path":str(architecture_path),
+            "weights_path":str(weights),"weights_bytes":weights.stat().st_size,"weights_sha256":digest,
+            "model_id":registered_id,"architecture_path":str(architecture_path),
             "config":config,
             "input_shape":original_shape,"preprocessing":"resample lineal a 256 puntos; z-score por ventana y canal" + ("; seis estadísticas por canal" if config["architecture"] == "feature_classifier" else ""),
             "elapsed_seconds":time.time()-start}
