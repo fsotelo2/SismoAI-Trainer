@@ -683,12 +683,16 @@ const App = (() => {
     const cssSource = getStyleSource(viewSource, styleSelector);
     const reference = isWorkspaceRegion
       ? `${cssSource} | ${styleSelector} | X/Y/W/H: ${coordinates}`
-      : `${cssSource} | ${styleSelector} | X/Y: --layout-x/--layout-y | W/H: width/height`;
+      : currentView === "ajustes"
+        ? `${cssSource} | ${styleSelector} | Ajuste espacial: --x/--y/--w/--h`
+        : `${cssSource} | ${styleSelector} | X/Y: --layout-x/--layout-y | W/H: width/height`;
     const rect = element.getBoundingClientRect();
     const elementCoordinates = `X:${Math.round(rect.x)} Y:${Math.round(rect.y)} W:${Math.round(rect.width)} H:${Math.round(rect.height)}`;
     const label = isWorkspaceRegion
       ? reference
-      : `HTML: ui/views/${viewSource}.html | CSS: ${cssSource} | ${styleSelector} | Posición real ${elementCoordinates} | Coordenadas CSS: --x/--y | Ajuste: --layout-x/--layout-y | Tamaño: width/height`;
+      : currentView === "ajustes"
+        ? `HTML: ui/views/ajustes.html | CSS: ui/css/ajustes.css | ${styleSelector} | Posición real ${elementCoordinates} | Variables: --x/--y/--w/--h`
+        : `HTML: ui/views/${viewSource}.html | CSS: ${cssSource} | ${styleSelector} | Posición real ${elementCoordinates} | Coordenadas CSS: --x/--y | Ajuste: --layout-x/--layout-y | Tamaño: width/height`;
     element.setAttribute("data-layout-ref", selector);
     if (!document.body.classList.contains("layout-inspector-active")) return;
     if (!element.hasAttribute("data-layout-inspector-title")) {
