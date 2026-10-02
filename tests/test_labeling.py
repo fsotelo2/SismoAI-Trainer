@@ -46,10 +46,12 @@ class WindowLabelTests(unittest.TestCase):
         with self.assertRaises(LabelingError):
             WindowLabel("W-001", class_code=True).validate()
 
-    def test_unknown_secondary_category_is_rejected(self):
-        with self.assertRaises(LabelingError):
-            WindowLabel("W-001", class_code=CLASS_NON_SEISMIC,
-                        disturbance="RUIDO").validate()
+    def test_secondary_taxonomy_is_not_closed_yet(self):
+        # Phase 7 documentation treats examples such as RUIDO as illustrative
+        # until the secondary catalog is formally approved.
+        label = WindowLabel("W-001", class_code=CLASS_NON_SEISMIC,
+                            disturbance="RUIDO").validate()
+        self.assertEqual(label.disturbance, "RUIDO")
 
     def test_category_is_rejected_for_pending_window(self):
         with self.assertRaises(LabelingError):

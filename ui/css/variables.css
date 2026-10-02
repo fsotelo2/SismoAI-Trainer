@@ -5,7 +5,8 @@
 
 :root {
   /* Tipografía */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-size-xs: 11px;
   --font-size-sm: 12px;
   --font-size-base: 14px;
@@ -14,36 +15,36 @@
   --font-size-title: 20px;
 
   /* Fondos y Superficies */
-  --color-bg-app: #F8FAFC;
-  --color-bg-card: #FFFFFF;
-  --color-bg-sidebar: #FFFFFF;
-  --color-bg-hover: #F1F5F9;
+  --color-bg-app: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-sidebar: #ffffff;
+  --color-bg-hover: #f1f5f9;
 
   /* Bordes y Separadores */
-  --color-border: #E2E8F0;
-  --color-border-subtle: #CBD5E1;
+  --color-border: #e2e8f0;
+  --color-border-subtle: #cbd5e1;
 
   /* Textos */
-  --color-text-primary: #0F172A;
+  --color-text-primary: #0f172a;
   --color-text-secondary: #475569;
-  --color-text-muted: #64748B;
+  --color-text-muted: #64748b;
 
   /* Colores de Marca y Estados */
-  --color-primary: #2563EB;
-  --color-primary-hover: #1D4ED8;
-  --color-primary-light: #EFF6FF;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: #eff6ff;
 
-  --color-success: #10B981;
-  --color-success-bg: #DCFCE7;
+  --color-success: #10b981;
+  --color-success-bg: #dcfce7;
 
-  --color-warning: #B45309;
-  --color-warning-bg: #FEF3C7;
+  --color-warning: #b45309;
+  --color-warning-bg: #fef3c7;
 
-  --color-danger: #DC2626;
-  --color-danger-bg: #FEE2E2;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fee2e2;
 
-  --color-accent-purple: #7C3AED;
-  --color-accent-purple-light: #F3E8FF;
+  --color-accent-purple: #7c3aed;
+  --color-accent-purple-light: #f3e8ff;
 
   /* Espaciados */
   --spacing-xs: 4px;

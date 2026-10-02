@@ -1,0 +1,172 @@
+/* Estructura espacial común: posicionamiento espacial e integración interna. */
+
+.view-container > .workspace-view {
+  flex: 0 0 auto;
+}
+
+.workspace-view {
+  --workspace-width: 1200px;
+  --workspace-height: 756px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+.workspace-panel,
+.workspace-view > .card,
+.workspace-view > .panel,
+.workspace-view > section,
+.workspace-view > footer,
+.workspace-view > header {
+  min-width: 0;
+  min-height: 0;
+}
+
+.workspace-scroll {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Desplazamiento optativo de elementos internos sin romper Grid/Flexbox. */
+[data-layout-ref] {
+  translate: var(--layout-x, 0px) var(--layout-y, 0px);
+}
+
+/* F7 muestra las regiones configurables sin alterar su layout. */
+.layout-inspector-active [data-layout-label] {
+  outline: 2px dashed #dc2626;
+  outline-offset: -2px;
+  z-index: 20;
+}
+
+.layout-inspector-active [data-layout-label]::before {
+  display: none;
+}
+
+.layout-inspector-active [data-layout-inspector-content] {
+  position: relative;
+}
+
+[data-layout-inspector-focus="true"] {
+  outline: 3px solid #2563eb !important;
+  outline-offset: -3px;
+}
+
+/* Panel de capas del inspector F7. */
+.layout-inspector-panel {
+  position: fixed;
+  z-index: 1000;
+  top: 12px;
+  right: 12px;
+  width: min(460px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--color-text-primary);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 32px rgb(15 23 42 / 22%);
+  font-size: 12px;
+}
+
+.layout-inspector-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  color: #fff;
+  background: #1d4ed8;
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+}
+
+.layout-inspector-panel.is-dragging {
+  opacity: 0.92;
+  cursor: grabbing;
+}
+
+.layout-inspector-panel-close {
+  padding: 4px 8px;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgb(255 255 255 / 60%);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.layout-inspector-panel-help {
+  margin: 0;
+  padding: 8px 12px;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.layout-inspector-panel-list {
+  overflow: auto;
+  padding: 6px;
+}
+
+.layout-inspector-item {
+  width: 100%;
+  display: block;
+  padding: 7px 8px;
+  color: var(--color-text-primary);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  cursor: pointer;
+}
+
+.layout-inspector-item:hover {
+  background: var(--color-bg-hover);
+}
+
+.layout-inspector-item strong,
+.layout-inspector-item span {
+  display: block;
+}
+
+.layout-inspector-item strong {
+  margin-bottom: 3px;
+  color: var(--color-primary);
+}
+
+.layout-inspector-item span {
+  color: var(--color-text-muted);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.workspace-view > .workspace-panel,
+.workspace-view > .card,
+.workspace-view > .panel,
+.workspace-view > section,
+.workspace-view > footer,
+.workspace-view > header {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  max-width: none;
+  max-height: none;
+}
+
+.workspace-view > .workspace-panel,
+.workspace-view > .card,
+.workspace-view > .panel,
+.workspace-view > section,
+.workspace-view > footer,
+.workspace-view > header {
+  overflow: auto;
+}

@@ -8,7 +8,7 @@
 - Interfaz Modelos integrada al cargador de vistas existente.
 - Consulta del manifiesto Dataset activo y visualización de conteos de particiones y etiquetas binarias.
 - Configuración de experimento con validación de hiperparámetros, arquitectura, sensores, semilla y opciones.
-- Registro persistente de experimentos en `model_experiments.json`, sin sobrescribir registros previos.
+- Registro persistente de experimentos como archivos individuales `Modelos/<nombre>.json`, sin sobrescribir configuraciones previas; los registros antiguos `model_experiments.json` se migran automáticamente.
 - Preparación de tensores desde las ventanas referenciadas por el manifiesto en el mismo worker de fondo que entrena: remuestreo lineal a longitud fija (256 puntos), normalización z-score por ventana/canal y validación de tiempos finitos, estrictamente crecientes y etiquetas binarias. La interfaz recibe el estado «preparing» sin esperar a que termine esta etapa.
 - Entrenamiento CPU en segundo plano con PyTorch: 1D-CNN, clasificador denso y baseline lineal.
 - Seguimiento de época, pérdidas y accuracy de validation; parada temprana opcional.
@@ -23,7 +23,7 @@
 - El entrenador valida tipos estrictos y límites de épocas (1–10000), batch size (1–4096) y learning rate finito (0–1], incluso si se invoca fuera de la interfaz.
 - La arquitectura baseline se identifica en la interfaz como clasificador lineal, evitando describirla como un sistema de reglas.
 - La interfaz informa errores de comunicación al iniciar, guardar configuración o consultar el progreso, en lugar de dejar fallar la operación sin explicación.
-- El puente evita iniciar una segunda ejecución simultánea, actualiza el estado compartido con bloqueo y no sobrescribe un registro de experimentos ilegible como si estuviera vacío.
+- El puente evita iniciar una segunda ejecución simultánea, actualiza el archivo individual y el estado compartido con bloqueo, y no sobrescribe un registro de experimentos ilegible como si estuviera vacío.
 
 ## Correcciones derivadas de CI
 
@@ -86,4 +86,11 @@ La verificación visual/integral requiere abrir la aplicación de escritorio en 
 - En el primer arranque con un manifiesto antiguo en `dataset.json`, se intenta migrarlo al nuevo destino sin eliminar el archivo anterior.
 - Pendiente de validación local: confirmar que la ruta de datos y la restauración funcionan en la instalación del usuario y ejecutar entrenamiento de extremo a extremo.
 
-- La carpeta `Dataset` se ubica ahora dentro de la raíz seleccionada en Proyecto. Ejemplo: `F:\\SismoAI-Trainer\\Reference\\Dataset\\dataset_activo.json`. Al cambiar de proyecto, se cambia la ruta del manifiesto y se carga el dataset de esa raíz; no se arrastra el dataset activo del proyecto anterior.
+- La carpeta `Dataset` se ubica dentro de la raíz seleccionada en Proyecto; al cambiar de proyecto, se actualiza la ruta del manifiesto y se carga el dataset de esa raíz, sin arrastrar el dataset activo del proyecto anterior.
+
+- El manifiesto se guarda con el nombre del Dataset: `Dataset/<nombre_del_dataset>.json` (por ejemplo, `Dataset/Sismos_Local_v01.json`). Los caracteres no válidos para nombres de archivo se sustituyen por guion bajo. Al restaurar, se selecciona el manifiesto válido más recientemente creado de la carpeta del proyecto.
+
+- Modelos consulta el inventario de JSON válidos de `./Dataset/` y permite seleccionar el manifiesto que se usará en el experimento. Al cambiar la selección, carga ese manifiesto completo y actualiza resumen, particiones y etiquetas.
+
+- El manifiesto del Dataset incorpora por ventana la referencia al BIN (`source_file`), el evento (`source_event_id` y `event_index` base cero), intervalo temporal (`start_us`, `end_us`, `duration_us` en microsegundos, relativo al evento y con intervalo semiabierto), sensores, rangos de muestras, información de muestreo, hash disponible y configuración de generación. La sección `source` define la carpeta raíz del proyecto y las reglas para reconstruir la ventana: abrir BIN, seleccionar evento y recortar señales.
+- Nota: esta información mejora la trazabilidad y define qué reconstruir; el cargador de entrenamiento actual todavía consulta el registro persistido de ventanas por `window_id` para extraer las señales. No se debe considerar independiente de ese registro hasta completar y validar ese cargador.

@@ -1,0 +1,2003 @@
+/* Estilos específicos del menú Análisis. */
+.analysis-view > #analysis-empty,
+.analysis-view > #analysis-content {
+  --x: 0px;
+  --y: 0px;
+  --w: 100%;
+  --h: 100%;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  max-width: none;
+  max-height: none;
+}
+
+.analysis-inline-actions {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+#btn-footer-windows {
+  --x: calc(100% - 145px);
+  --y: calc(100% - 35px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  pointer-events: auto;
+}
+/* Estilos visuales espec?ficos trasladados desde components.css. */
+/* -- Análisis: Header ----------------------------------------------- */
+
+.analysis-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.analysis-header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.analysis-header-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.analysis-header-text h1 {
+  font-size: var(--font-size-title);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.analysis-header-text p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.analysis-header-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-left: auto;
+  min-width: 58%;
+  padding: var(--spacing-sm);
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.analysis-header-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+}
+
+.analysis-file-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.analysis-file-selector label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.analysis-file-selector .form-select {
+  width: 220px;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.analysis-event-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.analysis-event-nav label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.analysis-event-counter {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  min-width: 70px;
+  text-align: center;
+}
+
+/* -- Análisis: Time Info -------------------------------------------- */
+
+.analysis-time-info {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: 0 var(--spacing-xs);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  margin-bottom: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.analysis-time-info strong {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+/* -- Análisis: Tabs ------------------------------------------------- */
+
+.analysis-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xs);
+}
+
+.analysis-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex: 1;
+  justify-content: center;
+}
+
+.analysis-tab svg {
+  width: 16px;
+  height: 16px;
+}
+
+.analysis-tab:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.analysis-tab.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* -- Análisis: Main Layout ------------------------------------------ */
+
+.analysis-main {
+  display: flex;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.analysis-charts-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  overflow-y: auto;
+}
+
+.analysis-sidebar {
+  width: 320px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  overflow-y: auto;
+}
+
+/* -- Análisis: Chart Cards ------------------------------------------ */
+
+.analysis-chart-card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.analysis-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg-hover);
+}
+
+.analysis-chart-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.analysis-chart-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.analysis-chart-color.geophone {
+  background-color: #2563eb;
+}
+
+.analysis-chart-color.mpu {
+  background-color: #7c3aed;
+}
+
+.analysis-chart-freq {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.analysis-chart-body {
+  padding: var(--spacing-md);
+}
+
+.analysis-canvas {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+.analysis-chart-cursor-info {
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* -- Análisis: Sidebar Info Cards ----------------------------------- */
+
+.analysis-info-card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.analysis-info-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg-hover);
+}
+
+.analysis-info-header svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-secondary);
+}
+
+.analysis-info-header h3 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.analysis-info-body {
+  padding: var(--spacing-md);
+}
+
+.analysis-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.analysis-info-table td {
+  padding: var(--spacing-xs) 0;
+  border: none;
+}
+
+.analysis-info-table td:first-child {
+  color: var(--color-text-muted);
+  padding-right: var(--spacing-sm);
+}
+
+.analysis-info-table td:last-child {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  text-align: right;
+}
+
+/* -- Análisis: Metric Tabs ------------------------------------------ */
+
+.analysis-metric-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  background-color: var(--color-bg-hover);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+
+.analysis-metric-tab {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.analysis-metric-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.analysis-metric-tab.active {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* -- Análisis: Actions ---------------------------------------------- */
+
+.analysis-actions {
+  margin-top: auto;
+}
+
+/* -- Análisis: STA/LTA Results -------------------------------------- */
+
+.analysis-stalta-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.analysis-stalta-item h4 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.analysis-stalta-item p {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-xs);
+}
+
+/* -- Análisis: Spectrum Results ------------------------------------- */
+
+.analysis-spectrum-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.analysis-spectrum-item h4 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.analysis-spectrum-item table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.analysis-spectrum-item td {
+  padding: var(--spacing-xs) 0;
+  border: none;
+}
+
+.analysis-spectrum-item td:first-child {
+  color: var(--color-text-muted);
+}
+
+.analysis-spectrum-item td:last-child {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  text-align: right;
+}
+
+.analysis-spectrum-item p {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-xs);
+}
+
+/* -- Análisis: Responsive ------------------------------------------- */
+
+@media (max-width: 1200px) {
+  .analysis-sidebar {
+    width: 280px;
+    min-width: 280px;
+  }
+}
+
+@media (max-width: 992px) {
+  .analysis-main {
+    flex-direction: column;
+  }
+
+  .analysis-sidebar {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .analysis-header {
+    flex-wrap: wrap;
+  }
+
+  .analysis-header-controls {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+}
+
+/* -- Ajuste de distribución del workspace de Análisis ---------------- */
+#analysis-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.analysis-header {
+  flex-shrink: 0;
+}
+
+.analysis-main {
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.analysis-charts-area {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.analysis-charts-area > .analysis-tabs {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.analysis-sidebar {
+  flex: 0 0 320px;
+  width: 320px;
+  min-width: 320px;
+}
+
+.submenu-content {
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .analysis-sidebar {
+    flex-basis: 280px;
+    width: 280px;
+    min-width: 280px;
+  }
+}
+
+@media (max-width: 715px) {
+  #analysis-content {
+    overflow-y: auto;
+  }
+  .analysis-main {
+    overflow: visible;
+  }
+  .analysis-charts-area {
+    overflow: visible;
+  }
+  .analysis-sidebar {
+    flex: 0 0 auto;
+  }
+}
+
+/* -- Análisis: adaptación a ventana normal y maximizada ------------- */
+#analysis-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#analysis-content > .analysis-header {
+  flex: 0 0 auto;
+  min-width: 0;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  gap: 12px;
+}
+
+.analysis-header-text {
+  min-width: 190px;
+  flex: 0 1 34%;
+}
+
+.analysis-header-text h1 {
+  font-size: clamp(18px, 1.35vw, 24px);
+}
+
+.analysis-header-controls {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+.analysis-header-control-row {
+  gap: 10px;
+}
+
+.analysis-file-selector {
+  min-width: 0;
+  flex: 1 1 50%;
+}
+
+.analysis-file-selector .form-select {
+  width: min(100%, 260px);
+  min-width: 110px;
+}
+
+.analysis-event-nav {
+  flex: 0 0 auto;
+}
+
+.analysis-main {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.analysis-charts-area {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.analysis-tabs {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin-bottom: 10px;
+}
+
+.submenu-content {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
+}
+
+.analysis-chart-card {
+  width: 100%;
+  min-width: 0;
+}
+
+.analysis-chart-body {
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.analysis-canvas {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+  height: clamp(150px, 22vh, 250px) !important;
+}
+
+.analysis-sidebar {
+  flex: 0 0 clamp(270px, 25vw, 350px);
+  width: clamp(270px, 25vw, 350px);
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  gap: 10px;
+  padding-right: 2px;
+}
+
+.analysis-info-header {
+  padding: 7px 10px;
+}
+
+.analysis-info-body {
+  padding: 9px 10px;
+}
+
+.analysis-info-table {
+  font-size: 12px;
+  table-layout: fixed;
+}
+
+.analysis-info-table td {
+  padding: 3px 0;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+.analysis-info-table td:first-child {
+  width: 48%;
+}
+
+.analysis-info-table td:last-child {
+  width: 52%;
+}
+
+.analysis-info-header h3 {
+  font-size: 13px;
+}
+
+.analysis-info-card .form-group {
+  margin-bottom: 8px;
+}
+
+.analysis-info-card .form-label {
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.analysis-info-card .form-input,
+.analysis-info-card .form-select {
+  min-height: 32px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+.analysis-actions {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+@media (max-height: 715px) {
+  #analysis-content > .analysis-header {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .analysis-header-icon {
+    width: 38px;
+    height: 38px;
+  }
+  .analysis-main {
+    gap: 8px;
+  }
+  .analysis-tabs {
+    margin-bottom: 8px;
+  }
+  .analysis-chart-body {
+    padding: 7px 9px;
+  }
+  .analysis-canvas {
+    height: clamp(125px, 19vh, 190px) !important;
+  }
+  .analysis-info-body {
+    padding: 7px 9px;
+  }
+  .analysis-sidebar {
+    gap: 7px;
+  }
+}
+
+@media (max-width: 1050px) {
+  .analysis-header-text {
+    flex-basis: 25%;
+  }
+  .analysis-sidebar {
+    flex-basis: 260px;
+    width: 260px;
+  }
+}
+
+@media (max-width: 820px) {
+  #analysis-content {
+    overflow-y: auto;
+  }
+  .analysis-header {
+    flex-wrap: wrap;
+  }
+  .analysis-header-controls {
+    flex-basis: 100%;
+  }
+  .analysis-main {
+    flex-direction: column;
+    overflow: visible;
+  }
+  .analysis-charts-area {
+    overflow: visible;
+  }
+  .analysis-sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+}
+
+/* Distribución adaptable del área de análisis */
+.analysis-charts-area,
+.analysis-sidebar,
+.analysis-chart-body {
+  min-width: 0;
+  min-height: 0;
+}
+
+.analysis-charts-area {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.analysis-canvas {
+  min-height: 180px;
+}
+
+@media (max-height: 715px) {
+  .analysis-canvas {
+    min-height: 160px;
+  }
+}
+
+/* Resolución de distribución: las gráficas usan el alto disponible sin scrollbar propio */
+@media (min-width: 821px) {
+  .analysis-charts-area {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    padding-right: 0;
+  }
+
+  .analysis-charts-area > .submenu-content:not([style*="display: none"]) {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .analysis-charts-area
+    > .submenu-content:not([style*="display: none"])
+    > .analysis-chart-card {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .analysis-chart-card > .analysis-chart-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .analysis-chart-body > .analysis-canvas {
+    flex: 0 0 auto;
+    height: clamp(125px, 22vh, 230px) !important;
+    min-height: 125px;
+    max-height: none;
+  }
+
+  /* La visibilidad de cada submenú la controla updateSubmenuVisibility()
+     mediante el estilo inline; no forzar display en Señales. */
+
+  #submenu-content-senales > .analysis-chart-card,
+  #submenu-content-stalta > .analysis-chart-card {
+    display: block;
+    flex: none;
+    height: auto;
+  }
+
+  #submenu-content-senales .analysis-chart-body,
+  #submenu-content-stalta .analysis-chart-body {
+    display: block;
+    height: auto;
+  }
+}
+
+/* Ajuste final de Análisis: sin scroll interno y gráficas distribuidas en el alto disponible */
+@media (min-width: 821px) {
+  #analysis-content {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden !important;
+  }
+  .analysis-main {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden !important;
+  }
+  .analysis-charts-area {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden !important;
+    scrollbar-width: none;
+  }
+  .analysis-charts-area::-webkit-scrollbar {
+    display: none;
+  }
+  .analysis-charts-area > .submenu-content:not([style*="display: none"]) {
+    flex: 1 1 0;
+    height: 100%;
+    min-height: 0;
+  }
+  .analysis-charts-area
+    > .submenu-content:not([style*="display: none"])
+    > .analysis-chart-card {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .analysis-chart-card > .analysis-chart-body {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .analysis-chart-body > .analysis-canvas {
+    min-height: 0 !important;
+  }
+}
+
+/* Señales: reducción acumulada de 10 px por canvas.
+   Una única regla evita que una declaración posterior restaure la altura anterior. */
+#submenu-content-senales .analysis-canvas {
+  height: 210px;
+}
+@media (min-width: 821px) {
+  #submenu-content-senales .analysis-canvas {
+    height: calc(clamp(125px, 22vh, 230px) - 10px) !important;
+  }
+}
+
+/* Sidebar de Análisis: tarjetas compactas, sin estirar ni recortar contenido. */
+.analysis-sidebar {
+  min-height: 0;
+  overflow: hidden;
+  gap: 8px;
+}
+
+.analysis-sidebar > .analysis-info-card {
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.analysis-sidebar > .analysis-actions {
+  flex: 0 0 auto;
+}
+
+#stalta-config-card {
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+#stalta-config-card .analysis-info-body {
+  display: block;
+}
+
+@media (min-width: 821px) and (max-height: 900px) {
+  .analysis-sidebar {
+    gap: 5px;
+  }
+
+  .analysis-sidebar .analysis-info-header {
+    padding: 5px 8px;
+  }
+  .analysis-sidebar .analysis-info-header h3 {
+    font-size: 12px;
+    line-height: 1.1;
+  }
+  .analysis-sidebar .analysis-info-body {
+    padding: 5px 8px;
+  }
+  .analysis-sidebar .analysis-info-table {
+    font-size: 11px;
+    line-height: 1.05;
+  }
+  .analysis-sidebar .analysis-info-table td {
+    padding: 1px 0;
+  }
+
+  #stalta-config-card .analysis-info-body {
+    padding: 5px 8px;
+  }
+  #stalta-config-card .d-flex {
+    gap: 6px;
+  }
+  #stalta-config-card .form-group {
+    margin-bottom: 4px;
+    min-width: 0;
+  }
+  #stalta-config-card .form-label {
+    font-size: 11px;
+    line-height: 1.05;
+    margin-bottom: 2px;
+  }
+  #stalta-config-card .form-input,
+  #stalta-config-card .form-select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 27px;
+    min-height: 27px;
+    padding: 2px 6px;
+    font-size: 12px;
+  }
+
+  .analysis-sidebar .analysis-metric-tabs {
+    margin-bottom: 4px;
+  }
+  .analysis-sidebar .analysis-metric-tab {
+    min-height: 24px;
+    padding: 2px 5px;
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 821px) and (max-height: 740px) {
+  .analysis-sidebar {
+    gap: 3px;
+  }
+  .analysis-sidebar .analysis-info-header {
+    padding: 3px 7px;
+  }
+  .analysis-sidebar .analysis-info-header h3 {
+    font-size: 10px;
+  }
+  .analysis-sidebar .analysis-info-body {
+    padding: 3px 7px;
+  }
+  .analysis-sidebar .analysis-info-table {
+    font-size: 9px;
+  }
+  .analysis-sidebar .analysis-info-table td {
+    padding: 0;
+  }
+
+  #stalta-config-card .analysis-info-body {
+    padding: 3px 7px;
+  }
+  #stalta-config-card .form-group {
+    margin-bottom: 2px;
+  }
+  #stalta-config-card .form-label {
+    font-size: 9px;
+    margin-bottom: 1px;
+  }
+  #stalta-config-card .form-input,
+  #stalta-config-card .form-select {
+    height: 22px;
+    min-height: 22px;
+    padding: 1px 5px;
+    font-size: 10px;
+  }
+
+  .analysis-sidebar .analysis-metric-tab {
+    min-height: 19px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 820px) {
+  /* En ventanas estrechas, el documento adapta su altura; no se comprimen
+     las tarjetas hasta hacer ilegibles sus campos. */
+  .analysis-sidebar {
+    overflow: visible;
+    gap: 8px;
+  }
+  .analysis-sidebar > .analysis-info-card {
+    flex: 0 0 auto;
+  }
+  #stalta-config-card {
+    flex: 0 0 auto;
+  }
+}
+
+/* STA/LTA maximizado: reducir la altura acumulada de controles para liberar
+   espacio vertical al botón de navegación, sin introducir scrollbars. */
+@media (min-width: 821px) {
+  #stalta-config-card .analysis-info-body {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  #stalta-config-card .form-group {
+    margin-bottom: 2px;
+  }
+
+  #stalta-config-card .form-label {
+    font-size: 10px;
+    line-height: 1;
+    margin-bottom: 1px;
+  }
+
+  #stalta-config-card .form-input,
+  #stalta-config-card .form-select {
+    height: 23px;
+    min-height: 23px;
+    padding: 1px 6px;
+    font-size: 11px;
+    line-height: 1.1;
+  }
+
+  #stalta-config-card .d-flex {
+    gap: 5px;
+  }
+
+  .analysis-sidebar {
+    gap: 4px;
+  }
+
+  .analysis-sidebar .analysis-info-header {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .analysis-sidebar .analysis-info-body {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .analysis-sidebar .analysis-info-table {
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  .analysis-sidebar .analysis-info-table td {
+    padding-top: 1px;
+    padding-bottom: 1px;
+  }
+
+  .analysis-sidebar .analysis-metric-tabs {
+    margin-bottom: 3px;
+    padding: 1px;
+  }
+
+  .analysis-sidebar .analysis-metric-tab {
+    min-height: 22px;
+    padding: 1px 4px;
+    font-size: 10px;
+  }
+
+  .analysis-actions button {
+    min-height: 26px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: 11px;
+    line-height: 1.1;
+  }
+}
+
+/* Evitar tarjetas de gráficas sobredimensionadas: altura según su contenido,
+   no estirar cada tarjeta para llenar todo el panel. */
+@media (min-width: 821px) {
+  .analysis-charts-area > .submenu-content:not([style*="display: none"]) {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    overflow: visible;
+    gap: 8px;
+  }
+
+  .analysis-charts-area
+    > .submenu-content:not([style*="display: none"])
+    > .analysis-chart-card {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0;
+  }
+
+  .analysis-chart-card > .analysis-chart-body {
+    flex: 0 0 auto !important;
+    min-height: 0;
+  }
+
+  .analysis-chart-body > .analysis-canvas {
+    flex: 0 0 auto;
+    height: clamp(125px, 22vh, 210px) !important;
+    min-height: 125px !important;
+  }
+}
+
+/* Espectrograma: composición de dos mapas apilados y controles en el panel lateral. */
+#submenu-content-espectrograma {
+  gap: 8px;
+}
+#submenu-content-espectrograma .spectrogram-chart-card {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.spectrogram-readout {
+  padding: 3px 10px 0;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  line-height: 1.2;
+  min-height: 17px;
+}
+#submenu-content-espectrograma .spectrogram-canvas-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 0 8px 7px;
+}
+#submenu-content-espectrograma .spectrogram-canvas {
+  height: clamp(180px, 28vh, 300px) !important;
+  min-height: 150px;
+}
+.spectrogram-settings {
+  display: grid;
+  grid-template-columns: minmax(85px, 1fr) minmax(100px, 1.25fr);
+  align-items: center;
+  gap: 5px 8px;
+  font-size: 12px;
+}
+.spectrogram-settings .form-select {
+  width: 100%;
+  min-width: 0;
+  height: 29px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.spectrogram-params-note {
+  grid-column: 1 / -1;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  line-height: 1.25;
+}
+@media (min-width: 821px) {
+  #submenu-content-espectrograma {
+    flex: 1 1 0 !important;
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+/* Frecuencia: misma composición espacial que Señales y STA/LTA. */
+#submenu-content-frecuencia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+#submenu-content-frecuencia > .frequency-chart-card {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+}
+#submenu-content-frecuencia .frequency-chart-meta {
+  flex: 0 0 auto;
+  padding: 5px 8px 2px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.25;
+}
+#submenu-content-frecuencia .frequency-chart-meta span {
+  color: var(--color-text-muted);
+}
+#submenu-content-frecuencia .frequency-canvas-wrap {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 0 5px 4px;
+}
+#submenu-content-frecuencia .frequency-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 0 !important;
+}
+.spectrum-settings {
+  display: grid;
+  grid-template-columns: 1fr minmax(110px, 1.2fr);
+  align-items: center;
+  gap: 5px 8px;
+}
+.spectrum-settings .form-select {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Mantener Señales como referencia intacta; igualar únicamente las otras pestañas. */
+@media (min-width: 821px) {
+  #submenu-content-stalta,
+  #submenu-content-espectrograma,
+  #submenu-content-frecuencia {
+    display: flex;
+    flex: 0 0 auto !important;
+    flex-direction: column;
+    gap: 8px;
+    height: auto !important;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  #submenu-content-stalta > .analysis-chart-card,
+  #submenu-content-espectrograma > .analysis-chart-card,
+  #submenu-content-frecuencia > .analysis-chart-card {
+    display: block;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0;
+  }
+
+  #submenu-content-stalta .analysis-chart-body,
+  #submenu-content-espectrograma .analysis-chart-body,
+  #submenu-content-frecuencia .analysis-chart-body {
+    display: block;
+    height: auto !important;
+    min-height: 0;
+    padding: var(--spacing-md);
+  }
+
+  #submenu-content-stalta .analysis-canvas,
+  #submenu-content-espectrograma .analysis-canvas,
+  #submenu-content-frecuencia .analysis-canvas {
+    display: block;
+    width: 100%;
+    height: calc(clamp(125px, 22vh, 230px) - 10px) !important;
+    min-height: 125px !important;
+    max-height: none;
+  }
+}
+
+#submenu-content-espectrograma .spectrogram-readout,
+#submenu-content-frecuencia .frequency-chart-meta {
+  margin-top: var(--spacing-sm);
+  padding: 0;
+  min-height: 0;
+  font-size: var(--font-size-xs);
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* Igualar STA/LTA, Espectrograma y Frecuencia a la geometría de Señales.
+   Sin scroll: dos tarjetas de altura natural y canvases con la misma altura. */
+@media (min-width: 821px) {
+  .analysis-charts-area {
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+    padding-right: 0;
+  }
+  .analysis-charts-area::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  #submenu-content-stalta,
+  #submenu-content-espectrograma,
+  #submenu-content-frecuencia {
+    display: flex;
+    flex: 0 0 auto !important;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    height: auto !important;
+    min-height: 0;
+    overflow: hidden !important;
+  }
+
+  #submenu-content-stalta > .analysis-chart-card,
+  #submenu-content-espectrograma > .analysis-chart-card,
+  #submenu-content-frecuencia > .analysis-chart-card,
+  #submenu-content-frecuencia > .frequency-chart-card {
+    display: block;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0;
+  }
+
+  #submenu-content-stalta .analysis-chart-body,
+  #submenu-content-espectrograma .analysis-chart-body,
+  #submenu-content-frecuencia .analysis-chart-body {
+    display: block;
+    height: auto !important;
+    min-height: 0;
+    padding: 10px 12px;
+  }
+
+  #submenu-content-stalta .analysis-canvas,
+  #submenu-content-frecuencia .analysis-canvas,
+  #submenu-content-frecuencia .frequency-canvas {
+    display: block;
+    width: 100% !important;
+    height: calc(clamp(125px, 22vh, 230px) - 10px) !important;
+    min-height: 0 !important;
+    max-height: none;
+  }
+
+  #submenu-content-espectrograma .spectrogram-chart-card {
+    display: block;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0;
+  }
+  #submenu-content-espectrograma .spectrogram-canvas-wrap {
+    display: block;
+    height: auto;
+    min-height: 0;
+    padding: 0 8px 7px;
+  }
+  #submenu-content-espectrograma .spectrogram-canvas {
+    display: block;
+    width: 100% !important;
+    height: calc(clamp(125px, 22vh, 230px) - 10px) !important;
+    min-height: 0 !important;
+    max-height: none;
+  }
+}
+
+/* Panel visual único: pestañas y gráficas comparten el mismo marco y altura útil. */
+@media (min-width: 821px) {
+  .analysis-charts-area {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden !important;
+    padding: 0;
+  }
+
+  .analysis-visual-panel {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    padding: 8px;
+    gap: 8px;
+    overflow: hidden;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .analysis-visual-panel > .analysis-tabs {
+    position: static;
+    flex: 0 0 auto;
+    width: 100%;
+    margin: 0;
+    padding: 4px;
+    background: var(--color-bg-hover);
+  }
+
+  .analysis-visual-panel > .submenu-content:not([style*="display: none"]) {
+    display: flex;
+    flex: 1 1 0 !important;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: auto !important;
+    gap: 8px;
+    overflow: hidden !important;
+  }
+
+  .analysis-visual-panel
+    > .submenu-content:not([style*="display: none"])
+    > .analysis-chart-card {
+    display: flex;
+    flex: 1 1 0 !important;
+    flex-direction: column;
+    min-height: 0;
+    height: auto !important;
+    overflow: hidden;
+  }
+
+  .analysis-visual-panel .analysis-chart-header {
+    flex: 0 0 auto;
+  }
+
+  .analysis-visual-panel .analysis-chart-body {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+    padding: 8px 10px;
+  }
+
+  .analysis-visual-panel .analysis-canvas,
+  .analysis-visual-panel .frequency-canvas,
+  .analysis-visual-panel .spectrogram-canvas {
+    display: block;
+    flex: 1 1 0;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none;
+  }
+
+  .analysis-visual-panel .spectrogram-canvas-wrap,
+  .analysis-visual-panel .frequency-canvas-wrap {
+    display: flex;
+    flex: 1 1 0;
+    min-height: 0;
+    height: auto;
+  }
+}
+
+@media (max-width: 820px) {
+  .analysis-visual-panel {
+    display: contents;
+  }
+}
+
+/* Geometría compartida: pestañas y dos tarjetas dentro del mismo panel. */
+@media (min-width: 821px) {
+  .analysis-charts-area {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden !important;
+    scrollbar-width: none;
+  }
+  .analysis-charts-area::-webkit-scrollbar {
+    display: none;
+  }
+
+  .analysis-visual-panel {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 8px;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .analysis-visual-panel > .analysis-tabs {
+    position: static;
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .analysis-visual-panel > .submenu-content:not([style*="display: none"]) {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 0;
+    margin: 0;
+    gap: 8px;
+    overflow: hidden !important;
+  }
+
+  .analysis-visual-panel
+    > .submenu-content:not([style*="display: none"])
+    > .analysis-chart-card {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .analysis-visual-panel .analysis-chart-header {
+    flex: 0 0 auto;
+  }
+
+  .analysis-visual-panel .analysis-chart-body {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 0;
+    padding: 8px 10px;
+    overflow: hidden;
+  }
+
+  .analysis-visual-panel .analysis-chart-body > .analysis-canvas {
+    display: block;
+    flex: 1 1 0 !important;
+    width: 100% !important;
+    height: 0 !important;
+    min-width: 0;
+    min-height: 0 !important;
+    max-height: none;
+  }
+
+  .analysis-visual-panel .analysis-chart-cursor-info {
+    flex: 0 0 auto;
+    min-height: 17px;
+    margin: 0;
+    padding-top: 3px;
+    line-height: 1.2;
+    text-align: center;
+  }
+}
+
+/* Layout canónico del panel de análisis: misma caja para las cuatro pestañas.
+   Evita height:0 en la cadena flex, que colapsaba el área de dibujo en vistas
+   cuyo contenido tiene una estructura interna distinta. */
+@media (min-width: 821px) {
+  #analysis-content,
+  #analysis-content > .analysis-main,
+  #analysis-content .analysis-charts-area,
+  #analysis-content .analysis-visual-panel {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden !important;
+  }
+
+  #analysis-content .analysis-charts-area {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  #analysis-content .analysis-visual-panel {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    padding: 8px;
+    gap: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  #analysis-content .analysis-visual-panel > .analysis-tabs {
+    display: flex;
+    flex: 0 0 auto;
+    width: 100%;
+    margin: 0;
+  }
+
+  #analysis-content
+    .analysis-visual-panel
+    > .submenu-content:not([style*="display: none"]) {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column;
+    width: 100%;
+    height: auto !important;
+    min-height: 0;
+    margin: 0;
+    gap: 8px;
+    overflow: hidden !important;
+  }
+
+  #analysis-content
+    .analysis-visual-panel
+    > .submenu-content:not([style*="display: none"])
+    > .analysis-chart-card {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column;
+    width: 100%;
+    height: auto !important;
+    min-height: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  #analysis-content .analysis-visual-panel .analysis-chart-header {
+    flex: 0 0 auto;
+  }
+
+  #analysis-content .analysis-visual-panel .analysis-chart-body {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column;
+    width: 100%;
+    height: auto !important;
+    min-width: 0;
+    min-height: 0;
+    padding: 8px 10px;
+    overflow: hidden;
+  }
+
+  #analysis-content
+    .analysis-visual-panel
+    .analysis-chart-body
+    > .analysis-canvas {
+    display: block;
+    flex: 1 1 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0;
+    min-height: 0 !important;
+    max-height: none;
+  }
+
+  #analysis-content .analysis-visual-panel .analysis-chart-cursor-info {
+    flex: 0 0 auto;
+    min-height: 17px;
+    margin: 0;
+    padding-top: 3px;
+    line-height: 1.2;
+  }
+
+  #analysis-content .analysis-visual-panel .spectrogram-canvas-wrap,
+  #analysis-content .analysis-visual-panel .frequency-canvas-wrap {
+    display: contents;
+  }
+}
+
+/* Estado activo de pestañas: contraste explícito y persistente */
+#analysis-content .analysis-visual-panel .analysis-tabs .analysis-tab {
+  border: 1px solid transparent;
+  font-weight: 500;
+}
+
+#analysis-content .analysis-visual-panel .analysis-tabs .analysis-tab.active,
+#analysis-content
+  .analysis-visual-panel
+  .analysis-tabs
+  .analysis-tab.active:hover {
+  color: #ffffff !important;
+  background: var(--color-primary) !important;
+  border: 1px solid var(--color-primary) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.22);
+  font-weight: 700;
+}
+
+#analysis-content
+  .analysis-visual-panel
+  .analysis-tabs
+  .analysis-tab.active
+  svg {
+  color: #ffffff !important;
+  stroke: currentColor;
+}
+
+/* Análisis: selector, navegación y metadatos en una sola fila */
+@media (min-width: 993px) {
+  #analysis-content > .analysis-header {
+    align-items: center;
+  }
+  #analysis-content .analysis-header-controls {
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+    gap: 14px;
+  }
+  #analysis-content .analysis-header-control-row {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+  #analysis-content .analysis-time-info {
+    flex: 0 0 auto;
+    gap: 12px;
+    white-space: nowrap;
+  }
+  #analysis-content .analysis-event-nav {
+    margin-left: auto;
+  }
+}
+
+/* Panel lateral adaptable: distribuir el alto libre entre las tarjetas visibles
+   según la pestaña activa, sin reservar espacio para tarjetas ocultas. */
+@media (min-width: 993px) {
+  #analysis-content .analysis-sidebar {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    gap: 8px;
+  }
+
+  #analysis-content
+    .analysis-sidebar
+    > .analysis-info-card:not([style*="display: none"]) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  #analysis-content
+    .analysis-sidebar
+    > .analysis-info-card:not([style*="display: none"])
+    > .analysis-info-body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  #analysis-content
+    .analysis-sidebar
+    > .analysis-info-card:not([style*="display: none"])
+    .analysis-info-table {
+    height: auto;
+    flex: 0 0 auto;
+  }
+
+  /* Tipografía ligeramente mayor y filas compactas: el espacio sobrante
+     queda al final de la tarjeta, no se reparte entre cada registro. */
+  #analysis-content .analysis-sidebar .analysis-info-table {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  #analysis-content .analysis-sidebar .analysis-info-table td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    line-height: 1.2;
+  }
+
+  #analysis-content .analysis-sidebar .analysis-info-header h3 {
+    font-size: 14px;
+  }
+}
+
+/* Posicionamiento interno espec?fico trasladado desde workspace.css. */
+/* Análisis conserva sus submenús e IDs, pero sus regiones tienen límites propios. */
+#analysis-content {
+  --x: 0px;
+  --y: 0px;
+  --w: 1200px;
+  --h: 756px;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--spacing-sm);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+#analysis-content > .analysis-header {
+  --x: 0px;
+  --y: 0px;
+  --w: 100%;
+  --h: 70px;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+}
+#analysis-content .analysis-visual-panel,
+#analysis-content .analysis-sidebar {
+  position: absolute;
+  top: var(--y);
+  height: var(--h);
+  min-width: 0;
+  min-height: 0;
+}
+
+#analysis-content .analysis-visual-panel {
+  --x: 0px;
+  --y: 75px;
+  --w: calc(100% - 340px);
+  --h: calc(100% - 75px - 72px);
+  left: var(--x);
+  width: var(--w);
+}
+
+/* Contenedor independiente de las gráficas y sus pestañas. */
+#analysis-content .analysis-visual-panel {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  display: block;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+#analysis-content .analysis-tabs {
+  --x: 0px;
+  --y: 0px;
+  --w: 100%;
+  --h: 42px;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  z-index: 2;
+}
+
+#analysis-content .submenu-content {
+  --x: 0px;
+  --y: 50px;
+  --w: 100%;
+  --h: calc(100% - 50px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+#analysis-content .submenu-content:not([style*="display: none"]) {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+}
+
+#analysis-content .submenu-content > .analysis-chart-card {
+  --x: 0px;
+  --y: 0px;
+  --w: 100%;
+  --h: auto;
+  position: relative;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Las reglas responsive antiguas usan height: 0 para un layout Flexbox.
+   En la estructura espacial actual el submenú debe conservar su región. */
+#analysis-content
+  .analysis-visual-panel
+  > .submenu-content:not([style*="display: none"]) {
+  display: grid !important;
+  position: absolute;
+  top: var(--y);
+  height: var(--h) !important;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  overflow: hidden !important;
+}
+
+#analysis-content
+  .analysis-visual-panel
+  > .submenu-content:not([style*="display: none"])
+  > .analysis-chart-card {
+  display: block !important;
+  position: relative;
+  width: var(--w);
+  height: auto !important;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+#analysis-content .analysis-visual-panel .analysis-chart-body {
+  display: block !important;
+  height: auto !important;
+  min-height: 220px;
+  overflow: hidden;
+}
+
+#analysis-content .analysis-visual-panel .analysis-chart-body > .analysis-canvas {
+  display: block;
+  width: 100% !important;
+  height: 220px !important;
+  min-height: 220px !important;
+  max-height: none;
+}
+
+/* Tarjetas visibles del panel lateral. */
+#analysis-content .analysis-sidebar > .analysis-info-card {
+  position: absolute;
+  left: var(--x, 0px);
+  top: var(--y, 0px);
+  width: var(--w, 100%);
+  height: var(--h, auto);
+  min-width: 0;
+  min-height: 0;
+}
+
+#analysis-content .analysis-sidebar > .analysis-info-card:first-child {
+  --x: 0px;
+  --y: 0px;
+  --w: 100%;
+  --h: 265px;
+}
+
+#analysis-content .analysis-sidebar > #analysis-metrics-card {
+  --x: 0px;
+  --y: 273px;
+  --w: 100%;
+  --h: calc(100% - 273px);
+}
+
+#analysis-content .analysis-sidebar {
+  --x: calc(100% - 326px);
+  --y: 75px;
+  --w: 326px;
+  --h: calc(100% - 75px - 72px);
+  left: var(--x);
+  width: var(--w);
+}
+
+/* Las tarjetas contextuales se apilan dentro del sidebar.
+   Solo el sidebar es una región espacial; sus tarjetas no deben superponerse. */
+#analysis-content .analysis-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  overflow: auto;
+}
+
+#analysis-content .analysis-sidebar > .analysis-info-card {
+  position: static !important;
+  left: auto;
+  top: auto;
+  width: 100%;
+  height: auto !important;
+  flex: 0 0 auto;
+}

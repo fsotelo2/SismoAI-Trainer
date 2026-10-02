@@ -1,5 +1,315 @@
-<section class="card">
- <div class="card-header"><div class="card-title">Dataset activo</div></div>
- <div id="model-dataset-state">Consultando dataset…</div>
- <p class="text-muted">La configuración del entrenamiento y la evaluación se implementarán en esta fase.</p>
+<section class="models-view workspace-view">
+  <div class="models-config-grid">
+    <section class="card models-card">
+      <header class="models-card-heading">
+        <span class="models-step">1</span>
+        <div>
+          <h2>Dataset de entrenamiento</h2>
+          <p>Conjunto de datos que se utilizará para entrenar el modelo.</p>
+        </div>
+        <span id="models-dataset-badge" class="badge">Consultando</span>
+      </header>
+      <div class="form-group">
+        <label class="form-label" for="models-dataset">Dataset activo</label>
+        <div class="models-dataset-controls">
+          <select id="models-dataset" class="form-select" disabled>
+            <option>Consultando dataset...</option>
+          </select>
+        </div>
+      </div>
+      <div id="models-dataset-summary" class="models-dataset-summary">
+        Consultando manifiesto activo…
+      </div>
+      <div class="models-section-label">Partición del dataset</div>
+      <div id="models-partition" class="models-partition">Sin datos</div>
+      <div id="models-partition-legend" class="models-legend"></div>
+      <p class="models-note">
+        Se utiliza la partición definida en Dataset; aquí no se redistribuyen
+        ventanas.
+      </p>
+    </section>
+    <section class="card models-card">
+      <header class="models-card-heading">
+        <span class="models-step">2</span>
+        <div>
+          <h2>Configuración del modelo</h2>
+          <p>Define la arquitectura y características del experimento.</p>
+        </div>
+      </header>
+      <div class="form-group">
+        <label class="form-label" for="models-name"
+          >Nombre del experimento</label
+        ><input
+          id="models-name"
+          class="form-input"
+          maxlength="80"
+          value="cnn_sismos_001"
+        />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="models-architecture">Arquitectura</label
+        ><select id="models-architecture" class="form-select">
+          <option value="1d_cnn">1D-CNN</option>
+          <option value="feature_classifier">
+            Clasificador de características
+          </option>
+          <option value="baseline">Baseline lineal</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="models-framework">Framework</label
+        ><select id="models-framework" class="form-select">
+          <option value="pytorch">PyTorch</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="models-input">Señal(es) de entrada</label
+        ><select id="models-input" class="form-select">
+          <option value="geo_mpu">GEO + MPU (dos señales)</option>
+          <option value="geo">GEO</option>
+          <option value="mpu">MPU</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="models-description"
+          >Descripción (opcional)</label
+        ><textarea
+          id="models-description"
+          class="form-input models-textarea"
+          rows="2"
+          maxlength="300"
+          placeholder="Objetivo o notas del experimento"
+        ></textarea>
+      </div>
+    </section>
+    <section class="card models-card">
+      <header class="models-card-heading">
+        <span class="models-step">3</span>
+        <div>
+          <h2>Parámetros de entrenamiento</h2>
+          <p>Ajusta los principales parámetros del proceso de aprendizaje.</p>
+        </div>
+      </header>
+      <div class="models-fields-grid">
+        <div class="form-group">
+          <label class="form-label" for="models-epochs">Épocas</label
+          ><input
+            id="models-epochs"
+            class="form-input"
+            type="number"
+            min="1"
+            max="10000"
+            value="50"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="models-batch">Batch size</label
+          ><input
+            id="models-batch"
+            class="form-input"
+            type="number"
+            min="1"
+            max="4096"
+            value="32"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="models-lr">Learning rate</label
+          ><input
+            id="models-lr"
+            class="form-input"
+            type="number"
+            min="0.000001"
+            max="1"
+            step="any"
+            value="0.001"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="models-seed">Semilla aleatoria</label
+          ><input
+            id="models-seed"
+            class="form-input"
+            type="number"
+            min="0"
+            max="2147483647"
+            value="42"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="models-optimizer">Optimizador</label
+          ><select id="models-optimizer" class="form-select">
+            <option value="adam">Adam</option>
+            <option value="sgd">SGD</option>
+            <option value="adamw">AdamW</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="models-loss">Función de pérdida</label
+          ><select id="models-loss" class="form-select">
+            <option value="cross_entropy">Cross Entropy</option>
+          </select>
+        </div>
+      </div>
+      <details class="models-advanced">
+        <summary>Opciones avanzadas</summary>
+        <div class="models-checks">
+          <label
+            ><input id="models-early-stop" type="checkbox" checked /> Activar
+            parada temprana</label
+          ><label
+            ><input id="models-best" type="checkbox" checked /> Guardar mejor
+            modelo (según Validation)</label
+          ><label
+            ><input id="models-weighted" type="checkbox" /> Ponderación de
+            clases</label
+          >
+        </div>
+      </details>
+      <div
+        id="models-form-message"
+        class="models-form-message"
+        role="status"
+      ></div>
+    </section>
+  </div>
+  <section class="card models-execution">
+    <header class="models-card-heading">
+      <span class="models-step">4</span>
+      <div>
+        <h2>Ejecución y resultados</h2>
+        <p>
+          Guarda la configuración y ejecuta el entrenamiento local en el PC.
+        </p>
+      </div>
+      <span class="badge badge-warning">Configuración</span>
+    </header>
+    <div class="models-toolbar">
+      <button class="btn btn-primary" data-model-action="save">
+        ▣ Guardar configuración</button
+      ><button class="btn btn-primary" data-model-action="train">
+        ▶ Iniciar entrenamiento</button
+      ><button class="btn btn-secondary" data-model-action="reset">
+        Restablecer</button
+      ><span id="models-save-status" class="models-muted"
+        >Sin cambios guardados</span
+      >
+    </div>
+    <div class="models-results-grid">
+      <div class="models-subcard models-final-card">
+        <h3>Métricas finales (al completar)</h3>
+        <dl class="models-final-metrics">
+          <dt>Loss (Train)</dt>
+          <dd>—</dd>
+          <dt>Loss (Validation)</dt>
+          <dd>—</dd>
+          <dt>Precisión (Test)</dt>
+          <dd>—</dd>
+          <dt>F1 (Test)</dt>
+          <dd>—</dd>
+        </dl>
+        <p class="models-note">
+          Test permanece reservado para evaluación final.
+        </p>
+      </div>
+      <div class="models-subcard models-progress-card">
+        <h3>Progreso del entrenamiento</h3>
+        <div class="models-progress-head">
+          <span id="models-progress-label">Época: — / —</span
+          ><strong id="models-progress-percent">Sin iniciar</strong>
+        </div>
+        <div class="models-progress-track">
+          <i id="models-progress-bar"></i>
+        </div>
+        <p id="models-progress-detail" class="models-muted">
+          Esperando ejecución.
+        </p>
+        <p id="models-progress-note" class="models-muted">
+          El entrenamiento aún no se ha ejecutado.
+        </p>
+      </div>
+      <div class="models-subcard models-realtime-card">
+        <h3>Métricas en tiempo real</h3>
+        <div class="models-placeholder-metrics">
+          <span>Loss (Train)<b id="models-live-train">—</b></span
+          ><span>Loss (Validation)<b id="models-live-val">—</b></span
+          ><span>Precisión (Validation)<b id="models-live-acc">—</b></span>
+        </div>
+      </div>
+      <div class="models-subcard models-learning-panel">
+        <h3>Curva de aprendizaje</h3>
+        <div class="models-chart-empty">
+          La curva se mostrará cuando exista una ejecución real.
+        </div>
+      </div>
+      <div class="models-subcard models-confusion-card">
+        <h3>Matriz de confusión</h3>
+        <table class="models-confusion-matrix">
+          <tbody id="models-confusion-matrix">
+            <tr><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="models-subcard models-summary-card">
+        <h3>Resumen del modelo</h3>
+        <dl class="models-summary-list">
+          <dt>Arquitectura</dt>
+          <dd id="models-summary-architecture">—</dd>
+          <dt>Entrada</dt>
+          <dd id="models-summary-input">—</dd>
+          <dt>Dataset</dt>
+          <dd id="models-summary-dataset">—</dd>
+          <dt>Partición</dt>
+          <dd id="models-summary-split">—</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+  <section class="card models-library">
+    <header class="models-card-heading">
+      <span class="models-library-icon">▤</span>
+      <div>
+        <h2>Experimentos guardados</h2>
+        <p>
+          Administra configuraciones, consulta resultados e historial, recupera
+          parámetros y elimina registros.
+        </p>
+      </div>
+      <button class="btn btn-secondary" data-model-action="refresh">
+        ↻ Actualizar
+      </button>
+    </header>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Arquitectura</th>
+            <th>Dataset</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Accuracy (Validation)</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="models-library-body">
+          <tr>
+            <td colspan="7">Cargando…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <div class="workspace-inline-actions models-inline-actions">
+    <button
+      class="btn btn-primary"
+      id="btn-continue-exportar"
+      data-action="footer-continue-exportar"
+      type="button"
+      disabled
+    >
+      Continuar a Exportar →
+    </button>
+  </div>
 </section>

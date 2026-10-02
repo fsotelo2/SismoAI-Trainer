@@ -11,6 +11,7 @@ Usage in JavaScript:
 import os
 import json
 import math
+import re
 from typing import Optional
 
 from core.project.service import ProjectService
@@ -30,6 +31,7 @@ from core.windowing import persistence as window_persistence
 from core.labeling.service import LabelingService
 from core.labeling.models import LabelingError
 from core.dataset.service import build_manifest, save_manifest, DatasetError
+from core.pipeline import manifests as pipeline_manifests
 
 
 def _sanitize_nan(obj):
@@ -55,8 +57,18 @@ class ApiBridge:
         self._window_sequence = 0
         self._restore_windows()
         self._labeling = LabelingService()
-        self._dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
+        self._window_selection_dir = os.path.join(os.path.dirname(self._window_path), 'window_selections')
+        self._active_window_selection = None
+        self._active_window_selection_filename = ''
+        self._active_label_batch = None
+        self._active_label_items = []
+        self._legacy_global_dataset_path = os.path.join(os.path.dirname(self._window_path), 'dataset.json')
+        self._dataset_dir = ""
+        self._dataset_path = ""
+        self._legacy_dataset_path = ""
+        self._export_dir = ""
         self._active_dataset = None
+        self._configure_dataset_paths()
         self._restore_dataset()
 
         # Wire callbacks for potential future async notifications
@@ -99,6 +111,14 @@ class ApiBridge:
                 return {"path": "", "file_count": 0, "status": "error"}
 
             self._project.select_folder(folder)
+            self._configure_dataset_paths()
+            self._restore_windows()
+            self._active_window_selection = None
+            self._active_window_selection_filename = ""
+            self._active_label_batch = None
+            self._active_label_items = []
+            self._active_dataset = None
+            self._restore_dataset()
 
             # Wait for scan to complete (simplified: synchronous check)
             import time
@@ -131,6 +151,7 @@ class ApiBridge:
             return {
                 "state": self._project.state,
                 "folder_path": self._project.folder_path,
+                "dataset_manifest_path": self._dataset_path,
                 "file_count": self._project.file_count_text,
                 "event_count": self._project.event_count_text,
                 "available_text": self._project.available_text,
@@ -1006,21 +1027,186 @@ class ApiBridge:
     # 7. Human window labeling
     # ------------------------------------------------------------------
 
+    def _configure_dataset_paths(self):
+        """Configure isolated persistence folders for the selected project."""
+        project_root = self._project.folder_path
+        if project_root:
+            root = os.path.abspath(os.path.expanduser(project_root))
+            windows_dir = os.path.join(root, "Ventanas")
+            labels_dir = os.path.join(root, "Etiquetados")
+            self._dataset_dir = os.path.join(root, "Dataset")
+            models_dir = os.path.join(root, "Modelos")
+            self._export_dir = os.path.join(root, "Exportar")
+            for folder in (windows_dir, labels_dir, self._dataset_dir, models_dir, self._export_dir):
+                os.makedirs(folder, exist_ok=True)
+            self._window_path = os.path.join(windows_dir, "windows.json")
+            self._window_selection_dir = windows_dir
+            self._labeling = LabelingService(os.path.join(labels_dir, "labels.json"))
+            self._legacy_dataset_path = os.path.join(root, "dataset.json")
+        else:
+            base = os.path.dirname(self._window_path)
+            self._dataset_dir = os.path.join(base, "Dataset")
+            self._window_selection_dir = os.path.join(base, "Ventanas")
+            self._export_dir = os.path.join(base, "Exportar")
+            self._legacy_dataset_path = os.path.join(base, "dataset.json")
+        self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
+
+    @staticmethod
+    def _dataset_filename(name):
+        """Convert a display name into a safe, portable JSON filename."""
+        value = str(name or "").strip()[:80]
+        invalid = set('<>:"/\\|?*')
+        value = "".join("_" if char in invalid or ord(char) < 32 else char for char in value)
+        value = value.rstrip(" .")
+        return (value or "Dataset_sin_nombre") + ".json"
+
     def _restore_dataset(self):
+        # Load the most recently created valid named manifest in this project.
+        candidates = []
         try:
-            with open(self._dataset_path, encoding="utf-8") as stream:
-                data = json.load(stream)
-            if data.get("schema") == "sismoai-dataset" and data.get("schema_version") == 1:
-                self._active_dataset = data
-        except (OSError, ValueError, TypeError):
+            if os.path.isdir(self._dataset_dir):
+                candidates = [
+                    os.path.join(self._dataset_dir, filename)
+                    for filename in os.listdir(self._dataset_dir)
+                    if filename.lower().endswith(".json")
+                ]
+        except OSError:
+            candidates = []
+        candidates.extend([self._legacy_dataset_path])
+        if not self._project.folder_path:
+            candidates.append(self._legacy_global_dataset_path)
+        valid = []
+        for candidate in candidates:
+            try:
+                with open(candidate, encoding="utf-8") as stream:
+                    data = json.load(stream)
+                if not isinstance(data, dict):
+                    continue
+                if data.get("schema") == "sismoai-dataset" and data.get("schema_version") == 1:
+                    valid.append((str(data.get("created_at", "")), candidate, data))
+            except (OSError, ValueError, TypeError):
+                continue
+        if not valid:
             self._active_dataset = None
+            self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
+            return
+        _, candidate, data = max(valid, key=lambda item: item[0])
+        self._active_dataset = data
+        desired = os.path.join(self._dataset_dir, self._dataset_filename(data.get("name")))
+        if os.path.abspath(candidate) != os.path.abspath(desired):
+            save_manifest(desired, data)
+        self._dataset_path = desired
+
+    def get_dataset_catalog(self) -> dict:
+        """Return saved Dataset manifests without depending on labeling/window workspace."""
+        try:
+            datasets = self._list_dataset_manifests()
+            active = self._active_dataset
+            active_path = self._dataset_path
+            # Restore from disk if the in-memory selection is absent or stale.
+            if not active or not active.get("dataset_id"):
+                self._restore_dataset()
+                active = self._active_dataset
+                active_path = self._dataset_path
+            return {
+                "success": True,
+                "datasets": datasets,
+                "active_dataset": active,
+                "manifest_path": active_path,
+                "dataset_dir": self._dataset_dir,
+            }
+        except Exception as exc:
+            return {"success": False, "error": str(exc), "datasets": [], "active_dataset": None}
+
+    def create_label_batch(self, name):
+        try:
+            display_name = str(name or "").strip()
+            if not display_name or len(display_name) > 80:
+                raise ValueError("El nombre es obligatorio y debe tener hasta 80 caracteres.")
+            if display_name.lower().endswith(".json"):
+                display_name = display_name[:-5].rstrip()
+            if not display_name or display_name in (".", "..") or re.search(r'[<>:"/\\|?*]', display_name):
+                raise ValueError("El nombre contiene caracteres no permitidos.")
+            workspace = self.get_labeling_workspace()
+            items = workspace.get("items", [])
+            if not items or any(
+                not x.get("label")
+                or x["label"].get("class_code") not in (0, 1)
+                or x["label"].get("quality_review") != "confirmed"
+                for x in items
+            ):
+                return {"success": False, "error": "Todas las ventanas deben tener clase binaria y revisión confirmada antes de guardar."}
+            source_id = ((self._active_label_batch or {}).get("source_id")
+                         if self._active_label_batch else
+                         (self._active_window_selection or {}).get("id"))
+            folder = os.path.abspath(os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados"))
+            os.makedirs(folder, exist_ok=True)
+            filename = display_name + ".json"
+            duplicate = filename.casefold() in {x.casefold() for x in os.listdir(folder)}
+            if not duplicate:
+                for entry in os.listdir(folder):
+                    if not entry.lower().endswith(".json"):
+                        continue
+                    try:
+                        with open(os.path.join(folder, entry), encoding="utf-8") as stream:
+                            saved = json.load(stream)
+                        if isinstance(saved, dict) and str(saved.get("name", "")).strip().casefold() == display_name.casefold():
+                            duplicate = True
+                            break
+                    except (OSError, ValueError, TypeError):
+                        continue
+            if duplicate:
+                return {"success": False, "error": "Ya existe un etiquetado con ese nombre. Elige otro nombre."}
+            manifest, generated_path = pipeline_manifests.create_manifest(
+                folder, "labels", display_name, items, source_id=source_id)
+            target_path = os.path.join(folder, filename)
+            if os.path.exists(target_path):
+                os.remove(generated_path)
+                return {"success": False, "error": "Ya existe un etiquetado con ese nombre. Elige otro nombre."}
+            os.rename(generated_path, target_path)
+            self._active_label_batch = manifest
+            return {"success": True, "batch": manifest, "filename": filename}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def get_label_batches(self):
+        folder = os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados")
+        return {"success": True, "items": pipeline_manifests.list_manifests(folder, "labels")}
+
+    def delete_label_batch(self, filename):
+        try:
+            safe_name = os.path.basename(str(filename or "").strip())
+            if not safe_name or safe_name != filename or not safe_name.lower().endswith(".json"):
+                raise ValueError("Nombre de archivo de etiquetado no válido.")
+            folder = os.path.abspath(os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados"))
+            manifest = pipeline_manifests.load_manifest(folder, "labels", safe_name)
+            # Do not remove a batch currently selected as the source of an active Dataset.
+            active_dataset = getattr(self, "_active_dataset", None) or {}
+            if isinstance(active_dataset, dict) and active_dataset.get("source_label_id") == manifest.get("id"):
+                return {"success": False, "error": "No se puede eliminar: el Dataset activo depende de este etiquetado."}
+            os.remove(os.path.join(folder, safe_name))
+            if self._active_label_batch and self._active_label_batch.get("id") == manifest.get("id"):
+                self._active_label_batch = None
+                self._active_label_items = []
+            return {"success": True, "id": manifest.get("id"), "filename": safe_name}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def select_label_batch(self, filename):
+        try:
+            folder = os.path.join(os.path.dirname(self._window_selection_dir), "Etiquetados")
+            self._active_label_batch = pipeline_manifests.load_manifest(folder, "labels", filename)
+            self._active_label_items = self._active_label_batch.get("records", [])
+            return {"success": True, "batch": self._active_label_batch}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
 
     def get_dataset_workspace(self) -> dict:
         try:
-            items = self._labeling.list_labels([
-                item.to_dict() for item in self._window_records
-                if item.selection_status == "include"
-            ])
+            if self._active_label_batch:
+                items = [dict(x) for x in self._active_label_batch.get("records", [])]
+            else:
+                items = []
             counts = {"total": len(items), "labeled": 0, "pending": 0, "classes": {"0": 0, "1": 0}, "events": 0}
             events = set()
             for item in items:
@@ -1035,9 +1221,105 @@ class ApiBridge:
                 if w.get("source_event_id") is not None:
                     events.add((w.get("source_file"), str(w.get("source_event_id"))))
             counts["events"] = len(events)
-            return {"success": True, "items": items, "counts": counts, "active_dataset": self._active_dataset}
+            return {"success": True, "items": items, "counts": counts, "active_dataset": self._active_dataset, "datasets": self._list_dataset_manifests(), "label_batches": self.get_label_batches().get("items", []), "active_label_batch": self._active_label_batch, "manifest_path": self._dataset_path}
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": [], "counts": {}}
+
+    def _list_dataset_manifests(self):
+        """List valid named manifests saved in the selected project's Dataset folder."""
+        datasets = []
+        try:
+            if not os.path.isdir(self._dataset_dir):
+                return datasets
+            for filename in sorted(os.listdir(self._dataset_dir), key=str.casefold):
+                if not filename.lower().endswith(".json"):
+                    continue
+                path = os.path.join(self._dataset_dir, filename)
+                if not os.path.isfile(path):
+                    continue
+                try:
+                    with open(path, encoding="utf-8") as stream:
+                        data = json.load(stream)
+                    if not isinstance(data, dict):
+                        continue
+                    if data.get("schema") != "sismoai-dataset" or data.get("schema_version") != 1:
+                        continue
+                    if not data.get("dataset_id") or not isinstance(data.get("splits"), dict):
+                        continue
+                    datasets.append({
+                        "filename": filename,
+                        "name": data.get("name") or os.path.splitext(filename)[0],
+                        "dataset_id": data["dataset_id"],
+                        "created_at": data.get("created_at", ""),
+                        "windows": (data.get("summary") or {}).get("all", {}).get("windows", 0),
+                        "active": bool(self._active_dataset and self._active_dataset.get("dataset_id") == data.get("dataset_id")),
+                    })
+                except (OSError, ValueError, TypeError):
+                    continue
+        except OSError:
+            pass
+        return datasets
+
+    def delete_dataset(self, filename: str) -> dict:
+        """Delete a saved Dataset manifest; preserve source data and refuse dangling experiment references."""
+        try:
+            safe_name = os.path.basename(str(filename or "").strip())
+            if not safe_name or safe_name != filename or not safe_name.lower().endswith(".json"):
+                raise ValueError("Nombre de archivo de Dataset no válido.")
+            path = os.path.abspath(os.path.join(self._dataset_dir, safe_name))
+            if os.path.dirname(path) != os.path.abspath(self._dataset_dir):
+                raise ValueError("Ruta de Dataset no válida.")
+            with open(path, encoding="utf-8") as stream:
+                manifest = json.load(stream)
+            if (not isinstance(manifest, dict) or manifest.get("schema") != "sismoai-dataset"
+                    or manifest.get("schema_version") != 1 or not manifest.get("dataset_id")):
+                raise ValueError("El archivo no contiene un manifiesto SismoAI válido.")
+            dataset_id = str(manifest["dataset_id"])
+            experiments = self.get_model_experiments()
+            if experiments.get("success"):
+                linked = [x for x in experiments.get("experiments", [])
+                          if isinstance(x, dict) and str(x.get("dataset_id")) == dataset_id]
+                if linked:
+                    raise ValueError("Este Dataset está asociado a " + str(len(linked)) +
+                                     " experimento(s). Elimina primero esos experimentos desde MODELOS.")
+            os.remove(path)
+            snapshot_dir = os.path.join(self._dataset_dir, "dataset_" + dataset_id + "_data")
+            if os.path.isdir(snapshot_dir):
+                import shutil
+                shutil.rmtree(snapshot_dir)
+            was_active = bool(self._active_dataset and str(self._active_dataset.get("dataset_id")) == dataset_id)
+            if was_active:
+                self._active_dataset = None
+                self._dataset_path = ""
+                remaining = self._list_dataset_manifests()
+                if remaining:
+                    selected = self.select_dataset(remaining[0]["filename"])
+                    if not selected.get("success"):
+                        return {"success": True, "deleted": safe_name, "active_dataset": None,
+                                "warning": selected.get("error")}
+            return {"success": True, "deleted": safe_name, "active_dataset": self._active_dataset,
+                    "datasets": self._list_dataset_manifests()}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def select_dataset(self, filename: str) -> dict:
+        """Select one saved manifest by filename from the current project's Dataset folder."""
+        try:
+            safe_name = os.path.basename(str(filename or "").strip())
+            if safe_name != filename or not safe_name.lower().endswith(".json"):
+                return {"success": False, "error": "Nombre de archivo de Dataset no válido."}
+            path = os.path.join(self._dataset_dir, safe_name)
+            with open(path, encoding="utf-8") as stream:
+                data = json.load(stream)
+            if (data.get("schema") != "sismoai-dataset" or data.get("schema_version") != 1
+                    or not data.get("dataset_id") or not isinstance(data.get("splits"), dict)):
+                return {"success": False, "error": "El archivo no contiene un manifiesto SismoAI válido."}
+            self._active_dataset = data
+            self._dataset_path = path
+            return {"success": True, "active_dataset": data, "manifest_path": path,
+                    "datasets": self._list_dataset_manifests()}
+        except (OSError, ValueError, TypeError) as exc:
+            return {"success": False, "error": "No se pudo cargar el Dataset: " + str(exc)}
 
     def generate_dataset(self, ratios=None, seed=42, name=None) -> dict:
         try:
@@ -1046,20 +1328,188 @@ class ApiBridge:
                 raise DatasetError(workspace.get("error", "No se pudo leer Etiquetado."))
             ratios = ratios or [0.70, 0.15, 0.15]
             manifest = build_manifest(workspace["items"], tuple(ratios), seed)
+            manifest["source_label_batch_id"] = (self._active_label_batch or {}).get("id")
+            manifest["source_selection_id"] = (self._active_label_batch or {}).get("source_id")
             if name is not None:
                 manifest["name"] = str(name).strip()[:80] or "Dataset_sin_nombre"
+            else:
+                manifest["name"] = "Dataset_sin_nombre"
+            # Persist an immutable physical snapshot of every included window's signals.
+            import numpy as np
+            os.makedirs(self._dataset_dir, exist_ok=True)
+            snapshot_dirname = "dataset_" + str(manifest["dataset_id"]) + "_data"
+            snapshot_dir = os.path.join(self._dataset_dir, snapshot_dirname)
+            os.makedirs(snapshot_dir, exist_ok=False)
+            items_by_id = {str((x.get("window") or {}).get("window_id")): x
+                           for x in workspace["items"]}
+            try:
+                for split_name, rows in manifest["splits"].items():
+                    for row_index, row in enumerate(rows):
+                        wid = str(row["window_id"])
+                        signal = self.get_window_signal(wid)
+                        if not signal.get("success"):
+                            raise DatasetError("No se pudo capturar la ventana " + wid + ": " +
+                                               str(signal.get("error", "error desconocido")))
+                        payload = {}
+                        for sensor in ("GEO", "MPU"):
+                            channel = (signal.get("signals") or {}).get(sensor) or {}
+                            times = channel.get("times") or []
+                            amplitudes = channel.get("amplitudes") or []
+                            if sensor in (row.get("sensors") or []) and (len(times) < 2 or len(times) != len(amplitudes)):
+                                raise DatasetError("La ventana " + wid + " no tiene señales válidas para " + sensor + ".")
+                            payload[sensor + "_times"] = np.asarray(times, dtype=np.float64)
+                            payload[sensor + "_amplitudes"] = np.asarray(amplitudes, dtype=np.float32)
+                        snapshot_name = split_name + "_" + str(row_index).zfill(5) + ".npz"
+                        np.savez_compressed(os.path.join(snapshot_dir, snapshot_name), **payload)
+                        row["snapshot"] = os.path.join(snapshot_dirname, snapshot_name)
+                manifest["snapshot"] = {"format": "npz_per_window", "version": 1,
+                                         "immutable": True, "window_count": sum(len(v) for v in manifest["splits"].values())}
+            except Exception:
+                import shutil
+                shutil.rmtree(snapshot_dir, ignore_errors=True)
+                raise
+            # Source locator and reconstruction semantics for consumers of this manifest.
+            manifest["source"] = {
+                "root_path": os.path.abspath(self._project.folder_path) if self._project.folder_path else None,
+                "file_field": "source_file",
+                "event_field": "event_index",
+                "event_index_base": 0,
+                "time_unit": "microseconds",
+                "time_reference": "event_relative",
+                "interval_convention": "[start_us, end_us)",
+                "reconstruction": "Load source_file from root_path, parse BIN, select event_index, then crop each listed sensor to the window interval.",
+            }
+            # Explicit contract consumed by Phase 9 Modelos/trainer.
+            manifest["model_contract"] = {
+                "task": "binary_classification",
+                "framework": "pytorch",
+                "input_shape": ["samples", "channels", "points"],
+                "supported_inputs": ["geo_mpu", "geo", "mpu"],
+                "points_per_window": 256,
+                "normalization": "per_window_z_score",
+                "label_field": "class_code",
+                "classes": {"0": "TEMBLOR", "1": "NO_SISMICO"},
+                "required_splits": ["train", "validation", "test"],
+            }
+            self._dataset_path = os.path.join(self._dataset_dir, self._dataset_filename(manifest["name"]))
             save_manifest(self._dataset_path, manifest)
             self._active_dataset = manifest
-            return {"success": True, "dataset": manifest}
+            return {"success": True, "dataset": manifest, "manifest_path": self._dataset_path}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def create_window_selection(self, name):
+        try:
+            display_name = str(name or "").strip()
+            if not display_name or len(display_name) > 80:
+                raise ValueError("El nombre es obligatorio y debe tener hasta 80 caracteres.")
+            if display_name.lower().endswith(".json"):
+                display_name = display_name[:-5].rstrip()
+            if not display_name or display_name in (".", "..") or re.search(r'[<>:"/\\|?*]', display_name):
+                raise ValueError("El nombre contiene caracteres no permitidos.")
+            records = [item.to_dict() for item in self._window_records
+                       if item.selection_status == "include"]
+            if not records:
+                raise ValueError("Incluye al menos una ventana para guardar.")
+            folder = os.path.abspath(self._window_selection_dir)
+            filename = display_name + ".json"
+            os.makedirs(folder, exist_ok=True)
+            existing = {entry.casefold() for entry in os.listdir(folder)}
+            duplicate_name = filename.casefold() in existing
+            if not duplicate_name:
+                for entry in os.listdir(folder):
+                    if not entry.lower().endswith(".json"):
+                        continue
+                    try:
+                        with open(os.path.join(folder, entry), encoding="utf-8") as stream:
+                            saved = json.load(stream)
+                        if isinstance(saved, dict) and str(saved.get("name", "")).strip().casefold() == display_name.casefold():
+                            duplicate_name = True
+                            break
+                    except (OSError, ValueError, TypeError):
+                        continue
+            if duplicate_name:
+                return {"success": False,
+                        "error": "Ya existe una selección con ese nombre. Elige otro nombre."}
+            for record in records:
+                record["window_ref"] = None
+            manifest, generated_path = pipeline_manifests.create_manifest(
+                folder, "windows", display_name, records)
+            for record in manifest["records"]:
+                record["selection_id"] = manifest["id"]
+                record["window_ref"] = manifest["id"] + "::" + str(record.get("window_id"))
+            from core.pipeline.manifests import _atomic_json
+            _atomic_json(generated_path, manifest)
+            target_path = os.path.join(folder, filename)
+            if os.path.exists(target_path):
+                os.remove(generated_path)
+                return {"success": False,
+                        "error": "Ya existe una selección con ese nombre. Elige otro nombre."}
+            os.rename(generated_path, target_path)
+            self._active_window_selection = manifest
+            self._active_window_selection_filename = filename
+            self._active_label_batch = None
+            self._active_label_items = [{"window": dict(w), "label": None} for w in manifest["records"]]
+            return {"success": True, "selection": manifest, "filename": filename}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def get_window_selections(self):
+        try:
+            items = pipeline_manifests.list_manifests(self._window_selection_dir, "windows")
+            return {"success": True, "items": items,
+                    "active_filename": self._active_window_selection_filename}
+        except Exception as exc:
+            return {"success": False, "error": str(exc), "items": []}
+
+    def delete_window_selection(self, filename):
+        """Delete a saved window selection only when no label batch depends on it."""
+        try:
+            safe_name = os.path.basename(str(filename or "").strip())
+            if not safe_name or safe_name != filename or not safe_name.lower().endswith(".json"):
+                raise ValueError("Nombre de archivo de selección no válido.")
+            folder = os.path.abspath(self._window_selection_dir)
+            path = os.path.abspath(os.path.join(folder, safe_name))
+            if os.path.dirname(path) != folder:
+                raise ValueError("Ruta de selección no válida.")
+            manifest = pipeline_manifests.load_manifest(folder, "windows", safe_name)
+            label_folder = os.path.join(os.path.dirname(folder), "Etiquetados")
+            dependent = [x for x in pipeline_manifests.list_manifests(label_folder, "labels")
+                         if x.get("source_id") == manifest.get("id")]
+            if dependent:
+                return {"success": False,
+                        "error": "No se puede eliminar: existe un etiquetado guardado que depende de esta selección."}
+            if self._active_window_selection and self._active_window_selection.get("id") == manifest.get("id"):
+                self._active_window_selection = None
+                self._active_window_selection_filename = ""
+                self._active_label_batch = None
+                self._active_label_items = []
+            os.remove(path)
+            return {"success": True, "id": manifest.get("id"), "filename": safe_name}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def select_window_selection(self, filename):
+        try:
+            manifest = pipeline_manifests.load_manifest(
+                self._window_selection_dir, "windows", filename)
+            self._active_window_selection = manifest
+            self._active_window_selection_filename = filename
+            self._active_label_batch = None
+            self._active_label_items = [{"window": dict(w), "label": None} for w in manifest["records"]]
+            return {"success": True, "selection": manifest}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
     def get_labeling_workspace(self) -> dict:
-        """Return windows with their current labels and aggregate counts."""
+        """Return the records of the selected immutable window selection."""
         try:
-            windows = [item.to_dict() for item in self._window_records
-                       if item.selection_status == "include"]
-            items = self._labeling.list_labels(windows)
+            if self._active_label_batch:
+                items = [dict(x) for x in self._active_label_batch.get("records", [])]
+            elif self._active_window_selection:
+                items = self._active_label_items
+            else:
+                items = []
             counts = {"total": len(items), "pending": 0, "labeled": 0, "review": 0}
             for item in items:
                 label = item.get("label")
@@ -1073,23 +1523,30 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc), "items": [], "counts": {}}
 
-    def get_window_signal(self, window_id: str) -> dict:
-        """Load the source event channels and crop them to one window interval."""
+    def get_window_signal(self, window_id: str, window_ref=None) -> dict:
+        """Read signal using the selected manifest record, not a globally reused W-### ID."""
         try:
-            window = next((w for w in self._window_records if w.window_id == window_id), None)
+            entries = (self._active_label_batch or {}).get("records", []) or self._active_label_items
+            entry = next((x for x in entries
+                          if (x.get("window") or {}).get("window_id") == window_id
+                          and (not window_ref or (x.get("window") or {}).get("window_ref") == window_ref)), None)
+            window = dict(entry.get("window")) if entry else None
+            if window is None and not self._active_window_selection:
+                window_obj = next((w for w in self._window_records if w.window_id == window_id), None)
+                window = window_obj.to_dict() if window_obj else None
             if window is None:
-                return {"success": False, "error": "Ventana no encontrada."}
+                return {"success": False, "error": "Ventana no encontrada en el manifiesto activo."}
             try:
-                event_index = int(window.source_event_id)
+                event_index = int(window.get("source_event_id"))
             except (TypeError, ValueError):
                 return {"success": False, "error": "La ventana no tiene un índice de evento válido."}
-            start, end = window.start_us / 1_000_000.0, window.end_us / 1_000_000.0
+            start, end = float(window.get("start_us", 0)) / 1e6, float(window.get("end_us", 0)) / 1e6
             result = {}
             for sensor, channel in (("GEO", "velocity"), ("MPU", "magnitude")):
-                if sensor not in window.sensors:
+                if sensor not in (window.get("sensors") or []):
                     result[sensor] = {"times": [], "amplitudes": []}
                     continue
-                series = self.get_channel_series(window.source_file, event_index, channel)
+                series = self.get_channel_series(window.get("source_file"), event_index, channel)
                 if "error" in series:
                     result[sensor] = {"times": [], "amplitudes": [], "error": series["error"]}
                     continue
@@ -1097,17 +1554,23 @@ class ApiBridge:
                          if start <= t < end]
                 result[sensor] = {"times": [p[0] for p in pairs],
                                   "amplitudes": [p[1] for p in pairs]}
-            return {"success": True, "window_id": window_id, "signals": result}
+            return {"success": True, "window_id": window_id, "window_ref": window.get("window_ref"), "signals": result}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
-    def save_window_label(self, window_id: str, payload: dict) -> dict:
-        """Validate and persist one annotation without modifying the source window."""
+    def save_window_label(self, window_id: str, payload: dict, window_ref=None) -> dict:
+        """Save annotation in the active batch, using the selection-scoped reference."""
         try:
-            window = next((w.to_dict() for w in self._window_records if w.window_id == window_id), None)
+            target_items = (self._active_label_batch or {}).get("records", []) or self._active_label_items
+            entry = next((x for x in target_items
+                          if (x.get("window") or {}).get("window_id") == window_id
+                          and (not window_ref or (x.get("window") or {}).get("window_ref") == window_ref)), None)
+            window = dict(entry.get("window")) if entry else None
             if window is None:
-                return {"success": False, "error": "Ventana no encontrada."}
+                return {"success": False, "error": "Ventana no encontrada en el conjunto activo."}
             label = self._labeling.save_label(window, payload)
+            if entry is not None:
+                entry["label"] = label
             return {"success": True, "label": label}
         except (LabelingError, TypeError, ValueError) as exc:
             return {"success": False, "error": str(exc)}
@@ -1266,6 +1729,20 @@ class ApiBridge:
         """Return the complete persisted window registry across files and events."""
         return [item.to_dict() for item in self._window_records]
 
+    def begin_window_session(self) -> dict:
+        """Start a fresh extraction session and restart visible IDs without deleting saved manifests."""
+        previous_records = self._window_records
+        previous_sequence = self._window_sequence
+        self._window_records = []
+        self._window_sequence = 0
+        try:
+            self._persist_windows()
+            return {"success": True, "sequence": 0}
+        except Exception as exc:
+            self._window_records = previous_records
+            self._window_sequence = previous_sequence
+            return {"success": False, "error": str(exc)}
+
     def clear_windows(self) -> dict:
         """Clear extracted windows and restart their visible IDs from W-001."""
         previous_records = self._window_records
@@ -1303,3 +1780,419 @@ class ApiBridge:
                 except Exception as exc:
                     return {"success": False, "error": str(exc)}
         return {"success": False, "error": "Ventana no encontrada."}
+
+
+    # ------------------------------------------------------------------
+    # 8. Model experiments — configuration registry (training not yet wired)
+    # ------------------------------------------------------------------
+
+    def _models_registry_path(self):
+        """Store model experiment configurations in the project's Modelos folder."""
+        project_root = self._project.folder_path
+        if project_root:
+            root = os.path.abspath(os.path.expanduser(project_root))
+        else:
+            root = os.path.dirname(self._window_path)
+        return os.path.join(root, "Modelos", "model_experiments.json")
+
+    def _legacy_models_registry_path(self):
+        """Previous registry location, kept for one-time migration."""
+        return os.path.join(os.path.dirname(self._dataset_path), "model_experiments.json")
+
+    def _experiment_filename(self, name):
+        value = str(name or "").strip()[:80]
+        value = "".join(
+            "_" if char in '<>:"/\\|?*' or ord(char) < 32 else char
+            for char in value
+        ).rstrip(" .")
+        return (value or "Experimento_sin_nombre") + ".json"
+
+    def _experiment_paths(self):
+        folder = os.path.dirname(self._models_registry_path())
+        try:
+            return [
+                os.path.join(folder, filename)
+                for filename in os.listdir(folder)
+                if filename.lower().endswith(".json")
+                and filename.casefold() != "model_experiments.json"
+            ]
+        except OSError:
+            return []
+
+    @staticmethod
+    def _write_experiment(path, record):
+        folder = os.path.dirname(path)
+        os.makedirs(folder, exist_ok=True)
+        temporary = path + ".tmp"
+        with open(temporary, "w", encoding="utf-8") as stream:
+            json.dump(record, stream, ensure_ascii=False, indent=2, allow_nan=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+
+    @staticmethod
+    def _read_experiment_id(path):
+        try:
+            with open(path, encoding="utf-8") as stream:
+                return str((json.load(stream) or {}).get("experiment_id", ""))
+        except (OSError, ValueError, TypeError):
+            return ""
+
+    def get_model_experiments(self) -> dict:
+        """Return saved experiment manifests from the project's Modelos folder."""
+        try:
+            experiments = []
+            for path in self._experiment_paths():
+                try:
+                    with open(path, encoding="utf-8") as stream:
+                        record = json.load(stream)
+                    if isinstance(record, dict) and record.get("experiment_id"):
+                        experiments.append(record)
+                except (OSError, ValueError, TypeError):
+                    continue
+            if experiments:
+                experiments.sort(key=lambda item: str(item.get("created_at", "")))
+                return {"success": True, "experiments": experiments}
+
+            legacy_path = self._models_registry_path()
+            if not os.path.isfile(legacy_path):
+                legacy_path = self._legacy_models_registry_path()
+            if not os.path.isfile(legacy_path):
+                return {"success": True, "experiments": []}
+            with open(legacy_path, "r", encoding="utf-8") as stream:
+                legacy = json.load(stream)
+            legacy = legacy if isinstance(legacy, list) else []
+            for record in legacy:
+                if not isinstance(record, dict) or not record.get("experiment_id"):
+                    continue
+                name = (record.get("config") or {}).get("name")
+                self._write_experiment(
+                    os.path.join(os.path.dirname(self._models_registry_path()),
+                                 self._experiment_filename(name)),
+                    record,
+                )
+            os.remove(legacy_path)
+            return {"success": True, "experiments": legacy}
+        except Exception as exc:
+            return {"success": False, "experiments": [], "error": str(exc)}
+
+    def save_model_experiment(self, config: dict, dataset_id: str, dataset_name: str) -> dict:
+        """Validate and persist a reproducible experiment configuration."""
+        try:
+            if not isinstance(config, dict):
+                raise ValueError("La configuración debe ser un objeto.")
+            name = str(config.get("name", "")).strip()
+            if not name or len(name) > 80:
+                raise ValueError("El nombre es obligatorio y debe tener máximo 80 caracteres.")
+            if not self._active_dataset or str(self._active_dataset.get("dataset_id", "")) != str(dataset_id):
+                raise ValueError("El dataset activo cambió. Actualiza la vista y vuelve a intentar.")
+            training = config.get("training")
+            if not isinstance(training, dict):
+                raise ValueError("La configuración de entrenamiento no es válida.")
+            epochs_raw = training.get("epochs", 0)
+            batch_raw = training.get("batch_size", 0)
+            seed_raw = training.get("seed", -1)
+            lr_raw = training.get("learning_rate", 0)
+            if any(isinstance(v, bool) or not isinstance(v, int) for v in (epochs_raw, batch_raw, seed_raw)):
+                raise ValueError("Épocas, batch size y semilla deben ser enteros.")
+            epochs, batch_size, seed = epochs_raw, batch_raw, seed_raw
+            try:
+                learning_rate = float(lr_raw)
+            except (TypeError, ValueError):
+                raise ValueError("Learning rate no válido.")
+            if not math.isfinite(learning_rate):
+                raise ValueError("Learning rate debe ser finito.")
+            if training.get("optimizer", "adam") not in ("adam", "adamw", "sgd"):
+                raise ValueError("Optimizador no reconocido.")
+            if training.get("loss", "cross_entropy") != "cross_entropy":
+                raise ValueError("La única función de pérdida implementada es cross_entropy.")
+            if not 1 <= epochs <= 10000:
+                raise ValueError("Épocas fuera del rango permitido (1–10000).")
+            if not 1 <= batch_size <= 4096:
+                raise ValueError("Batch size fuera del rango permitido (1–4096).")
+            if not 0 < learning_rate <= 1:
+                raise ValueError("Learning rate fuera del rango permitido (0–1].")
+            if seed < 0:
+                raise ValueError("La semilla debe ser no negativa.")
+            allowed_arch = {"1d_cnn", "feature_classifier", "baseline"}
+            if config.get("architecture") not in allowed_arch:
+                raise ValueError("Arquitectura no reconocida.")
+            registry_result = self.get_model_experiments()
+            if not registry_result.get("success"):
+                raise ValueError("No se pudo leer el registro de experimentos: " + registry_result.get("error", "error desconocido"))
+            registry = registry_result.get("experiments", [])
+            # Reuse the existing experiment when the dataset and full configuration match.
+            existing = next((item for item in reversed(registry)
+                if isinstance(item, dict)
+                and item.get("dataset_id") == str(dataset_id)
+                and item.get("config") == config), None)
+            if existing is not None:
+                return {"success": True, "experiment_id": existing.get("experiment_id"), "existing": True}
+            import uuid
+            from datetime import datetime
+            record = {
+                "experiment_id": str(uuid.uuid4()),
+                "created_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+                "status": "configuration",
+                "dataset_id": str(dataset_id),
+                "dataset_name": str(dataset_name),
+                "config": config,
+                "runs": [],
+            }
+            path = os.path.join(
+                os.path.dirname(self._models_registry_path()),
+                self._experiment_filename(name),
+            )
+            if os.path.exists(path):
+                raise ValueError("Ya existe un experimento con ese nombre. Usa otro nombre.")
+            self._write_experiment(path, record)
+            return {"success": True, "experiment_id": record["experiment_id"]}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+
+    def delete_model_experiment(self, experiment_id: str) -> dict:
+        """Delete one saved experiment record without deleting model weight files."""
+        try:
+            experiment_id = str(experiment_id or "").strip()
+            if not experiment_id:
+                raise ValueError("Identificador de experimento no válido.")
+            thread = getattr(self, "_model_training_thread", None)
+            state = getattr(self, "_model_training_state", {}) or {}
+            if thread and thread.is_alive() and state.get("experiment_id") == experiment_id:
+                raise ValueError("No se puede eliminar un experimento mientras está entrenando.")
+            lock = getattr(self, "_model_registry_lock", None)
+            if lock is None:
+                import threading
+                self._model_registry_lock = threading.RLock()
+                lock = self._model_registry_lock
+            with lock:
+                result = self.get_model_experiments()
+                if not result.get("success"):
+                    raise ValueError("No se pudo leer el registro: " + result.get("error", "error desconocido"))
+                registry = result.get("experiments", [])
+                record = next(
+                    (
+                        item
+                        for item in registry
+                        if isinstance(item, dict)
+                        and item.get("experiment_id") == experiment_id
+                    ),
+                    None,
+                )
+                if record is None:
+                    raise ValueError("Experimento no encontrado.")
+                path = next(
+                    (
+                        candidate
+                        for candidate in self._experiment_paths()
+                        if self._read_experiment_id(candidate) == experiment_id
+                    ),
+                    None,
+                )
+                if not path:
+                    raise ValueError("Archivo de experimento no encontrado.")
+                models_dir = os.path.abspath(os.path.dirname(self._models_registry_path()))
+                import shutil
+                folder_names = {
+                    os.path.splitext(
+                        self._experiment_filename((record.get("config") or {}).get("name"))
+                    )[0],
+                    experiment_id,
+                }
+                for folder_name in folder_names:
+                    output_dir = os.path.abspath(os.path.join(models_dir, folder_name))
+                    if os.path.dirname(output_dir) != models_dir:
+                        raise ValueError("Ruta de resultados de experimento no válida.")
+                    if os.path.isdir(output_dir):
+                        shutil.rmtree(output_dir)
+                os.remove(path)
+            return {"success": True, "experiment_id": experiment_id}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def get_model_training_state(self) -> dict:
+        state = getattr(self, "_model_training_state", None)
+        if state is None:
+            return {"success": True, "status": "idle", "epoch": 0, "epochs": 0}
+        return {"success": True, **state}
+
+    def start_model_training(self, config: dict, dataset_id: str) -> dict:
+        """Launch preparation and training in a worker so the UI remains responsive."""
+        import threading
+        try:
+            lock = getattr(self, "_model_training_lock", None)
+            if lock is None:
+                self._model_training_lock = threading.RLock()
+                lock = self._model_training_lock
+            with lock:
+                thread = getattr(self, "_model_training_thread", None)
+                if thread and thread.is_alive():
+                    return {"success": False, "error": "Ya existe un entrenamiento en ejecución."}
+                if not self._active_dataset or str(self._active_dataset.get("dataset_id")) != str(dataset_id):
+                    raise ValueError("El dataset activo cambió. Actualiza la vista.")
+                if not isinstance(config, dict):
+                    raise ValueError("Configuración no válida.")
+                registry_result = self.get_model_experiments()
+                if not registry_result.get("success"):
+                    raise ValueError("No se pudo leer el registro de experimentos: " + registry_result.get("error", "error desconocido"))
+                registry = registry_result.get("experiments", [])
+                record = next((x for x in reversed(registry)
+                               if x.get("dataset_id") == str(dataset_id)
+                               and x.get("config") == config), None)
+                if record is None:
+                    saved = self.save_model_experiment(config, dataset_id,
+                        self._active_dataset.get("name", "Dataset"))
+                    if not saved.get("success"):
+                        raise ValueError(saved.get("error", "No se pudo registrar el experimento."))
+                    registry_result = self.get_model_experiments()
+                    if not registry_result.get("success"):
+                        raise ValueError("No se pudo confirmar el registro del experimento.")
+                    record = next((x for x in reversed(registry_result.get("experiments", []))
+                                   if x.get("experiment_id") == saved.get("experiment_id")), None)
+                if record is None:
+                    raise ValueError("No se encontró el experimento recién registrado.")
+                # Freeze the manifest/config references for this run. Window records are
+                # copied as a lookup; signal loading remains in the worker.
+                import copy
+                manifest = copy.deepcopy(self._active_dataset)
+                manifest_path_snapshot = os.path.abspath(self._dataset_path)
+                config_snapshot = copy.deepcopy(config)
+                window_by_id = {w.window_id: w for w in list(self._window_records)}
+                experiment_id = record["experiment_id"]
+                self._update_model_record(experiment_id, {"status": "running", "error": None})
+                experiment_stem = os.path.splitext(
+                    self._experiment_filename((config_snapshot or {}).get("name"))
+                )[0]
+                output_dir = os.path.join(
+                    os.path.dirname(self._models_registry_path()),
+                    experiment_stem,
+                )
+                os.makedirs(output_dir, exist_ok=True)
+                self._model_training_state = {
+                    "status": "preparing", "epoch": 0,
+                    "epochs": int((config.get("training") or {}).get("epochs", 0)),
+                    "experiment_id": experiment_id, "error": None, "progress": None,
+                }
+
+                def worker():
+                    try:
+                        import numpy as np
+                        splits = manifest.get("splits") or {}
+                        sensor_mode = config_snapshot.get("input", "geo_mpu")
+                        sensors = {"geo_mpu": ("GEO", "MPU"), "geo": ("GEO",), "mpu": ("MPU",)}.get(sensor_mode)
+                        if not sensors:
+                            raise ValueError("Selección de señales no reconocida.")
+                        points, arrays = 256, {}
+                        for split_name in ("train", "validation", "test"):
+                            rows = splits.get(split_name, [])
+                            if not isinstance(rows, list):
+                                raise ValueError("Partición inválida en el manifiesto: " + split_name)
+                            xs, ys = [], []
+                            for item in rows:
+                                wid = item.get("window_id")
+                                snapshot_rel = item.get("snapshot")
+                                if not snapshot_rel:
+                                    raise ValueError("El Dataset no contiene una copia física de la ventana " + str(wid) +
+                                                     ". Genere nuevamente el Dataset desde Etiquetado.")
+                                snapshot_base = os.path.abspath(os.path.dirname(manifest_path_snapshot))
+                                snapshot_path = os.path.abspath(os.path.join(snapshot_base, snapshot_rel))
+                                if os.path.commonpath([snapshot_base, snapshot_path]) != snapshot_base:
+                                    raise ValueError("Ruta de snapshot inválida para la ventana " + str(wid))
+                                if not os.path.isfile(snapshot_path):
+                                    raise ValueError("No se encontró el archivo físico de la ventana " + str(wid) +
+                                                     ": " + snapshot_path)
+                                with np.load(snapshot_path, allow_pickle=False) as stored:
+                                    channels = []
+                                    for sensor in sensors:
+                                        values_key, times_key = sensor + "_amplitudes", sensor + "_times"
+                                        if values_key not in stored or times_key not in stored:
+                                            raise ValueError("El snapshot de " + str(wid) + " no contiene " + sensor + ".")
+                                        values = np.asarray(stored[values_key], dtype=np.float32)
+                                        times = np.asarray(stored[times_key], dtype=np.float64)
+                                        if len(values) < 2 or len(times) != len(values):
+                                            raise ValueError("La ventana " + str(wid) + " no tiene muestras válidas de " + sensor + ".")
+                                    if (not np.all(np.isfinite(values)) or not np.all(np.isfinite(times))
+                                            or len(times) != len(values)):
+                                        raise ValueError("Datos no finitos o desalineados en ventana " + str(wid) + ".")
+                                    if np.any(np.diff(times) <= 0):
+                                        raise ValueError("Los tiempos deben ser estrictamente crecientes en ventana " + str(wid) + ".")
+                                    code = item.get("class_code")
+                                    if isinstance(code, bool) or not isinstance(code, (int, np.integer)) or code not in (0, 1):
+                                        raise ValueError("Código de clase inválido en ventana " + str(wid) + ".")
+                                    target = np.linspace(float(times[0]), float(times[-1]), points)
+                                    values = np.interp(target, times, values).astype(np.float32)
+                                    std = float(values.std())
+                                    values = (values - float(values.mean())) / (std if std > 1e-8 else 1.0)
+                                    channels.append(values)
+                                xs.append(np.stack(channels))
+                                ys.append(int(item.get("class_code")))
+                            arrays[split_name] = (
+                                np.stack(xs).astype(np.float32) if xs else np.empty((0, len(sensors), points), dtype=np.float32),
+                                np.asarray(ys, dtype=np.int64))
+                        with self._model_training_lock:
+                            self._model_training_state.update(status="running",
+                                samples={k: len(v[1]) for k, v in arrays.items()})
+                        from core.models.trainer import train_experiment
+                        def on_progress(progress):
+                            with self._model_training_lock:
+                                self._model_training_state.update(status="running",
+                                    epoch=progress["epoch"], progress=progress)
+                        result = train_experiment(config_snapshot, arrays, output_dir, on_progress)
+                        finished_at = __import__("datetime").datetime.now().astimezone().isoformat(timespec="seconds")
+                        current = self.get_model_experiments().get("experiments", [])
+                        prior = next((x for x in current if x.get("experiment_id") == experiment_id), {})
+                        runs = list(prior.get("runs", []))
+                        runs.append({"run_number": len(runs) + 1, "finished_at": finished_at, "training_result": result})
+                        self._update_model_record(experiment_id, {"status": "trained", "training_result": result, "runs": runs, "error": None})
+                        with self._model_training_lock:
+                            self._model_training_state.update(status="completed", result=result,
+                                epoch=result["epochs_completed"], error=None)
+                    except Exception as exc:
+                        try:
+                            self._update_model_record(experiment_id, {"status": "error", "error": str(exc)})
+                        except Exception:
+                            pass
+                        with self._model_training_lock:
+                            self._model_training_state.update(status="error", error=str(exc))
+                self._model_training_thread = threading.Thread(
+                    target=worker, name="SismoAI-ModelTraining", daemon=True)
+                self._model_training_thread.start()
+                return {"success": True, "experiment_id": experiment_id, "status": "preparing"}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def _update_model_record(self, experiment_id: str, changes: dict) -> None:
+        """Update one experiment atomically; never replace a corrupt registry with an empty one."""
+        lock = getattr(self, "_model_registry_lock", None)
+        if lock is None:
+            import threading
+            self._model_registry_lock = threading.RLock()
+            lock = self._model_registry_lock
+        with lock:
+            result = self.get_model_experiments()
+            if not result.get("success"):
+                raise ValueError("No se pudo leer el registro de experimentos: " + result.get("error", "error desconocido"))
+            registry = result.get("experiments", [])
+            found = False
+            for item in registry:
+                if item.get("experiment_id") == experiment_id:
+                    item.update(changes)
+                    found = True
+                    break
+            if not found:
+                raise ValueError("Experimento no encontrado en el registro: " + str(experiment_id))
+            path = next(
+                (
+                    candidate
+                    for candidate in self._experiment_paths()
+                    if self._read_experiment_id(candidate) == experiment_id
+                ),
+                None,
+            )
+            if not path:
+                raise ValueError("Archivo de experimento no encontrado: " + str(experiment_id))
+            self._write_experiment(path, next(
+                item for item in registry
+                if item.get("experiment_id") == experiment_id
+            ))
