@@ -215,13 +215,13 @@
   inset:0;
   pointer-events:none;
 }
-.export-inline-actions > .btn {
-  --x: calc(100% - 230px);
-  --y: calc(100% - 38px);
-  position:absolute;
-  left:var(--x);
-  top:var(--y);
-  pointer-events:auto;
+#btn-continue-exportar {
+  --x: calc(100% - 190px);
+  --y: calc(100% - 35px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  pointer-events: auto;
 }
 @media (max-width: 1050px) {
   .export-view { overflow:auto; min-height:900px; }
