@@ -1,5 +1,25 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.7.0] — Exportación intermedia ONNX
+
+**Fecha:** 2026-10-01  
+**Rama:** `fase-10-exportar`  
+**Versión anterior:** 0.6.0  
+**Tipo:** MINOR
+
+**Cambios**
+- **Added:** servicio de exportación ONNX para modelos 1D-CNN reconstruidos desde sus manifiestos y pesos.
+- **Added:** comprobación del grafo ONNX y verificación numérica opcional frente a PyTorch.
+- **Added:** reporte persistente con dimensiones, tamaño y SHA-256 del artefacto.
+- **Added:** conexión del puente Python, interfaz de Exportar y dependencias ONNX/ONNX Runtime.
+
+**Alcance y verificación**
+- La salida implementada es ONNX intermedio. No genera todavía un binario ejecutable ni estima memoria/latencia para ESP32-S3.
+- La cuantización INT8 PTQ, evaluación predictiva y empaquetado final quedan pendientes.
+- Integración escrita en la rama; no se han ejecutado pruebas locales ni una exportación real en este entorno.
+
+---
+
 ## [v0.6.0] — Registro, reconstrucción y validación estructural de modelos
 
 **Fecha:** 2026-10-01  
