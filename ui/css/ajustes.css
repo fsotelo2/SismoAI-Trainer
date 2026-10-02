@@ -346,6 +346,14 @@
 .settings-category-toggle-button,.settings-category-delete-button {
   position: relative;
 }
+/* Reglas específicas por componente para edición desde el inspector F7. */
+.settings-appearance {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+
 /* Geometría espacial unificada del menú Ajustes: todos los elementos
    inspeccionables usan --x, --y, --w y --h (no --layout-x/y). */
 .settings-view [data-layout-ref] {
