@@ -1,1 +1,235 @@
-/* Estilos específicos del menú Exportar. */
+/* Exportar: paneles configurables del workspace y controles de exportación. */
+.export-view {
+  --export-gap: 10px;
+  overflow: auto;
+}
+.export-grid {
+  --x: 0px;
+  --y: 0px;
+  --w: 100%;
+  --h: calc(100% - 160px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  min-width: 0;
+  min-height: 0;
+}
+.export-card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg-card);
+}
+.export-card-model {
+  --x: 0px; --y: 0px;
+  --w: calc((100% - 20px) / 3);
+  --h: calc((100% - 10px) / 2);
+}
+.export-card-config {
+  --x: calc((100% + 10px) / 3); --y: 0px;
+  --w: calc((100% - 20px) / 3);
+  --h: calc((100% - 10px) / 2);
+}
+.export-card-calibration {
+  --x: calc((100% + 10px) * 2 / 3); --y: 0px;
+  --w: calc((100% - 20px) / 3);
+  --h: calc((100% - 10px) / 2);
+}
+.export-card-advanced {
+  --x: 0px; --y: calc(50% + 5px);
+  --w: calc((100% - 20px) / 3);
+  --h: calc((100% - 10px) / 2);
+}
+.export-card-execution {
+  --x: calc((100% + 10px) / 3); --y: calc(50% + 5px);
+  --w: calc((100% - 20px) / 3);
+  --h: calc((100% - 10px) / 2);
+}
+.export-card-results {
+  --x: calc((100% + 10px) * 2 / 3); --y: calc(50% + 5px);
+  --w: calc((100% - 20px) / 3);
+  --h: calc((100% - 10px) / 2);
+}
+.export-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+}
+.export-card-heading > div { flex: 1; min-width: 0; }
+.export-card-heading h2 {
+  margin: 1px 0 2px;
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 650;
+}
+.export-card-heading p {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.export-step {
+  display: grid;
+  place-items: center;
+  flex: 0 0 27px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--color-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+.export-view .form-group { margin: 0; min-width: 0; }
+.export-view .form-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.export-view .form-input,
+.export-view .form-select {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+.export-summary {
+  padding: 9px 10px;
+  border-radius: 6px;
+  background: #f1f6fc;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.export-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.export-check input { accent-color: var(--color-primary); }
+.export-note, .export-muted {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.export-pipeline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 4px 0;
+}
+.export-pipeline-step {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-text-muted);
+  text-align: center;
+  font-size: 10px;
+}
+.export-pipeline-step b {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #334155;
+}
+.export-pipeline-step.active b { background: var(--color-primary); color: #fff; }
+.export-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
+.export-toolbar .btn { padding: 7px 10px; font-size: 12px; }
+.export-toolbar .export-muted { margin-left:auto; }
+.export-progress-head {
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  font-weight:600;
+}
+.export-progress-track {
+  height:7px;
+  border-radius:10px;
+  overflow:hidden;
+  background:#e2e8f0;
+}
+.export-progress-track i { display:block; width:0; height:100%; background:var(--color-primary); }
+.export-log { flex:1; min-height:50px; resize:none; font-size:11px !important; }
+.export-result-list { display:grid; gap:0; margin:0; }
+.export-result-list > div {
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  padding:4px 2px;
+  border-bottom:1px solid var(--color-border);
+  font-size:11px;
+}
+.export-result-list dt { color:var(--color-text-secondary); }
+.export-result-list dd { margin:0; font-weight:600; text-align:right; }
+.export-info {
+  margin-top:auto;
+  padding:8px;
+  border-radius:6px;
+  background:#eff6ff;
+  color:#475569;
+  font-size:11px;
+  line-height:1.4;
+}
+.export-history {
+  --x: 0px;
+  --y: calc(100% - 145px);
+  --w: 100%;
+  --h: 112px;
+  padding: 10px 12px;
+  overflow:auto;
+}
+.export-history .export-card-heading {
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:5px;
+}
+.export-history .table-container { min-width:0; overflow:auto; }
+.export-history .table { font-size:11px; }
+.export-history .table th, .export-history .table td { padding:5px 7px; white-space:nowrap; }
+.export-inline-actions {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.export-inline-actions > .btn {
+  --x: calc(100% - 230px);
+  --y: calc(100% - 38px);
+  position:absolute;
+  left:var(--x);
+  top:var(--y);
+  pointer-events:auto;
+}
+@media (max-width: 1050px) {
+  .export-view { overflow:auto; min-height:900px; }
+  .export-grid { position:relative; height:auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .export-card, .export-card-model, .export-card-config, .export-card-calibration,
+  .export-card-advanced, .export-card-execution, .export-card-results {
+    position:relative; left:auto; top:auto; width:auto; height:auto; min-height:250px;
+  }
+  .export-history { position:relative; left:auto; top:auto; width:100%; height:auto; margin-top:10px; }
+  .export-inline-actions { position:relative; height:50px; }
+  .export-inline-actions > .btn { position:relative; left:auto; top:auto; float:right; }
+}
+@media (max-width: 680px) {
+  .export-grid { grid-template-columns:1fr; }
+}
