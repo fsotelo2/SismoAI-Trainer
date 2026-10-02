@@ -1000,3 +1000,26 @@
 .settings-view .settings-category-editor input {
   min-width: 180px;
 }
+
+
+/* Proporción y márgenes de la tarjeta inferior de información */
+.settings-grid {
+  min-height: 790px;
+}
+.settings-grid > .settings-info {
+  --x: 0px;
+  --y: 630px;
+  --w: 100%;
+  --h: 145px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+@media (max-width: 1050px) {
+  .settings-grid {
+    min-height: 1190px;
+  }
+  .settings-grid > .settings-info {
+    --y: 1035px;
+    --h: 140px;
+  }
+}
