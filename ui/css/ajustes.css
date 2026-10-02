@@ -988,3 +988,15 @@
     flex-basis: 100%;
   }
 }
+
+
+/* Catálogo simplificado: solo nombre, estado y acciones. */
+.settings-view .settings-table th:nth-child(1) { width: 60%; }
+.settings-view .settings-table th:nth-child(2) { width: 18%; }
+.settings-view .settings-table th:nth-child(3) { width: 22%; }
+.settings-view .settings-category-editor:not([hidden]) label {
+  flex: 1 1 auto;
+}
+.settings-view .settings-category-editor input {
+  min-width: 180px;
+}
