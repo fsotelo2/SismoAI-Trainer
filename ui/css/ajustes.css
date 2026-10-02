@@ -378,8 +378,267 @@
 .settings-view .settings-info-grid {
   min-width: 0;
 }
-/* Controles espaciales individuales editables desde ajustes.css. */
+
+/* Controles espaciales individuales para todos los contenedores y tarjetas de Ajustes. */
+.settings-view .settings-app-info-grid {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-appearance {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-appearance-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-appearance-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-card {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-card-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog-layout {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog-note {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-categories {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-categories-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-categories-title {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-category-editor {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-category-table-wrap {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-class-no-sismico {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-class-row {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-class-temblor {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
 .settings-view .settings-classes {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-editor {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-editor-actions {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-general {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-general-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-general-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-grid {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-app {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-environment {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-grid {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-python {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-version {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-language-row {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-message {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-note {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-static-row {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-storage-row {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-table-wrap {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-theme-options {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-view {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .theme-options {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .workspace-view {
   --x: 0px;
   --y: 0px;
   --w: auto;
