@@ -38,7 +38,7 @@
       const exp=selectedExperiment(), match=datasets.find(d=>d.dataset_id===exp?.dataset_id);
       if(match)sel.value=match.dataset_id;
       if(summary)summary.textContent=match?
-        "Dataset del experimento: "+(match.name||match.dataset_id)+". Ventanas registradas: "+fmt(match.windows)+". Reservado para una futura calibración; no se usa en la exportación ONNX actual.":
+        "Dataset del experimento: "+(match.name||match.dataset_id)+". Ventanas registradas: "+fmt(match.windows)+". Se usará Train para calibrar INT8; Test queda reservado para evaluación.":
         "No hay datos de calibración aplicados en esta versión. La partición de prueba permanece reservada.";
       sel.disabled=true;
       const count=$("export-calibration-count");if(count)count.disabled=true;
