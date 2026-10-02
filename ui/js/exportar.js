@@ -71,7 +71,7 @@
   }
   function updateStages(done){
     document.querySelectorAll(".export-pipeline-step").forEach((el,i)=>{el.classList.toggle("active",i===done);el.classList.toggle("complete",i<done);});
-    const status=$("export-stage-message");if(status)status.textContent=done===4?"Conversión ONNX completada.":"Etapa "+(done+1)+" de 4";
+    const status=$("export-stage-message");if(status)status.textContent=done===4?"4 de 4 etapas completadas":"Etapa "+(done+1)+" de 4";
   }
   async function run(){
     const id=$("export-experiment")?.value;if(!id||busy)return;
