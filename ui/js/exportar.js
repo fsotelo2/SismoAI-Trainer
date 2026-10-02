@@ -76,7 +76,9 @@
   async function run(){
     const id=$("export-experiment")?.value;if(!id||busy)return;
     const name=$("export-name")?.value?.trim(),dir=$("export-directory")?.value?.trim()||"";
+    const calibrationCount=Number.parseInt($("export-calibration-count")?.value||"200",10);
     if(!name){log("Error: indica un nombre de exportación.");return;}
+    if(!Number.isInteger(calibrationCount)||calibrationCount<1||calibrationCount>10000){log("Error: las muestras de calibración deben estar entre 1 y 10000.");return;}
     setBusy(true);$("export-log").value="Iniciando flujo completo de exportación…";
     const progress=$(".export-progress-head strong"),track=$(".export-progress-track i");
     if(progress)progress.textContent="En ejecución";if(track)track.style.width="5%";
@@ -84,7 +86,7 @@
     const msg=$("export-progress-message");
     if(msg)msg.textContent="Ejecutando ONNX, cuantización INT8, evaluación del conjunto Test y empaquetado.";
     try{
-      const r=await Bridge.exportModelPipeline(id,name,dir,$("export-equivalence")?.checked!==false);
+      const r=await Bridge.exportModelPipeline(id,name,dir,$("export-equivalence")?.checked!==false,calibrationCount);
       if(!r?.success)throw new Error(r?.error||"Falló el flujo de exportación.");
       const x=r.export||{},p=r.pipeline||{},st=p.stages||{},q=st.quantization||{},ev=st.evaluation||{},pkg=st.package||{};
       log("Etapa 1/4 — ONNX: completada.");
