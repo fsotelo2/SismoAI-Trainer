@@ -1,0 +1,142 @@
+<section class="export-view workspace-view">
+  <div class="export-grid" id="export-grid">
+    <section class="card export-card export-card-model" data-export-region="1">
+      <header class="export-card-heading">
+        <span class="export-step">1</span>
+        <div><h2>Seleccionar modelo</h2><p>Elige un experimento entrenado y validado.</p></div>
+      </header>
+      <div class="form-group">
+        <label class="form-label" for="export-experiment">Experimento</label>
+        <select id="export-experiment" class="form-select">
+          <option value="">Consultar experimentos...</option>
+        </select>
+      </div>
+      <div class="export-summary" id="export-model-summary">
+        Selecciona un experimento para consultar arquitectura, dataset, dimensiones, accuracy y estado de validación.
+      </div>
+    </section>
+
+    <section class="card export-card export-card-config" data-export-region="2">
+      <header class="export-card-heading">
+        <span class="export-step">2</span>
+        <div><h2>Configuración de exportación</h2><p>Define el formato y el destino.</p></div>
+      </header>
+      <div class="form-group">
+        <label class="form-label" for="export-format">Formato de salida</label>
+        <select id="export-format" class="form-select">
+          <option value="onnx">ONNX (experimental/intermedio)</option>
+          <option value="espdl">ESP-DL (.espdl) — ESP-PPQ 1.3.11 validado localmente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="export-target">Destino</label>
+        <select id="export-target" class="form-select">
+          <option value="esp32s3">ESP32-S3</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="export-name">Nombre de exportación</label>
+        <input id="export-name" class="form-input" value="cnn_sismos_001_esp32s3_v1" maxlength="100"/>
+      </div>
+    </section>
+
+    <section class="card export-card export-card-calibration" data-export-region="3">
+      <header class="export-card-heading">
+        <span class="export-step">3</span>
+        <div><h2>Dataset de calibración</h2><p>Se calibra automáticamente con una muestra de Train del Dataset del experimento.</p></div>
+      </header>
+      <div class="form-group">
+        <label class="form-label" for="export-calibration-dataset">Dataset</label>
+        <select id="export-calibration-dataset" class="form-select" disabled>
+          <option value="">No requerido hasta seleccionar cuantización</option>
+        </select>
+      </div>
+      <div class="export-summary" id="export-calibration-summary">
+        Se usa Train para calibración; Test queda reservado exclusivamente para evaluación.
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="export-calibration-count">Muestras de calibración</label>
+        <input id="export-calibration-count" class="form-input" type="number" min="1" max="10000" value="200"/>
+      </div>
+    </section>
+
+    <section class="card export-card export-card-advanced" data-export-region="4">
+      <header class="export-card-heading">
+        <span class="export-step">4</span>
+        <div><h2>Opciones avanzadas</h2><p>Ajusta parámetros de conversión y cuantización.</p></div>
+      </header>
+      <div class="form-group">
+        <label class="form-label" for="export-quantization">Método de cuantización</label>
+        <select id="export-quantization" class="form-select">
+          <option value="none">Sin cuantización</option>
+          <option value="onnx_int8">INT8 estático PTQ experimental (ONNX Runtime)</option>
+          <option value="w8a8">ESP-PPQ w8a8</option>
+          <option value="w8a16">ESP-PPQ w8a16</option>
+          <option value="w16a16">ESP-PPQ w16a16</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="export-normalization">Normalización de entrada</label>
+        <select id="export-normalization" class="form-select">
+          <option value="experiment">Usar configuración del experimento</option>
+        </select>
+      </div>
+      <label class="export-check"><input id="export-equivalence" type="checkbox" checked/> Verificar equivalencia PyTorch vs ONNX</label>
+      <p class="export-note">ONNX Runtime es experimental. ESP-DL usa ESP-PPQ 1.3.11 validado localmente; este flujo no genera firmware.</p>
+    </section>
+
+    <section class="card export-card export-card-execution" data-export-region="5">
+      <header class="export-card-heading">
+        <span class="export-step">5</span>
+        <div><h2>Ejecución y resultados</h2><p>Ejecuta el proceso de exportación por etapas.</p></div>
+      </header>
+      <div class="export-pipeline">
+        <div class="export-pipeline-step active"><b>1</b><span>ONNX</span></div>
+        <div class="export-pipeline-step"><b>2</b><span>Cuantización</span></div>
+        <div class="export-pipeline-step"><b>3</b><span>Evaluación</span></div>
+        <div class="export-pipeline-step"><b>4</b><span>Paquete</span></div>
+      </div>
+      <div class="export-toolbar">
+        <button class="btn btn-primary" id="btn-start-export" type="button" disabled>▶ Iniciar exportación</button>
+        <button class="btn btn-secondary" id="btn-reset-export" type="button">Restablecer</button>
+        <span class="export-muted" id="export-stage-message">Selecciona un modelo para iniciar.</span>
+      </div>
+      <div class="export-progress-head"><span>Progreso</span><strong>Sin iniciar</strong></div>
+      <div class="export-progress-track"><i></i></div>
+      <p class="export-muted" id="export-progress-message">Se ejecutarán ONNX, cuantización INT8, evaluación con Test y empaquetado.</p>
+      <label class="form-label" for="export-log">Registro de proceso</label>
+      <textarea id="export-log" class="form-input export-log" readonly>Listo para ejecutar las cuatro etapas.</textarea>
+    </section>
+
+    <section class="card export-card export-card-results" data-export-region="6">
+      <header class="export-card-heading">
+        <span class="export-step">6</span>
+        <div><h2>Resultados y verificación</h2><p>Resumen técnico de los artefactos generados.</p></div>
+      </header>
+      <dl class="export-result-list">
+        <div><dt>Modelo ONNX</dt><dd>—</dd></div>
+        <div><dt>Modelo cuantizado</dt><dd>—</dd></div>
+        <div><dt>Tamaño estimado</dt><dd>—</dd></div>
+        <div><dt>Operadores compatibles</dt><dd>—</dd></div>
+        <div><dt>Memoria estimada</dt><dd>—</dd></div>
+        <div><dt>Latencia estimada</dt><dd>—</dd></div>
+        <div><dt>Accuracy original</dt><dd>—</dd></div>
+        <div><dt>Accuracy cuantizado</dt><dd>—</dd></div>
+      </dl>
+      <div class="export-info">ⓘ Los resultados se mostrarán una vez finalice la exportación y la evaluación.</div>
+    </section>
+  </div>
+
+  <section class="card export-history" data-export-region="history">
+    <header class="export-card-heading">
+      <div><h2>Exportaciones guardadas</h2><p>Historial de paquetes y conversiones generadas.</p></div>
+      <button class="btn btn-secondary btn-sm" id="btn-refresh-export-history" type="button">↻ Actualizar</button>
+    </header>
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Nombre</th><th>Experimento</th><th>Formato</th><th>Cuantización</th><th>Tamaño</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="export-history-body"><tr><td colspan="8">Consultando exportaciones...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</section>

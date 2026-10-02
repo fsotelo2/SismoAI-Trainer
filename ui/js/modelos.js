@@ -490,13 +490,11 @@
       const x = await getExperiment(id);
       if (!x) throw new Error("Experimento no encontrado.");
       const name = x.config?.name || id;
-      if (
-        !confirm(
-          '¿Eliminar el experimento "' +
-            name +
-            '"? Se eliminará el registro y su historial, pero no los archivos de pesos del modelo.',
-        )
-      )
+      if (!(await window.showConfirmDialog({
+        title: "Confirmar eliminación",
+        subtitle: "Se eliminará el registro del experimento.",
+        message: '¿Deseas eliminar "' + name + '"? Los archivos de pesos del modelo se conservarán.',
+      })))
         return;
       const r = await Bridge.deleteModelExperiment(id);
       if (!r?.success) throw new Error(r?.error || "No se pudo eliminar.");

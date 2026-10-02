@@ -17,6 +17,22 @@ from typing import Callable
 import numpy as np
 
 
+INPUT_SENSORS = {
+    "geo_mpu": ("GEO", "MPU"),
+    "geo": ("GEO",),
+    "mpu": ("MPU",),
+}
+
+
+def resolve_input_sensors(input_mode: str | None) -> tuple[str, tuple[str, ...]]:
+    """Resolve the persisted input mode into its stable channel contract."""
+    mode = str(input_mode or "geo_mpu").strip().lower()
+    sensors = INPUT_SENSORS.get(mode)
+    if not sensors:
+        raise ValueError("Configuración de sensores no reconocida: " + mode)
+    return mode, sensors
+
+
 def _torch():
     try:
         import torch
@@ -81,7 +97,9 @@ def build_network(architecture: str, channels: int, points: int, classes: int = 
 
 
 def _architecture_manifest(model, architecture: str, channels: int, points: int,
-                           classes: int, model_id: str) -> dict:
+                           classes: int, model_id: str, input_mode: str | None = None,
+                           sensors: tuple[str, ...] | None = None,
+                           dataset_id: str | None = None) -> dict:
     """Describe the supported model factory and its concrete modules for reconstruction."""
     torch, _ = _torch()
     layers = []
@@ -104,7 +122,7 @@ def _architecture_manifest(model, architecture: str, channels: int, points: int,
         elif isinstance(module, torch.nn.AdaptiveAvgPool1d):
             item["output_size"] = module.output_size
         layers.append(item)
-    return {"schema": "sismoai-model-architecture", "schema_version": 1,
+    manifest = {"schema": "sismoai-model-architecture", "schema_version": 1,
             "architecture_version": 1, "model_id": str(model_id),
             "architecture": architecture, "framework": "pytorch",
             "factory": "core.models.trainer.build_network",
@@ -112,6 +130,13 @@ def _architecture_manifest(model, architecture: str, channels: int, points: int,
                                    "classes": int(classes)},
             "input_shape": [int(channels), int(points)],
             "output_shape": [int(classes)], "layers": layers}
+    if input_mode is not None:
+        manifest["input_mode"] = str(input_mode)
+    if sensors is not None:
+        manifest["sensors"] = list(sensors)
+    if dataset_id is not None:
+        manifest["dataset_id"] = str(dataset_id)
+    return manifest
 
 
 def reconstruct_model(model_dir: str | Path, expected_model_id: str | None = None):
@@ -138,8 +163,17 @@ def reconstruct_model(model_dir: str | Path, expected_model_id: str | None = Non
         raise ValueError("Faltan parámetros estructurales en architecture.json.")
     model = build_network("1d_cnn", int(params["channels"]),
                           int(params["points"]), int(params["classes"]))
+    input_mode = manifest.get("input_mode")
+    sensors = None
+    if input_mode is not None:
+        input_mode, sensors = resolve_input_sensors(input_mode)
+        if manifest.get("sensors") != list(sensors):
+            raise ValueError("Los sensores registrados no coinciden con input_mode.")
+        if int(params["channels"]) != len(sensors):
+            raise ValueError("Los canales registrados no coinciden con input_mode.")
     expected = _architecture_manifest(model, "1d_cnn", int(params["channels"]),
-        int(params["points"]), int(params["classes"]), str(manifest.get("model_id", "")))
+        int(params["points"]), int(params["classes"]), str(manifest.get("model_id", "")),
+        input_mode=input_mode, sensors=sensors, dataset_id=manifest.get("dataset_id"))
     if manifest.get("layers") != expected["layers"]:
         raise ValueError("La definición de capas no coincide con la CNN registrada.")
     if manifest.get("input_shape") != expected["input_shape"] or manifest.get("output_shape") != expected["output_shape"]:
@@ -208,7 +242,8 @@ def _validate_arrays(arrays: dict) -> None:
 
 def train_experiment(config: dict, arrays: dict, output_dir: str,
                      progress: Callable[[dict], None] | None = None,
-                     model_id: str | None = None) -> dict:
+                     model_id: str | None = None,
+                     dataset_id: str | None = None) -> dict:
     torch, nn = _torch()
     if not isinstance(config, dict) or not isinstance(config.get("training"), dict):
         raise ValueError("La configuración de entrenamiento no es válida.")
@@ -225,6 +260,14 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     x_test, y_test = arrays["test"]
     if len(x_train) == 0 or len(x_val) == 0:
         raise ValueError("Train y Validation deben contener muestras.")
+    input_mode, sensors = resolve_input_sensors(config.get("input"))
+    expected_channels = len(sensors)
+    if x_train.shape[1] != expected_channels:
+        raise ValueError(
+            "La configuración de entrada " + input_mode + " requiere "
+            + str(expected_channels) + " canales, pero Train contiene "
+            + str(x_train.shape[1]) + "."
+        )
     epochs_value = training.get("epochs", 0)
     batch_value = training.get("batch_size", 0)
     lr_value = training.get("learning_rate", 0)
@@ -326,7 +369,8 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
     architecture_path = out / "architecture.json"
     manifest = _architecture_manifest(model, config["architecture"],
         original_shape[0], original_shape[1], int(model.classifier[-1].out_features)
-        if config["architecture"] == "1d_cnn" else 2, registered_id)
+        if config["architecture"] == "1d_cnn" else 2, registered_id,
+        input_mode=input_mode, sensors=sensors, dataset_id=dataset_id)
     with open(architecture_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2, allow_nan=False)
     with torch.no_grad():
@@ -340,6 +384,7 @@ def train_experiment(config: dict, arrays: dict, output_dir: str,
             "weights_path":str(weights),"weights_bytes":weights.stat().st_size,"weights_sha256":digest,
             "model_id":registered_id,"architecture_path":str(architecture_path),
             "config":config,
+            "input_mode":input_mode,"sensors":list(sensors),"dataset_id":dataset_id,
             "input_shape":original_shape,"preprocessing":"resample lineal a 256 puntos; z-score por ventana y canal" + ("; seis estadísticas por canal" if config["architecture"] == "feature_classifier" else ""),
             "elapsed_seconds":time.time()-start}
     with open(out/"training_result.json","w",encoding="utf-8") as f:

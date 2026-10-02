@@ -412,7 +412,7 @@
               esc(x.id) +
               "</code></td><td>" +
               esc(x.count) +
-              '</td><td><button class="btn btn-secondary btn-sm" data-label-action="delete-batch" data-filename="' +
+              '</td><td><button class="btn btn-danger btn-sm" data-label-action="delete-batch" data-filename="' +
               esc(x.filename) +
               '">Eliminar</button></td></tr>',
           )
@@ -589,11 +589,11 @@
         .filename;
       if (
         !filename ||
-        !confirm(
-          '¿Eliminar el etiquetado guardado "' +
-            filename +
-            '"? Esta acción no se puede deshacer.',
-        )
+        !(await window.showConfirmDialog({
+          title: "Confirmar eliminación",
+          subtitle: "Esta acción no se puede deshacer.",
+          message: '¿Deseas eliminar el etiquetado "' + filename + '"?',
+        }))
       )
         return;
       const result = await Bridge.deleteLabelBatch(filename);
