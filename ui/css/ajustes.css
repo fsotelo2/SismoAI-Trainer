@@ -1,7 +1,13 @@
 /* Fase Ajustes — tarjetas ordenadas y responsivas */
+.settings-view.workspace-view {
+  width: 1200px;
+  height: 796px;
+  min-width: 1200px;
+  min-height: 796px;
+  flex: 0 0 auto;
+  overflow: auto;
+}
 .settings-view {
-  width:1200px;
-  height:796px;
   overflow:auto;
   padding:2px 2px 8px
 }
