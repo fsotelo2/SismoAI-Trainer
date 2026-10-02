@@ -7,7 +7,8 @@
     dragStart = null,
     dragEnd = null,
     manualContextKey = null;
-  let hasSavedSelections = false;
+  let hasSavedSelections = false,
+    savedSelectionNames = new Set();
   const manualRanges = new Map();
   const $ = (id) => document.getElementById(id);
   const sec = (us) => (us / 1e6).toFixed(1);
@@ -293,6 +294,13 @@
         $("win-version-note").textContent = "Escribe un nombre para guardar.";
       return null;
     }
+    if (savedSelectionNames.has(name.replace(/\.json$/i, "").toLocaleLowerCase())) {
+      if ($("win-version-note"))
+        $("win-version-note").textContent =
+          "Ya existe una selección con ese nombre. Usa otro nombre.";
+      updateSaveButton();
+      return null;
+    }
     const btn = document.querySelector('[data-w-action="save-selection"]');
     if (btn) btn.disabled = true;
     try {
@@ -421,12 +429,23 @@
       items = r?.items || [];
     if (!r?.success) {
       hasSavedSelections = false;
+      savedSelectionNames = new Set();
+      updateSaveButton();
       renderRows();
       body.innerHTML =
         '<tr><td colspan="4">No se pudieron cargar las selecciones.</td></tr>';
       return;
     }
     hasSavedSelections = items.length > 0;
+    savedSelectionNames = new Set(
+      items.map((x) =>
+        String(x.name || x.filename || "")
+          .trim()
+          .replace(/\.json$/i, "")
+          .toLocaleLowerCase(),
+      ),
+    );
+    updateSaveButton();
     renderRows();
     body.innerHTML = items.length
       ? items
@@ -444,6 +463,16 @@
           )
           .join("")
       : '<tr><td colspan="4" class="text-center">No hay selecciones guardadas.</td></tr>';
+  }
+  function updateSaveButton() {
+    const button = document.querySelector('[data-w-action="save-selection"]');
+    const name =
+      $("win-selection-name")?.value?.trim().replace(/\.json$/i, "").toLocaleLowerCase() || "";
+    if (!button) return;
+    button.disabled = !name || savedSelectionNames.has(name);
+    button.title = savedSelectionNames.has(name)
+      ? "Ya existe una selección con ese nombre"
+      : "Guardar selección";
   }
   async function refresh() {
     const files = await loadFileOptions();
@@ -628,6 +657,7 @@
     document.addEventListener(type, (e) => {
       if (e.target?.id === "w-start" || e.target?.id === "w-end")
         updateManualField(e);
+      if (e.target?.id === "win-selection-name") updateSaveButton();
     }),
   );
   document.addEventListener("click", (e) => {

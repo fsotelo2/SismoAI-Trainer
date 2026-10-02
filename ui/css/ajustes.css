@@ -298,23 +298,6 @@
   font-weight:500
 }
 
-/* Theme tokens */
-:root[data-theme="dark"] {
-  --color-bg-app:#0f172a;
-  --color-bg-card:#1e293b;
-  --color-bg-sidebar:#172033;
-  --color-bg-hover:#263449;
-  --color-border:#334155;
-  --color-border-subtle:#475569;
-  --color-text-primary:#f1f5f9;
-  --color-text-secondary:#cbd5e1;
-  --color-text-muted:#94a3b8;
-  --color-primary-light:#172f55;
-  --color-success-bg:#064e3b;
-  --color-warning-bg:#78350f;
-  --color-danger-bg:#7f1d1d;
-  --color-accent-purple-light:#3b2360
-}
 /* Selectores de ajuste fino para el inspector F7.
    Cada elemento tiene su propia referencia CSS y admite --layout-x/--layout-y. */
 .settings-appearance-icon,.settings-catalog-icon,.settings-info-icon,

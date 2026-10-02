@@ -16,6 +16,16 @@ const Charts = (() => {
     trigger: "#10B981",
   };
 
+  function refreshTheme() {
+    const styles = getComputedStyle(document.documentElement);
+    const read = (name, fallback) =>
+      styles.getPropertyValue(name).trim() || fallback;
+    COLORS.grid = read("--chart-grid", read("--color-border", "#E2E8F0"));
+    COLORS.text = read("--chart-text", read("--color-text-muted", "#64748B"));
+    COLORS.cursor = read("--color-danger", "#DC2626");
+    COLORS.trigger = read("--color-success", "#10B981");
+  }
+
   /**
    * Clear canvas and set dimensions
    */
@@ -1410,6 +1420,7 @@ const Charts = (() => {
     plotStalta,
     cleanupCanvas,
     cleanupAllCanvases,
+    refreshTheme,
     COLORS,
   };
 })();

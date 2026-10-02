@@ -54,6 +54,11 @@ const App = (() => {
         if (container) renderAnalysisState(container, analysisState);
       }
     });
+    window.addEventListener("themechange", () => {
+      if (typeof Charts !== "undefined" && Charts.refreshTheme)
+        Charts.refreshTheme();
+      void navigateTo(currentView);
+    });
 
     // Load initial view
     await navigateTo("proyecto");

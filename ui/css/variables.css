@@ -45,6 +45,8 @@
 
   --color-accent-purple: #7c3aed;
   --color-accent-purple-light: #f3e8ff;
+  --chart-grid: #e2e8f0;
+  --chart-text: #64748b;
 
   /* Espaciados */
   --spacing-xs: 4px;
@@ -70,4 +72,33 @@
   /* Transiciones */
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
+}
+
+/* La apariencia oscura es global: no depende de que Ajustes esté cargado. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg-app: #0f172a;
+  --color-bg-card: #1e293b;
+  --color-bg-sidebar: #172033;
+  --color-bg-hover: #263449;
+  --color-border: #334155;
+  --color-border-subtle: #475569;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-primary: #60a5fa;
+  --color-primary-hover: #3b82f6;
+  --color-primary-light: #172f55;
+  --color-success: #34d399;
+  --color-success-bg: #064e3b;
+  --color-warning: #fbbf24;
+  --color-warning-bg: #78350f;
+  --color-danger: #f87171;
+  --color-danger-bg: #7f1d1d;
+  --color-accent-purple: #a78bfa;
+  --color-accent-purple-light: #3b2360;
+  --chart-grid: #475569;
+  --chart-text: #cbd5e1;
+  --surface: #1e293b;
+  --border-color: #334155;
 }
