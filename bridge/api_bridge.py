@@ -2282,6 +2282,9 @@ class ApiBridge:
             from core.models.exporter import export_onnx
             report = export_onnx(model_dir, destination, name, bool(verify))
             report["experiment_id"] = experiment_id
+            from datetime import datetime
+            report["created_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+            report["experiment_name"] = (record.get("config") or {}).get("name", experiment_id)
             report_path = os.path.join(destination, name + ".export.json")
             with open(report_path, "w", encoding="utf-8") as stream:
                 json.dump(report, stream, ensure_ascii=False, indent=2)
