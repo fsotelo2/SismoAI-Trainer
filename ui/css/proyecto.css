@@ -105,8 +105,36 @@
 }
 
 .summary-card-icon.purple {
-  background-color: var(--color-accent-purple-light);
-  color: var(--color-accent-purple);
+  background-color: #f1e8ff;
+  color: #7c3aed;
+}
+
+.summary-card-icon.cyan {
+  background-color: #dff7fb;
+  color: #0891b2;
+}
+
+.summary-card-icon.amber {
+  background-color: #fff1d6;
+  color: #d97706;
+}
+
+.summary-card-icon.green {
+  background-color: #dcfce9;
+  color: #059669;
+}
+
+.summary-card-icon.blue {
+  background-color: #e4efff;
+  color: #2563eb;
+}
+
+.summary-card-icon {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.summary-card-icon svg {
+  stroke-width: 2.2;
 }
 
 .summary-card-icon svg {
