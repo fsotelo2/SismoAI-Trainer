@@ -41,6 +41,9 @@ body {
 }
 
 .sidebar-header {
+  height: 72px;
+  min-height: 72px;
+  flex: 0 0 72px;
   padding: var(--spacing-md);
   border-bottom: 1px solid var(--color-border);
   display: flex;
