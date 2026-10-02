@@ -1,5 +1,35 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.6.0] — Registro, reconstrucción y validación estructural de modelos
+
+**Fecha:** 2026-10-01  
+**Rama de integración:** `main`  
+**Rama de origen:** `fase-10.1-registro-arquitectura`  
+**Versión anterior:** 0.5.0  
+**Tipo:** MINOR
+
+**Justificación:** se incorpora la base de trazabilidad y reconstrucción de modelos entrenados, como preparación para la exportación posterior a ESP32-S3.
+
+**Cambios**
+
+- **Added:** manifiesto de arquitectura para registrar la estructura del modelo y vincularla con sus artefactos.
+- **Added:** reconstrucción de modelos 1D-CNN desde el manifiesto y carga estricta de los pesos guardados.
+- **Added:** acción «Validar» para experimentos entrenados, con comprobación del manifiesto, carga de pesos, paso de inferencia y salida finita.
+- **Added:** ventana de resultado de validación integrada visualmente en el módulo Modelos.
+
+**Verificación**
+
+- El usuario compartió evidencia de una validación completada con entrada `[1, 256]`, salida `[2]` y los cuatro controles reportados como correctos.
+- Se confirmó por consulta al repositorio la presencia del método de validación, su conexión en el puente y la interfaz.
+- No se declara ejecución de pruebas automatizadas ni verificación visual posterior al último ajuste del encabezado del modal.
+
+**Compatibilidad**
+
+- Esta fase establece la reconstrucción y validación estructural; no implementa todavía la conversión intermedia, cuantización ni empaquetado para ESP32-S3.
+- La prueba de inferencia es una comprobación básica de ejecución, no una evaluación de rendimiento predictivo ni una demostración de equivalencia numérica con el modelo original.
+
+---
+
 ## [v0.5.0] — Entrenamiento de modelos y estructura oficial del workspace
 
 **Fecha:** 2026-10-01  
