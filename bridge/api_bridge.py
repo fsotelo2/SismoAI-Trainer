@@ -2339,6 +2339,11 @@ class ApiBridge:
                 config,
                 exported["input_shape"][1:],
             )
+            exported["quantization"] = "int8_dynamic"
+            exported["pipeline_report_path"] = os.path.join(
+                os.path.dirname(exported["onnx_path"]), str(export_name).strip() + ".pipeline.json")
+            with open(onnx_result["report_path"], "w", encoding="utf-8") as stream:
+                json.dump(exported, stream, ensure_ascii=False, indent=2)
             return {"success": True, "export": exported, "pipeline": pipeline}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
