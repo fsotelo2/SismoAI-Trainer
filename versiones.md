@@ -11,7 +11,7 @@
 - **Added:** servicio de exportación ONNX para modelos 1D-CNN reconstruidos desde sus manifiestos y pesos.
 - **Added:** comprobación del grafo ONNX y verificación numérica opcional frente a PyTorch.
 - **Added:** reporte persistente con dimensiones, tamaño y SHA-256 del artefacto.
-- **Added:** conexión del puente Python, interfaz de Exportar y dependencias ONNX/ONNX Runtime.
+- **Added:** conexión del puente Python, interfaz de Exportar y dependencias ONNX/ONNX Runtime.\n- **Changed:** resumen del experimento con arquitectura, dataset, dimensiones, accuracy de validación y estado previo a la exportación.\n- **Added:** consulta del catálogo de datasets y del historial persistido de exportaciones ONNX, con detalle de cada artefacto.\n- **Changed:** estados de ejecución y resultados diferenciados para la conversión ONNX y las etapas que siguen pendientes.
 
 **Alcance y verificación**
 - La salida implementada es ONNX intermedio. No genera todavía un binario ejecutable ni estima memoria/latencia para ESP32-S3.
