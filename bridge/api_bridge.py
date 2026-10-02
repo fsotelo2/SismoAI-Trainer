@@ -2011,6 +2011,51 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
+    def validate_model_experiment(self, experiment_id: str) -> dict:
+        """Validate registered architecture/checkpoint and run a reconstruction smoke test."""
+        try:
+            experiment_id = str(experiment_id or "").strip()
+            if not experiment_id:
+                raise ValueError("Identificador de experimento no válido.")
+            registry = self.get_model_experiments()
+            if not registry.get("success"):
+                raise ValueError(registry.get("error", "No se pudo leer el registro."))
+            record = next((x for x in registry.get("experiments", [])
+                           if x.get("experiment_id") == experiment_id), None)
+            if record is None:
+                raise ValueError("Experimento no encontrado.")
+            if record.get("status") != "trained":
+                raise ValueError("Solo se pueden validar experimentos entrenados.")
+            result = record.get("training_result") or {}
+            architecture_path = result.get("architecture_path")
+            if not architecture_path:
+                raise ValueError("El registro no contiene la ruta de architecture.json.")
+            from pathlib import Path
+            models_dir = Path(os.path.abspath(os.path.dirname(self._models_registry_path())))
+            arch_path = Path(os.path.abspath(architecture_path))
+            if os.path.commonpath([str(models_dir), str(arch_path)]) != str(models_dir):
+                raise ValueError("La ruta de arquitectura está fuera de la carpeta Modelos.")
+            from core.models.trainer import reconstruct_model
+            import torch
+            model, manifest = reconstruct_model(arch_path.parent, expected_model_id=experiment_id)
+            params = manifest["factory_parameters"]
+            sample = torch.zeros((1, int(params["channels"]), int(params["points"])), dtype=torch.float32)
+            with torch.no_grad():
+                output = model(sample)
+            if list(output.shape) != [1, int(params["classes"])]:
+                raise ValueError("La salida reconstruida tiene dimensiones inesperadas.")
+            if not torch.isfinite(output).all().item():
+                raise ValueError("La reconstrucción produjo valores no finitos.")
+            return {"success": True, "experiment_id": experiment_id,
+                    "architecture": manifest.get("architecture"),
+                    "input_shape": manifest.get("input_shape"),
+                    "output_shape": manifest.get("output_shape"),
+                    "checks": {"architecture_manifest": True, "weights_strict_load": True,
+                               "forward_pass": True, "finite_output": True},
+                    "message": "Arquitectura y pesos cargados; prueba de inferencia completada."}
+        except Exception as exc:
+            return {"success": False, "error": str(exc), "experiment_id": str(experiment_id or "")}
+
     def get_model_training_state(self) -> dict:
         state = getattr(self, "_model_training_state", None)
         if state is None:
