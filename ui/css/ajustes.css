@@ -1023,3 +1023,66 @@
     --h: 140px;
   }
 }
+
+
+/* Compactación de espacios internos en Ajustes */
+.settings-view {
+  padding: 2px;
+}
+.settings-view .settings-grid {
+  gap: 8px;
+}
+.settings-view .settings-card {
+  padding: 12px;
+}
+.settings-view .settings-card-header {
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.settings-view .settings-label {
+  margin-bottom: 5px;
+}
+.settings-view .settings-hint {
+  margin-top: 7px;
+}
+.settings-view .settings-note {
+  padding: 7px 10px;
+  margin-bottom: 8px;
+}
+.settings-view .settings-catalog-layout {
+  gap: 5px;
+}
+.settings-view .settings-classes,
+.settings-view .settings-categories {
+  padding: 5px;
+}
+.settings-view .settings-classes h3,
+.settings-view .settings-categories h3 {
+  margin-bottom: 6px;
+}
+.settings-view .settings-class-row {
+  gap: 7px;
+  padding: 8px 3px;
+}
+.settings-view .settings-categories-heading {
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.settings-view .settings-info-grid {
+  gap: 6px;
+}
+.settings-view .settings-info-grid > div {
+  gap: 3px;
+  padding: 5px 8px;
+}
+.settings-view .settings-static-row {
+  gap: 2px 8px;
+  padding: 7px 0;
+}
+.settings-view .settings-theme-options {
+  gap: 6px;
+}
+.settings-view .settings-theme-option {
+  gap: 6px;
+  padding: 9px 6px;
+}
