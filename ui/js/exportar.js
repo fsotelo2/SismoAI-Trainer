@@ -48,7 +48,7 @@
     const body=$("export-history-body");if(!body)return;
     if(!rows?.length){body.innerHTML='<tr><td colspan="8">Aún no hay exportaciones registradas.</td></tr>';return;}
     body.innerHTML=rows.map((x,i)=>'<tr><td>'+esc(x.name)+'</td><td>'+esc(x.experiment_name||x.experiment_id||"—")+
-      '</td><td>ONNX</td><td>'+esc(x.quantization==='int8_dynamic'?'INT8 dinámico':'Sin cuantización')+'</td><td>'+esc(x.bytes?Math.ceil(x.bytes/1024)+" KB":"—")+
+      '</td><td>ONNX</td><td>'+esc(x.quantization==='int8_static_ptq'?'INT8 estático PTQ':'Sin cuantización')+'</td><td>'+esc(x.bytes?Math.ceil(x.bytes/1024)+" KB":"—")+
       '</td><td>'+esc(x.created_at||"—")+'</td><td><span class="export-status-ok">Completado</span></td><td><button class="btn btn-secondary btn-sm" data-export-view="'+i+'">Ver</button></td></tr>').join("");
     body._exportRows=rows;
   }
@@ -91,7 +91,7 @@
       log("Archivo: "+fmt(x.onnx_path));log("Tamaño: "+fmt(x.bytes)+" bytes");
       log("SHA-256: "+fmt(x.sha256));
       log("Equivalencia PyTorch/ONNX: "+(x.verified?(x.parity?.passed?"Correcta":"Fallida"):"No solicitada"));
-      log("Etapa 2/4 — Cuantización INT8 dinámica: completada.");
+      log("Etapa 2/4 — Cuantización INT8 estática PTQ: completada.");
       log("Modelo cuantizado: "+fmt(q.path));log("Tamaño INT8: "+fmt(q.bytes)+" bytes");
       log("Etapa 3/4 — Evaluación con Test: completada.");
       log("Muestras Test: "+fmt(ev.samples));
