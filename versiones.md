@@ -1,22 +1,35 @@
 # SismoAI Trainer — Historial de versiones
 
-## [v0.7.0] — Exportación intermedia ONNX
+## [v0.7.0] — Exportación y empaquetado para ESP32-S3
 
-**Fecha:** 2026-10-01  
-**Rama:** `fase-10-exportar`  
+**Fecha:** 2026-10-02  
+**Rama de integración:** `main`  
+**Rama de origen:** `fase-10-exportar`  
 **Versión anterior:** 0.6.0  
 **Tipo:** MINOR
 
-**Cambios**
-- **Added:** servicio de exportación ONNX para modelos 1D-CNN reconstruidos desde sus manifiestos y pesos.
-- **Added:** comprobación del grafo ONNX y verificación numérica opcional frente a PyTorch.
-- **Added:** reporte persistente con dimensiones, tamaño y SHA-256 del artefacto.
-- **Added:** conexión del puente Python, interfaz de Exportar y dependencias ONNX/ONNX Runtime.\n- **Changed:** resumen del experimento con arquitectura, dataset, dimensiones, accuracy de validación y estado previo a la exportación.\n- **Added:** consulta del catálogo de datasets y del historial persistido de exportaciones ONNX, con detalle de cada artefacto.\n- **Changed:** estados de ejecución y resultados diferenciados para la conversión ONNX y las etapas que siguen pendientes.
+**Justificación:** se amplía la exportación intermedia ONNX con un pipeline de cuantización y generación de artefactos para el flujo de despliegue en ESP32-S3.
 
-**Alcance y verificación**
-- La salida implementada es ONNX intermedio. No genera todavía un binario ejecutable ni estima memoria/latencia para ESP32-S3.
-- La cuantización INT8 PTQ, evaluación predictiva y empaquetado final quedan pendientes.
-- Integración escrita en la rama; no se han ejecutado pruebas locales ni una exportación real en este entorno.
+**Cambios**
+- **Added:** exportación ONNX de modelos 1D-CNN reconstruidos desde sus manifiestos y pesos, con comprobación del grafo y paridad numérica opcional frente a PyTorch.
+- **Added:** pipeline de exportación para ESP-DL mediante ESP-PPQ, con selección de objetivo y configuración de cuantización, incluyendo W8A8, W8A16 y W16A16 según compatibilidad.
+- **Added:** calibración y generación del artefacto cuantizado `.espdl`, junto con archivos de configuración, información y reportes.
+- **Added:** evaluación del modelo original sobre el conjunto Test y registro del estado de evaluación cuantizada cuando no está disponible.
+- **Added:** empaquetado portable de los artefactos y metadatos de exportación.
+- **Added:** módulo Exportar integrado en la navegación, con consulta del experimento, opciones de formato/objetivo, ejecución y detalle de resultados.
+- **Changed:** validaciones del contrato de entrada y de los canales GEO/MPU para reducir inconsistencias entre Dataset, modelo, calibración y exportación.
+
+**Verificación**
+- Exportación real reportada con objetivo ESP32-S3, formato ESP-DL y cuantización W8A16.
+- Artefacto `.espdl` generado (19.216 bytes); entrada declarada `[1, 2, 256]`; calibración con 6 muestras.
+- El reporte ONNX indica verificación correcta y paridad numérica aprobada, con error absoluto máximo de aproximadamente `2.38e-7`.
+- Evaluación del modelo original en Test: 0 aciertos de 2 muestras. La evaluación del modelo cuantizado figura como no disponible; no se declara equivalencia predictiva.
+- El paquete generado es portable, no ejecutable ni firmware. No se declara prueba de inferencia en hardware ESP32-S3 ni ejecución automatizada de pruebas en esta entrega.
+
+**Compatibilidad y límites**
+- ESP-DL/ESP-PPQ produce un artefacto destinado al flujo de integración con ESP-IDF; el paquete requiere el entorno y componentes compatibles.
+- La exportación completada acredita la generación de artefactos, no el rendimiento, precisión generalizable ni funcionamiento en hardware.
+- La evaluación predictiva requiere un conjunto Test representativo y una evaluación del modelo cuantizado; el resultado actual es insuficiente para concluir sobre su precisión.
 
 ---
 
