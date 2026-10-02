@@ -77,26 +77,46 @@
     const id=$("export-experiment")?.value;if(!id||busy)return;
     const name=$("export-name")?.value?.trim(),dir=$("export-directory")?.value?.trim()||"";
     if(!name){log("Error: indica un nombre de exportación.");return;}
-    if($("export-quantization")?.value!=="none"){log("La cuantización seleccionada aún no está integrada.");return;}
-    setBusy(true);$("export-log").value="Iniciando validación y conversión ONNX…";
+    setBusy(true);$("export-log").value="Iniciando flujo completo de exportación…";
     const progress=$(".export-progress-head strong"),track=$(".export-progress-track i");
-    if(progress)progress.textContent="En ejecución";if(track)track.style.width="10%";updateStages(0);
+    if(progress)progress.textContent="En ejecución";if(track)track.style.width="5%";
+    updateStages(0);
+    const msg=$("export-progress-message");
+    if(msg)msg.textContent="Ejecutando ONNX, cuantización INT8, evaluación del conjunto Test y empaquetado.";
     try{
-      const r=await Bridge.exportModelOnnx(id,name,dir,$("export-equivalence")?.checked!==false);
-      if(!r?.success)throw new Error(r?.error||"Falló la exportación.");
-      const x=r.export||{},exp=selectedExperiment();
-      log("Validación estructural completada.");log("Exportación ONNX completada.");
-      log("Archivo: "+fmt(x.onnx_path));log("Tamaño: "+fmt(x.bytes)+" bytes");log("SHA-256: "+fmt(x.sha256));
+      const r=await Bridge.exportModelPipeline(id,name,dir,$("export-equivalence")?.checked!==false);
+      if(!r?.success)throw new Error(r?.error||"Falló el flujo de exportación.");
+      const x=r.export||{},p=r.pipeline||{},st=p.stages||{},q=st.quantization||{},ev=st.evaluation||{},pkg=st.package||{};
+      log("Etapa 1/4 — ONNX: completada.");
+      log("Archivo: "+fmt(x.onnx_path));log("Tamaño: "+fmt(x.bytes)+" bytes");
+      log("SHA-256: "+fmt(x.sha256));
       log("Equivalencia PyTorch/ONNX: "+(x.verified?(x.parity?.passed?"Correcta":"Fallida"):"No solicitada"));
-      log(x.note||"");
-      const values=[x.onnx_path,"No aplicado",x.bytes?Math.ceil(x.bytes/1024)+" KB":"—","No evaluados","No estimada","No estimada",fmt(exp?.training_result?.metrics?.validation?.accuracy!==undefined?(exp.training_result.metrics.validation.accuracy*100).toFixed(1)+"%":"No disponible"),"No aplica"];
+      log("Etapa 2/4 — Cuantización INT8 dinámica: completada.");
+      log("Modelo cuantizado: "+fmt(q.path));log("Tamaño INT8: "+fmt(q.bytes)+" bytes");
+      log("Etapa 3/4 — Evaluación con Test: completada.");
+      log("Muestras Test: "+fmt(ev.samples));
+      log("Accuracy original: "+(Number.isFinite(ev.original_accuracy)?(ev.original_accuracy*100).toFixed(2)+"%":"—"));
+      log("Accuracy INT8: "+(Number.isFinite(ev.int8_accuracy)?(ev.int8_accuracy*100).toFixed(2)+"%":"—"));
+      log("Diferencia accuracy: "+(Number.isFinite(ev.accuracy_delta)?(ev.accuracy_delta*100).toFixed(2)+" pp":"—"));
+      log("Etapa 4/4 — Paquete portable: completada.");
+      log("Paquete: "+fmt(pkg.path));log("Tamaño paquete: "+fmt(pkg.bytes)+" bytes");
+      log("El paquete no es firmware ni binario ejecutable ESP32-S3.");
+      const values=[x.onnx_path,q.path,
+        x.bytes&&q.bytes?Math.ceil(q.bytes/1024)+" KB (INT8)": "—",
+        "Compatibilidad ESP32-S3 pendiente de conversión específica",
+        "No estimada","No estimada",
+        Number.isFinite(ev.original_accuracy)?(ev.original_accuracy*100).toFixed(2)+"%":"—",
+        Number.isFinite(ev.int8_accuracy)?(ev.int8_accuracy*100).toFixed(2)+"%":"—"];
       document.querySelectorAll(".export-result-list dd").forEach((el,i)=>{if(values[i]!==undefined)el.textContent=values[i];});
-      if(progress)progress.textContent="ONNX completado · siguientes etapas pendientes";
-      if(track)track.style.width="25%";updateStages(1);
-      const msg=$("export-progress-message");if(msg)msg.textContent="ONNX generado. Cuantización, evaluación y empaquetado ESP32-S3 no ejecutados.";
+      if(progress)progress.textContent="4 de 4 etapas completadas";
+      if(track)track.style.width="100%";updateStages(4);
+      if(msg)msg.textContent="Flujo completado. Se generó el paquete portable; no es firmware ejecutable.";
       await loadHistory();
-    }catch(e){log("Error: "+(e?.message||String(e)));if(progress)progress.textContent="Error";const msg=$("export-progress-message");if(msg)msg.textContent=e?.message||String(e);}
-    finally{setBusy(false);}
+    }catch(e){
+      log("Error: "+(e?.message||String(e)));
+      if(progress)progress.textContent="Proceso incompleto";
+      if(msg)msg.textContent=e?.message||String(e);
+    }finally{setBusy(false);}
   }
   document.addEventListener("click",e=>{
     const target=e.target.closest("button");if(!target)return;
