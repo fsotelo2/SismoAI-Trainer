@@ -2289,3 +2289,29 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
+    def get_export_history(self) -> dict:
+        """Read persisted ONNX export reports from the project's Modelos/exports folder."""
+        try:
+            from pathlib import Path
+            root = Path(os.path.dirname(self._models_registry_path())).resolve() / "exports"
+            if not root.is_dir():
+                return {"success": True, "exports": []}
+            experiments = (self.get_model_experiments() or {}).get("experiments", [])
+            names = {str(x.get("experiment_id")): (x.get("config") or {}).get("name", x.get("experiment_id"))
+                     for x in experiments if isinstance(x, dict)}
+            rows = []
+            for report_path in root.glob("**/*.export.json"):
+                try:
+                    report = json.loads(report_path.read_text(encoding="utf-8"))
+                    if not isinstance(report, dict) or report.get("format") != "onnx":
+                        continue
+                    report["report_path"] = str(report_path)
+                    report["experiment_name"] = names.get(str(report.get("experiment_id")), report.get("experiment_id", "—"))
+                    rows.append(report)
+                except (OSError, ValueError, TypeError):
+                    continue
+            rows.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
+            return {"success": True, "exports": rows}
+        except Exception as exc:
+            return {"success": False, "exports": [], "error": str(exc)}
+
