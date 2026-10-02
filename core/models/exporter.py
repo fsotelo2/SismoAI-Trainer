@@ -32,7 +32,7 @@ def export_onnx(model_dir: str | Path, output_dir: str | Path, export_name: str,
     torch.onnx.export(model, sample, str(target), input_names=["signal"],
                       output_names=["logits"], opset_version=17,
                       dynamic_axes={"signal": {0: "batch"}, "logits": {0: "batch"}},
-                      do_constant_folding=True)
+                      do_constant_folding=True, dynamo=False)
     graph = onnx.load(str(target))
     onnx.checker.check_model(graph)
     session = ort.InferenceSession(str(target), providers=["CPUExecutionProvider"])

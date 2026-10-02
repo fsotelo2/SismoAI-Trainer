@@ -24,7 +24,8 @@
       <div class="form-group">
         <label class="form-label" for="export-format">Formato de salida</label>
         <select id="export-format" class="form-select">
-          <option value="onnx">ONNX (intermedio)</option>
+          <option value="onnx">ONNX (experimental/intermedio)</option>
+          <option value="espdl">ESP-DL (.espdl) — ESP-PPQ 1.3.11 validado localmente</option>
         </select>
       </div>
       <div class="form-group">
@@ -36,10 +37,6 @@
       <div class="form-group">
         <label class="form-label" for="export-name">Nombre de exportación</label>
         <input id="export-name" class="form-input" value="cnn_sismos_001_esp32s3_v1" maxlength="100"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="export-directory">Directorio de salida</label>
-        <input id="export-directory" class="form-input" value="Exportaciones/cnn_sismos_001_esp32s3_v1"/>
       </div>
     </section>
 
@@ -71,8 +68,11 @@
       <div class="form-group">
         <label class="form-label" for="export-quantization">Método de cuantización</label>
         <select id="export-quantization" class="form-select">
-          <option value="none">Sin cuantización (solo ONNX)</option>
-          <option value="int8_dynamic">INT8 estático PTQ (ONNX Runtime)</option>
+          <option value="none">Sin cuantización</option>
+          <option value="onnx_int8">INT8 estático PTQ experimental (ONNX Runtime)</option>
+          <option value="w8a8">ESP-PPQ w8a8</option>
+          <option value="w8a16">ESP-PPQ w8a16</option>
+          <option value="w16a16">ESP-PPQ w16a16</option>
         </select>
       </div>
       <div class="form-group">
@@ -82,7 +82,7 @@
         </select>
       </div>
       <label class="export-check"><input id="export-equivalence" type="checkbox" checked/> Verificar equivalencia PyTorch vs ONNX</label>
-      <p class="export-note">El flujo genera ONNX, cuantiza pesos a INT8 dinámico, evalúa con Test y crea un paquete portable. No genera firmware.</p>
+      <p class="export-note">ONNX Runtime es experimental. ESP-DL usa ESP-PPQ 1.3.11 validado localmente; este flujo no genera firmware.</p>
     </section>
 
     <section class="card export-card export-card-execution" data-export-region="5">
@@ -139,7 +139,4 @@
       </table>
     </div>
   </section>
-  <div class="workspace-inline-actions export-inline-actions">
-    <button class="btn btn-primary" id="btn-generate-export-package" type="button" disabled>Ejecutar flujo completo →</button>
-  </div>
 </section>

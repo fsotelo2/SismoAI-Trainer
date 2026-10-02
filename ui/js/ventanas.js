@@ -438,7 +438,7 @@
               escapeHtml(x.id) +
               "</code></td><td>" +
               x.count +
-              '</td><td><button class="btn btn-secondary btn-sm" data-w-action="delete-saved" data-filename="' +
+              '</td><td><button class="btn btn-danger btn-sm" data-w-action="delete-saved" data-filename="' +
               escapeHtml(x.filename) +
               '">Eliminar</button></td></tr>',
           )
@@ -477,13 +477,11 @@
     if (a === "refresh-saved") await refreshSavedSelections();
     if (a === "delete-saved") {
       const filename = b.dataset.filename;
-      if (
-        !confirm(
-          '¿Eliminar la selección guardada "' +
-            filename +
-            '"? Esta acción no se puede deshacer.',
-        )
-      )
+      if (!(await window.showConfirmDialog({
+        title: "Confirmar eliminación",
+        subtitle: "Esta acción no se puede deshacer.",
+        message: '¿Deseas eliminar la selección "' + filename + '"?',
+      })))
         return;
       const result = await Bridge.deleteWindowSelection(filename);
       if (!result?.success) {

@@ -2125,11 +2125,9 @@ class ApiBridge:
                 def worker():
                     try:
                         import numpy as np
+                        from core.models.trainer import resolve_input_sensors
                         splits = manifest.get("splits") or {}
-                        sensor_mode = config_snapshot.get("input", "geo_mpu")
-                        sensors = {"geo_mpu": ("GEO", "MPU"), "geo": ("GEO",), "mpu": ("MPU",)}.get(sensor_mode)
-                        if not sensors:
-                            raise ValueError("Selección de señales no reconocida.")
+                        sensor_mode, sensors = resolve_input_sensors(config_snapshot.get("input"))
                         points, arrays = 256, {}
                         for split_name in ("train", "validation", "test"):
                             rows = splits.get(split_name, [])
@@ -2138,6 +2136,13 @@ class ApiBridge:
                             xs, ys = [], []
                             for item in rows:
                                 wid = item.get("window_id")
+                                row_sensors = tuple(item.get("sensors") or ())
+                                missing = [sensor for sensor in sensors if sensor not in row_sensors]
+                                if missing:
+                                    raise ValueError(
+                                        "La ventana " + str(wid) + " no contiene los sensores "
+                                        + ", ".join(missing) + " requeridos por " + sensor_mode + "."
+                                    )
                                 snapshot_rel = item.get("snapshot")
                                 if not snapshot_rel:
                                     raise ValueError("El Dataset no contiene una copia física de la ventana " + str(wid) +
@@ -2159,19 +2164,19 @@ class ApiBridge:
                                         times = np.asarray(stored[times_key], dtype=np.float64)
                                         if len(values) < 2 or len(times) != len(values):
                                             raise ValueError("La ventana " + str(wid) + " no tiene muestras válidas de " + sensor + ".")
-                                    if (not np.all(np.isfinite(values)) or not np.all(np.isfinite(times))
-                                            or len(times) != len(values)):
-                                        raise ValueError("Datos no finitos o desalineados en ventana " + str(wid) + ".")
-                                    if np.any(np.diff(times) <= 0):
-                                        raise ValueError("Los tiempos deben ser estrictamente crecientes en ventana " + str(wid) + ".")
+                                        if (not np.all(np.isfinite(values)) or not np.all(np.isfinite(times))
+                                                or len(times) != len(values)):
+                                            raise ValueError("Datos no finitos o desalineados en ventana " + str(wid) + ".")
+                                        if np.any(np.diff(times) <= 0):
+                                            raise ValueError("Los tiempos deben ser estrictamente crecientes en ventana " + str(wid) + ".")
+                                        target = np.linspace(float(times[0]), float(times[-1]), points)
+                                        values = np.interp(target, times, values).astype(np.float32)
+                                        std = float(values.std())
+                                        values = (values - float(values.mean())) / (std if std > 1e-8 else 1.0)
+                                        channels.append(values)
                                     code = item.get("class_code")
                                     if isinstance(code, bool) or not isinstance(code, (int, np.integer)) or code not in (0, 1):
                                         raise ValueError("Código de clase inválido en ventana " + str(wid) + ".")
-                                    target = np.linspace(float(times[0]), float(times[-1]), points)
-                                    values = np.interp(target, times, values).astype(np.float32)
-                                    std = float(values.std())
-                                    values = (values - float(values.mean())) / (std if std > 1e-8 else 1.0)
-                                    channels.append(values)
                                 xs.append(np.stack(channels))
                                 ys.append(int(item.get("class_code")))
                             arrays[split_name] = (
@@ -2185,7 +2190,10 @@ class ApiBridge:
                             with self._model_training_lock:
                                 self._model_training_state.update(status="running",
                                     epoch=progress["epoch"], progress=progress)
-                        result = train_experiment(config_snapshot, arrays, output_dir, on_progress, model_id=experiment_id)
+                        result = train_experiment(
+                            config_snapshot, arrays, output_dir, on_progress,
+                            model_id=experiment_id, dataset_id=dataset_id,
+                        )
                         finished_at = __import__("datetime").datetime.now().astimezone().isoformat(timespec="seconds")
                         current = self.get_model_experiments().get("experiments", [])
                         prior = next((x for x in current if x.get("experiment_id") == experiment_id), {})
@@ -2269,6 +2277,21 @@ class ApiBridge:
             architecture_path = result.get("architecture_path")
             if not architecture_path:
                 raise ValueError("El registro no contiene architecture_path.")
+            from core.models.trainer import resolve_input_sensors
+            input_mode, sensors = resolve_input_sensors((record.get("config") or {}).get("input"))
+            with open(architecture_path, encoding="utf-8") as stream:
+                architecture = json.load(stream)
+            params = architecture.get("factory_parameters") or {}
+            if int(params.get("channels", 0)) != len(sensors):
+                raise ValueError(
+                    "La arquitectura registrada para " + input_mode + " declara "
+                    + str(params.get("channels")) + " canales; se requieren "
+                    + str(len(sensors)) + ". Reentrena el experimento."
+                )
+            if architecture.get("input_mode") is not None and architecture.get("input_mode") != input_mode:
+                raise ValueError("El modo de entrada del modelo no coincide con el experimento.")
+            if architecture.get("dataset_id") is not None and str(architecture.get("dataset_id")) != str(record.get("dataset_id")):
+                raise ValueError("El Dataset registrado en la arquitectura no coincide con el experimento.")
             model_dir = os.path.dirname(os.path.abspath(architecture_path))
             models_root = os.path.abspath(os.path.dirname(self._models_registry_path()))
             # Resolve relative export destinations against the same canonical
@@ -2313,8 +2336,12 @@ class ApiBridge:
 
     def export_model_pipeline(self, experiment_id: str, export_name: str,
                               output_directory: str = "", verify: bool = True,
-                              calibration_count: int = 200) -> dict:
-        """Run the complete ONNX -> INT8 -> Test evaluation -> bundle workflow."""
+                              calibration_count: int = 200,
+                              output_format: str = "onnx",
+                              quantization_method: str = "onnx_int8",
+                              target: str = "esp32s3",
+                              normalization: str = "experiment") -> dict:
+        """Run the complete export, evaluation, and portable bundle workflow."""
         try:
             registry = self.get_model_experiments()
             if not registry.get("success"):
@@ -2326,8 +2353,9 @@ class ApiBridge:
             config = record.get("config") or {}
             if config.get("architecture") != "1d_cnn":
                 raise ValueError("El flujo de exportación solo admite la arquitectura CNN 1D.")
+            # The pipeline owns its destination: Exportaciones/<export_name>.
             onnx_result = self.export_model_onnx(experiment_id, export_name,
-                                                 output_directory, verify)
+                                                 "", verify)
             if not onnx_result.get("success"):
                 raise ValueError(onnx_result.get("error", "Falló la etapa ONNX."))
             exported = onnx_result.get("export") or {}
@@ -2341,8 +2369,14 @@ class ApiBridge:
                 exported["input_shape"][1:],
                 record.get("dataset_id"),
                 calibration_count,
+                output_format,
+                quantization_method,
+                target,
+                normalization,
             )
-            exported["quantization"] = "int8_static_ptq"
+            exported["format"] = output_format
+            exported["target"] = target
+            exported["quantization"] = pipeline["stages"]["quantization"].get("method")
             exported["pipeline_report_path"] = os.path.join(
                 os.path.dirname(exported["onnx_path"]), str(export_name).strip() + ".pipeline.json")
             with open(onnx_result["report_path"], "w", encoding="utf-8") as stream:
@@ -2365,7 +2399,7 @@ class ApiBridge:
             for report_path in root.glob("**/*.export.json"):
                 try:
                     report = json.loads(report_path.read_text(encoding="utf-8"))
-                    if not isinstance(report, dict) or report.get("format") != "onnx":
+                    if not isinstance(report, dict) or report.get("format") not in ("onnx", "espdl"):
                         continue
                     report["report_path"] = str(report_path)
                     report["experiment_name"] = names.get(str(report.get("experiment_id")), report.get("experiment_id", "—"))
@@ -2377,3 +2411,61 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "exports": [], "error": str(exc)}
 
+    def delete_export(self, report_path: str) -> dict:
+        """Delete one saved export and its generated artifacts under the export root."""
+        try:
+            from pathlib import Path
+            import shutil
+            root = Path(self._export_dir).resolve()
+            report = Path(str(report_path or "")).resolve()
+            if report.suffix.lower() != ".json" or report.name.count(".") < 2:
+                raise ValueError("Informe de exportación no válido.")
+            if not report.is_file() or report.parent == root:
+                raise ValueError("No se encontró el informe de exportación.")
+            if os.path.commonpath([str(root), str(report)]) != str(root):
+                raise ValueError("La exportación está fuera del directorio permitido.")
+            data = json.loads(report.read_text(encoding="utf-8"))
+            if not isinstance(data, dict) or data.get("format") not in ("onnx", "espdl"):
+                raise ValueError("El archivo no contiene una exportación SismoAI válida.")
+            pipeline_path = report.with_name(report.stem.replace(".export", "") + ".pipeline.json")
+            paths = {report, pipeline_path}
+            for key in ("onnx_path", "pipeline_report_path"):
+                if data.get(key):
+                    paths.add(Path(str(data[key])).resolve())
+            if pipeline_path.is_file():
+                pipeline = json.loads(pipeline_path.read_text(encoding="utf-8"))
+                quant = ((pipeline.get("stages") or {}).get("quantization") or {})
+                package = ((pipeline.get("stages") or {}).get("package") or {})
+                for value in (quant.get("path"), quant.get("espdl_path"), package.get("path")):
+                    if value:
+                        paths.add(Path(str(value)).resolve())
+                for artifact in (quant.get("artifacts") or {}).values():
+                    if isinstance(artifact, dict) and artifact.get("path"):
+                        paths.add(Path(str(artifact["path"])).resolve())
+            for path in paths:
+                if os.path.commonpath([str(root), str(path)]) != str(root):
+                    raise ValueError("La exportación contiene una ruta fuera del directorio permitido.")
+            for path in paths:
+                if path.is_file():
+                    path.unlink()
+            if report.parent.is_dir() and not any(report.parent.iterdir()):
+                report.parent.rmdir()
+            return {"success": True}
+        except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+            return {"success": False, "error": str(exc)}
+
+    def open_export_directory(self, export_path: str) -> dict:
+        """Open the containing directory of an export artifact in the OS file manager."""
+        try:
+            from pathlib import Path
+            root = Path(self._export_dir).resolve()
+            artifact = Path(str(export_path or "")).resolve()
+            directory = artifact if artifact.is_dir() else artifact.parent
+            if directory == root or os.path.commonpath([str(root), str(directory)]) != str(root):
+                raise ValueError("La ruta de exportación no es válida.")
+            if not directory.is_dir():
+                raise ValueError("No existe el directorio de exportación.")
+            os.startfile(str(directory))
+            return {"success": True, "path": str(directory)}
+        except (OSError, ValueError, TypeError) as exc:
+            return {"success": False, "error": str(exc)}

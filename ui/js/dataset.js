@@ -52,7 +52,7 @@
               esc(x.dataset_id) +
               "</code></td><td>" +
               esc(x.windows) +
-              '</td><td><button class="btn btn-secondary btn-sm" data-ds-action="delete-saved" data-filename="' +
+              '</td><td><button class="btn btn-danger btn-sm" data-ds-action="delete-saved" data-filename="' +
               esc(x.filename) +
               '">Eliminar</button></td></tr>',
           )
@@ -455,7 +455,11 @@
     if (btn.dataset.dsAction === "delete-saved") {
       const filename = btn.dataset.filename;
       if (!filename) return;
-      if (!confirm("¿Eliminar este Dataset guardado?")) return;
+      if (!(await window.showConfirmDialog({
+        title: "Confirmar eliminación",
+        subtitle: "Esta acción no se puede deshacer.",
+        message: '¿Deseas eliminar el Dataset "' + filename + '"?',
+      }))) return;
       btn.disabled = true;
       try {
         const result = await Bridge.deleteDataset(filename);

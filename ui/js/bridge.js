@@ -89,9 +89,13 @@ const Bridge = (() => {
     getModelTrainingState: () => call("get_model_training_state"),
     exportModelOnnx: (experimentId, name, directory, verify) =>
       call("export_model_onnx", experimentId, name, directory, verify),
-    exportModelPipeline: (experimentId, name, directory, verify, calibrationCount) =>
-      call("export_model_pipeline", experimentId, name, directory, verify, calibrationCount),
+    exportModelPipeline: (experimentId, name, directory, verify, calibrationCount,
+      outputFormat, quantizationMethod, target, normalization) =>
+      call("export_model_pipeline", experimentId, name, directory, verify, calibrationCount,
+        outputFormat, quantizationMethod, target, normalization),
     getExportHistory: () => call("get_export_history"),
+    deleteExport: (reportPath) => call("delete_export", reportPath),
+    openExportDirectory: (exportPath) => call("open_export_directory", exportPath),
     generateDataset: (ratios, seed, name) =>
       call("generate_dataset", ratios, seed, name),
     getWindowSignal: (windowId, windowRef) =>
