@@ -46,7 +46,7 @@
     <section class="card export-card export-card-calibration" data-export-region="3">
       <header class="export-card-heading">
         <span class="export-step">3</span>
-        <div><h2>Dataset de calibración</h2><p>La cuantización dinámica no requiere dataset de calibración.</p></div>
+        <div><h2>Dataset de calibración</h2><p>Se calibra automáticamente con una muestra de Train del Dataset del experimento.</p></div>
       </header>
       <div class="form-group">
         <label class="form-label" for="export-calibration-dataset">Dataset</label>
@@ -55,7 +55,7 @@
         </select>
       </div>
       <div class="export-summary" id="export-calibration-summary">
-        No requerido para INT8 dinámico. El conjunto Test se mantiene reservado para evaluación.
+        Se usa Train para calibración; Test queda reservado exclusivamente para evaluación.
       </div>
       <div class="form-group">
         <label class="form-label" for="export-calibration-count">Muestras de calibración</label>
@@ -72,7 +72,7 @@
         <label class="form-label" for="export-quantization">Método de cuantización</label>
         <select id="export-quantization" class="form-select">
           <option value="none">Sin cuantización (solo ONNX)</option>
-          <option value="int8_dynamic">INT8 dinámico (ONNX Runtime)</option>
+          <option value="int8_dynamic">INT8 estático PTQ (ONNX Runtime)</option>
         </select>
       </div>
       <div class="form-group">
