@@ -89,6 +89,8 @@ const Bridge = (() => {
     getModelTrainingState: () => call("get_model_training_state"),
     exportModelOnnx: (experimentId, name, directory, verify) =>
       call("export_model_onnx", experimentId, name, directory, verify),
+    exportModelPipeline: (experimentId, name, directory, verify) =>
+      call("export_model_pipeline", experimentId, name, directory, verify),
     getExportHistory: () => call("get_export_history"),
     generateDataset: (ratios, seed, name) =>
       call("generate_dataset", ratios, seed, name),
