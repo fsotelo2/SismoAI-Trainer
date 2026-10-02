@@ -1036,7 +1036,7 @@ class ApiBridge:
             labels_dir = os.path.join(root, "Etiquetados")
             self._dataset_dir = os.path.join(root, "Dataset")
             models_dir = os.path.join(root, "Modelos")
-            self._export_dir = os.path.join(root, "Exportar")
+            self._export_dir = os.path.join(root, "Exportaciones")
             for folder in (windows_dir, labels_dir, self._dataset_dir, models_dir, self._export_dir):
                 os.makedirs(folder, exist_ok=True)
             self._window_path = os.path.join(windows_dir, "windows.json")
@@ -1047,7 +1047,7 @@ class ApiBridge:
             base = os.path.dirname(self._window_path)
             self._dataset_dir = os.path.join(base, "Dataset")
             self._window_selection_dir = os.path.join(base, "Ventanas")
-            self._export_dir = os.path.join(base, "Exportar")
+            self._export_dir = os.path.join(base, "Exportaciones")
             self._legacy_dataset_path = os.path.join(base, "dataset.json")
         self._dataset_path = os.path.join(self._dataset_dir, "dataset_activo.json")
 
@@ -2285,7 +2285,7 @@ class ApiBridge:
                         raise
                     raise ValueError("Directorio de salida no válido.") from path_error
             else:
-                destination = os.path.join(project_root, "Exportaciones", name)
+                destination = os.path.join(self._export_dir, name)
             os.makedirs(destination, exist_ok=True)
             from core.models.exporter import export_onnx
             report = export_onnx(model_dir, destination, name, bool(verify))
@@ -2304,7 +2304,7 @@ class ApiBridge:
         """Read persisted ONNX export reports from the project's Modelos/exports folder."""
         try:
             from pathlib import Path
-            root = Path(os.path.dirname(os.path.dirname(self._models_registry_path()))).resolve() / "Exportaciones"
+            root = Path(self._export_dir).resolve()
             if not root.is_dir():
                 return {"success": True, "exports": []}
             experiments = (self.get_model_experiments() or {}).get("experiments", [])
