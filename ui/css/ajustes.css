@@ -277,13 +277,13 @@
 .settings-info-grid {
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:12px
+  gap:6px
 }
 .settings-info-grid>div {
   display:flex;
   flex-direction:column;
   gap:5px;
-  padding:8px 12px;
+  padding:4px 6px;
   border-right:1px solid var(--color-border)
 }
 .settings-info-grid>div:last-child {
@@ -1010,7 +1010,7 @@
   --x: 0px;
   --y: 630px;
   --w: 100%;
-  --h: 145px;
+  --h: 130px;
   border-radius: 12px;
   overflow: hidden;
 }
