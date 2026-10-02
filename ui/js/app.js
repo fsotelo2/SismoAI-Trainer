@@ -767,6 +767,9 @@ const App = (() => {
       case "modelos":
         if (window.initModels) await window.initModels();
         break;
+      case "exportar":
+        if (window.initExportar) await window.initExportar();
+        break;
       default:
         // Placeholder views
         break;
