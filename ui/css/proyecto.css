@@ -31,6 +31,26 @@
   min-width: 0;
 }
 
+.project-summary-card {
+  --h: 260px;
+}
+
+.project-summary-card .summary-card {
+  min-height: 76px;
+}
+
+@media (max-width: 1100px) {
+  .project-summary-card .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .project-summary-card .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .project-summary-card .summary-card {
   min-width: 0;
   min-height: 70px;
