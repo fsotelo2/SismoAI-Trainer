@@ -753,23 +753,37 @@ const App = (() => {
   }
 
   function getDimensionSelector(element) {
-    if (element.id) return `#${element.id}`;
-    if (element.classList.length > 0) {
-      const genericClasses = new Set([
-        "btn",
-        "btn-primary",
-        "btn-secondary",
-        "btn-sm",
-        "form-control",
-        "form-input",
-        "form-select",
-      ]);
-      const specificClass = Array.from(element.classList).find(
-        (className) => !genericClasses.has(className),
-      );
-      if (specificClass) return `.${specificClass}`;
-      return `.${element.classList.item(0)}`;
-    }
+    const genericClasses = new Set([
+      "card",
+      "btn",
+      "btn-primary",
+      "btn-secondary",
+      "btn-sm",
+      "form-control",
+      "form-input",
+      "form-select",
+    ]);
+    const classes = Array.from(element.classList || []);
+    const specificClasses = classes.filter(
+      (className) => !genericClasses.has(className),
+    );
+    const candidates = specificClasses.map(
+      (className) => `.${className}`,
+    );
+    if (element.id) candidates.unshift(`#${element.id}`);
+
+    const sources = [
+      VIEW_STYLE_SOURCES[currentView],
+      "ui/css/workspace.css",
+      "ui/css/layout.css",
+      "ui/css/components.css",
+      "ui/css/variables.css",
+    ].filter(Boolean);
+    const matchingSelector = candidates.find((selector) =>
+      sources.some((source) => stylesheetContainsSelector(source, selector)),
+    );
+    if (matchingSelector) return matchingSelector;
+    if (candidates.length > 0) return candidates[0];
     return element.tagName.toLowerCase();
   }
 
