@@ -1,6 +1,6 @@
 /* Exportar: paneles configurables del workspace y controles de exportación. */
 .export-view {
-  --export-gap: 10px;
+  --export-gap: 4px;
   overflow: auto;
 }
 .export-grid {
@@ -24,10 +24,10 @@
   height: var(--h);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
   min-height: 0;
-  padding: 12px;
+  padding: 4px;
   overflow: auto;
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -36,37 +36,37 @@
 .export-card-model {
   --x: 0px; --y: 0px;
   --w: calc((100% - 20px) / 3);
-  --h: calc((100% - 10px) / 2 - 20px);
+  --h: calc((100% - 10px) / 2 - 15px);
 }
 .export-card-config {
   --x: calc((100% + 10px) / 3); --y: 0px;
   --w: calc((100% - 20px) / 3);
-  --h: calc((100% - 10px) / 2 - 20px);
+  --h: calc((100% - 10px) / 2 - 15px);
 }
 .export-card-calibration {
   --x: calc((100% + 10px) * 2 / 3); --y: 0px;
   --w: calc((100% - 20px) / 3);
-  --h: calc((100% - 10px) / 2 - 20px);
+  --h: calc((100% - 10px) / 2 - 15px);
 }
 .export-card-advanced {
-  --x: 0px; --y: calc((100% - 10px) / 2 - 15px);
+  --x: 0px; --y: calc((100% - 10px) / 2 - 10px);
   --w: calc((100% - 20px) / 3);
-  --h: calc((100% - 10px) / 2 - 20px);
+  --h: calc((100% - 10px) / 2 - 15px);
 }
 .export-card-execution {
-  --x: calc((100% + 10px) / 3); --y: calc((100% - 10px) / 2 - 15px);
+  --x: calc((100% + 10px) / 3); --y: calc((100% - 10px) / 2 - 10px);
   --w: calc((100% - 20px) / 3);
-  --h: calc((100% - 10px) / 2 - 20px);
+  --h: calc((100% - 10px) / 2 - 15px);
 }
 .export-card-results {
-  --x: calc((100% + 10px) * 2 / 3); --y: calc((100% - 10px) / 2 - 15px);
+  --x: calc((100% + 10px) * 2 / 3); --y: calc((100% - 10px) / 2 - 10px);
   --w: calc((100% - 20px) / 3);
-  --h: calc((100% - 10px) / 2 - 20px);
+  --h: calc((100% - 10px) / 2 - 15px);
 }
 .export-card-heading {
   display: flex;
   align-items: flex-start;
-  gap: 9px;
+  gap: 4px;
   min-width: 0;
 }
 .export-card-heading > div { flex: 1; min-width: 0; }
@@ -196,10 +196,10 @@
 }
 .export-history {
   --x: 0px;
-  --y: calc(100% - 165px);
+  --y: calc(100% - 190px);
   --w: 100%;
-  --h: 112px;
-  padding: 10px 12px;
+  --h: 145px;
+  padding: 5px 6px;
   overflow:auto;
 }
 .export-history .export-card-heading {
