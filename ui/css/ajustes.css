@@ -68,3 +68,29 @@
 .settings-category-toggle-button,.settings-category-delete-button {
   position: relative;
 }
+
+
+/* Geometría espacial unificada del menú Ajustes: todos los elementos
+   inspeccionables usan --x, --y, --w y --h (no --layout-x/y). */
+.settings-view [data-layout-ref] {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+  position: relative;
+  left: auto;
+  top: auto;
+  width: var(--w);
+  height: var(--h);
+  translate: var(--x) var(--y);
+  box-sizing: border-box;
+}
+/* Mantener el flujo base; el desplazamiento visual es independiente por elemento. */
+.settings-view .settings-card,
+.settings-view .settings-card-header,
+.settings-view .settings-catalog-layout,
+.settings-view .settings-classes,
+.settings-view .settings-categories,
+.settings-view .settings-info-grid {
+  min-width: 0;
+}
