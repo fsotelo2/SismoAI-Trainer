@@ -770,6 +770,9 @@ const App = (() => {
       case "exportar":
         if (window.initExportar) await window.initExportar();
         break;
+      case "ajustes":
+        if (window.initSettings) await window.initSettings();
+        break;
       default:
         // Placeholder views
         break;

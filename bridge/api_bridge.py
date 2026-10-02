@@ -2469,3 +2469,117 @@ class ApiBridge:
             return {"success": True, "path": str(directory)}
         except (OSError, ValueError, TypeError) as exc:
             return {"success": False, "error": str(exc)}
+
+
+    # ------------------------------------------------------------------
+    # Application settings and editable secondary label catalog
+    # ------------------------------------------------------------------
+
+    def _settings_file(self):
+        """Return the per-user settings file, independent from project data."""
+        if os.name == "nt":
+            base = os.environ.get("APPDATA", os.path.expanduser("~"))
+        else:
+            base = os.environ.get("XDG_CONFIG_HOME", os.path.join(os.path.expanduser("~"), ".config"))
+        return os.path.join(base, "SismoAI Trainer", "settings.json")
+
+    def _read_app_settings(self):
+        path = self._settings_file()
+        try:
+            with open(path, "r", encoding="utf-8") as stream:
+                value = json.load(stream)
+            if isinstance(value, dict) and value.get("schema") == "sismoai-settings" and value.get("schema_version") == 1:
+                return value
+        except (OSError, ValueError, TypeError):
+            pass
+        return {
+            "schema": "sismoai-settings",
+            "schema_version": 1,
+            "preferences": {"theme": "light"},
+            "categories": [
+                {"id": "ruido", "name": "RUIDO", "description": "Ruido ambiental", "active": True},
+                {"id": "vibraciones", "name": "VIBRACIONES", "description": "Vibraciones de maquinaria", "active": True},
+                {"id": "golpes", "name": "GOLPES", "description": "Impactos o golpes", "active": True},
+                {"id": "indeterminado", "name": "INDETERMINADO", "description": "Sin clasificación específica", "active": True},
+            ],
+        }
+
+    def _write_app_settings(self, value):
+        path = self._settings_file()
+        folder = os.path.dirname(path)
+        os.makedirs(folder, exist_ok=True)
+        temporary = path + ".tmp"
+        with open(temporary, "w", encoding="utf-8") as stream:
+            json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+
+    def get_app_settings(self) -> dict:
+        try:
+            settings = self._read_app_settings()
+            return {"success": True, "preferences": settings["preferences"]}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def save_app_preferences(self, preferences: dict) -> dict:
+        try:
+            if not isinstance(preferences, dict):
+                raise ValueError("Las preferencias deben ser un objeto.")
+            theme = preferences.get("theme")
+            if theme not in ("light", "dark", "system"):
+                raise ValueError("Tema no válido.")
+            settings = self._read_app_settings()
+            settings["preferences"] = {"theme": theme}
+            self._write_app_settings(settings)
+            return {"success": True, "preferences": settings["preferences"]}
+        except (OSError, ValueError, TypeError) as exc:
+            return {"success": False, "error": str(exc)}
+
+    def get_label_categories(self) -> dict:
+        try:
+            settings = self._read_app_settings()
+            return {"success": True, "categories": settings["categories"]}
+        except Exception as exc:
+            return {"success": False, "categories": [], "error": str(exc)}
+
+    def save_label_categories(self, categories: list) -> dict:
+        try:
+            if not isinstance(categories, list) or len(categories) > 50:
+                raise ValueError("El catálogo debe ser una lista de hasta 50 subcategorías.")
+            normalized, ids, names = [], set(), set()
+            for item in categories:
+                if not isinstance(item, dict):
+                    raise ValueError("Cada subcategoría debe ser un objeto.")
+                name = str(item.get("name", "")).strip().upper()
+                description = str(item.get("description", "")).strip()
+                category_id = str(item.get("id", "")).strip()
+                if not category_id or len(category_id) > 80 or not re.fullmatch(r"[a-z0-9_-]+", category_id):
+                    raise ValueError("Identificador de subcategoría no válido.")
+                if not name or len(name) > 40 or not re.fullmatch(r"[A-Z0-9_ -]+", name):
+                    raise ValueError("El nombre debe usar letras, números, espacios, guion o guion bajo (máximo 40 caracteres).")
+                if len(description) > 160:
+                    raise ValueError("La descripción admite máximo 160 caracteres.")
+                if category_id in ids or name in names:
+                    raise ValueError("No se permiten identificadores ni nombres duplicados.")
+                ids.add(category_id); names.add(name)
+                normalized.append({"id": category_id, "name": name, "description": description, "active": bool(item.get("active", True))})
+            settings = self._read_app_settings()
+            previous = {item.get("id"): item for item in settings["categories"]}
+            # Preserve stable IDs and reject deletion of categories referenced by existing annotations.
+            removed = set(previous) - ids
+            if removed:
+                labels = getattr(self, "_labeling", None)
+                used = set()
+                if labels:
+                    for record in labels.labels.values():
+                        if record.get("disturbance"):
+                            used.add(str(record["disturbance"]).upper())
+                protected = [previous[cid]["name"] for cid in removed if previous[cid]["name"] in used]
+                if protected:
+                    raise ValueError("No se pueden eliminar subcategorías en uso: " + ", ".join(protected) + ". Desactívalas.")
+            settings["categories"] = normalized
+            self._write_app_settings(settings)
+            return {"success": True, "categories": normalized}
+        except (OSError, ValueError, TypeError) as exc:
+            return {"success": False, "error": str(exc)}

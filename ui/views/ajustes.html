@@ -1,0 +1,51 @@
+<section class="settings-view">
+  <div class="settings-grid">
+    <section class="card settings-card settings-appearance">
+      <header class="settings-card-header"><span class="settings-icon blue">◐</span><div><h2>Apariencia</h2><p>Configura el tema visual de la aplicación.</p></div></header>
+      <label class="settings-label">Tema de la aplicación</label>
+      <div class="theme-options" role="group" aria-label="Tema de la aplicación">
+        <button class="theme-option selected" data-settings-theme="light" type="button"><span>☀</span> Claro</button>
+        <button class="theme-option" data-settings-theme="dark" type="button"><span>☾</span> Oscuro</button>
+        <button class="theme-option" data-settings-theme="system" type="button"><span>▣</span> Sistema</button>
+      </div>
+      <p class="settings-hint">La preferencia se guarda para futuras sesiones.</p>
+    </section>
+
+    <section class="card settings-card settings-general">
+      <header class="settings-card-header"><span class="settings-icon blue">☷</span><div><h2>Preferencias generales</h2><p>Comportamiento general de la aplicación.</p></div></header>
+      <div class="settings-static-row"><span>Idioma de la interfaz</span><strong>Español</strong><small>Idioma disponible actualmente</small></div>
+      <div class="settings-static-row"><span>Almacenamiento de preferencias</span><strong>Configuración local</strong><small>Independiente de la carpeta del proyecto</small></div>
+    </section>
+
+    <section class="card settings-card settings-catalog">
+      <header class="settings-card-header"><span class="settings-icon purple">◇</span><div><h2>Etiquetas y subcategorías</h2><p>Administra las subcategorías disponibles para la clase NO_SISMICO.</p></div></header>
+      <div class="settings-note"><strong>Clases principales fijas:</strong> TEMBLOR (0) y NO_SISMICO (1). Las subcategorías solo se aplican a NO_SISMICO.</div>
+      <div class="settings-catalog-layout">
+        <div class="settings-classes">
+          <h3>Clases principales</h3>
+          <div class="settings-class-row"><span class="class-symbol seismic">∿</span><div><strong>TEMBLOR (0)</strong><small>Evento sísmico</small></div><span class="fixed-pill">Fija</span></div>
+          <div class="settings-class-row"><span class="class-symbol nonsismic">⊘</span><div><strong>NO_SISMICO (1)</strong><small>Evento no sísmico</small></div><span class="fixed-pill">Fija</span></div>
+          <p class="settings-hint">Las clases principales no se pueden modificar.</p>
+        </div>
+        <div class="settings-categories">
+          <div class="settings-categories-heading"><h3>Subcategorías de NO_SISMICO</h3><button class="btn btn-outline btn-sm" data-settings-action="add-category" type="button">＋ Agregar subcategoría</button></div>
+          <div class="settings-table-wrap"><table class="settings-table"><thead><tr><th>Nombre</th><th>Descripción</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="settings-category-rows"><tr><td colspan="4">Cargando catálogo…</td></tr></tbody></table></div>
+          <div id="settings-category-editor" class="settings-editor" hidden>
+            <h4 id="settings-editor-title">Nueva subcategoría</h4>
+            <label>Nombre<input id="settings-category-name" maxlength="40" placeholder="Ej. MAQUINARIA"></label>
+            <label>Descripción<input id="settings-category-description" maxlength="160" placeholder="Descripción de uso"></label>
+            <div class="settings-editor-actions"><button class="btn btn-secondary btn-sm" data-settings-action="cancel-category" type="button">Cancelar</button><button class="btn btn-primary btn-sm" data-settings-action="save-category" type="button">Guardar</button></div>
+            <p id="settings-category-error" role="status"></p>
+          </div>
+        </div>
+      </div>
+      <p class="settings-hint">Las categorías en uso se pueden desactivar, pero no eliminar. Los cambios afectan las opciones disponibles para nuevas etiquetas.</p>
+    </section>
+
+    <section class="card settings-card settings-info">
+      <header class="settings-card-header"><span class="settings-icon amber">ⓘ</span><div><h2>Información de la aplicación</h2><p>Versión y entorno de ejecución.</p></div></header>
+      <div class="settings-info-grid"><div><small>Aplicación</small><strong>SismoAI Trainer</strong></div><div><small>Versión</small><strong>0.4.0</strong></div><div><small>Python</small><strong>3.11+</strong></div><div><small>Entorno</small><strong>Escritorio</strong></div></div>
+    </section>
+  </div>
+  <div id="settings-message" class="settings-message" role="status"></div>
+</section>

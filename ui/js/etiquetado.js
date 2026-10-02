@@ -673,9 +673,21 @@
       () => current() && drawSignals(current()),
     );
   }
+  async function loadLabelCategories() {
+    const select = $("label-category");
+    if (!select) return;
+    const result = await Bridge.getLabelCategories();
+    if (!result?.success) return;
+    const categories = (result.categories || []).filter((item) => item.active);
+    const selected = select.value;
+    select.innerHTML = '<option value="">Seleccionar categoría…</option>' +
+      categories.map((item) => '<option value="' + esc(item.name) + '">' + esc(item.name) + '</option>').join("");
+    select.value = categories.some((item) => item.name === selected) ? selected : "";
+  }
   window.initLabeling = async () => {
     try {
       bindViewControls();
+      await loadLabelCategories();
       context = null;
       await load();
     } catch (err) {
