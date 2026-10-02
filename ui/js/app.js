@@ -426,6 +426,58 @@ const App = (() => {
     ".models-config-grid",
     ".models-execution",
     ".models-library",
+    ".settings-grid",
+    ".settings-card",
+    ".settings-card-header",
+    ".settings-appearance",
+    ".settings-general",
+    ".settings-catalog",
+    ".settings-classes",
+    ".settings-categories",
+    ".settings-info",
+    ".settings-note",
+    ".settings-class-row",
+    ".settings-categories-heading",
+    ".settings-table-wrap",
+    ".settings-editor",
+    ".settings-info-grid",
+    ".settings-appearance-header",
+    ".settings-general-header",
+    ".settings-catalog-header",
+    ".settings-info-header",
+    ".settings-appearance-heading",
+    ".settings-general-heading",
+    ".settings-catalog-heading",
+    ".settings-info-heading",
+    ".settings-appearance-title",
+    ".settings-general-title",
+    ".settings-catalog-title",
+    ".settings-info-title",
+    ".settings-appearance-description",
+    ".settings-general-description",
+    ".settings-catalog-description",
+    ".settings-info-description",
+    ".settings-general-icon",
+    ".settings-classes-title",
+    ".settings-categories-heading-title",
+    ".settings-info-app",
+    ".settings-info-version",
+    ".settings-info-python",
+    ".settings-info-environment",
+    ".settings-theme-light",
+    ".settings-theme-dark",
+    ".settings-theme-system",
+    ".settings-language-row",
+    ".settings-storage-row",
+    ".settings-class-temblor",
+    ".settings-class-no-sismico",
+    ".settings-category-edit-button",
+    ".settings-category-toggle-button",
+    ".settings-category-delete-button",
+    ".settings-category-name-input",
+    ".settings-category-description-input",
+    ".settings-cancel-category-button",
+    ".settings-save-category-button",
   ];
   const LAYOUT_CONTENT = [
     "button",
@@ -441,6 +493,18 @@ const App = (() => {
     ".summary-card",
     ".analysis-chart-card",
     ".label-chart-wrap",
+    ".settings-label",
+    ".theme-options",
+    ".theme-option",
+    ".settings-static-row",
+    ".settings-hint",
+    ".settings-table th",
+    ".settings-table td",
+    ".settings-table button",
+    ".settings-editor label",
+    ".settings-editor input",
+    ".settings-editor-actions",
+    ".settings-message",
   ].join(", ");
   const GLOBAL_LAYOUT_REGIONS = [
     ".sidebar",
@@ -501,6 +565,14 @@ const App = (() => {
           setLayoutLabel(element, selector, false, true);
         });
       });
+
+      if (currentView === "ajustes") {
+        activeView
+          .querySelectorAll("div, section, article, header, footer, aside, main, form, fieldset")
+          .forEach((element) => {
+            setLayoutLabel(element, getElementSelector(element), false, false);
+          });
+      }
 
       activeView.querySelectorAll(LAYOUT_CONTENT).forEach((element) => {
         setLayoutLabel(element, getElementSelector(element), true, false);
@@ -656,12 +728,16 @@ const App = (() => {
     const cssSource = getStyleSource(viewSource, styleSelector);
     const reference = isWorkspaceRegion
       ? `${cssSource} | ${styleSelector} | X/Y/W/H: ${coordinates}`
-      : `${cssSource} | ${styleSelector} | X/Y: --layout-x/--layout-y | W/H: width/height`;
+      : currentView === "ajustes"
+        ? `${cssSource} | ${styleSelector} | Ajuste espacial: --x/--y/--w/--h`
+        : `${cssSource} | ${styleSelector} | X/Y: --layout-x/--layout-y | W/H: width/height`;
     const rect = element.getBoundingClientRect();
     const elementCoordinates = `X:${Math.round(rect.x)} Y:${Math.round(rect.y)} W:${Math.round(rect.width)} H:${Math.round(rect.height)}`;
     const label = isWorkspaceRegion
       ? reference
-      : `HTML: ui/views/${viewSource}.html | CSS: ${cssSource} | ${styleSelector} | Posición real ${elementCoordinates} | Coordenadas CSS: --x/--y | Ajuste: --layout-x/--layout-y | Tamaño: width/height`;
+      : currentView === "ajustes"
+        ? `HTML: ui/views/ajustes.html | CSS: ui/css/ajustes.css | ${styleSelector} | Posición real ${elementCoordinates} | Variables: --x/--y/--w/--h`
+        : `HTML: ui/views/${viewSource}.html | CSS: ${cssSource} | ${styleSelector} | Posición real ${elementCoordinates} | Coordenadas CSS: --x/--y | Ajuste: --layout-x/--layout-y | Tamaño: width/height`;
     element.setAttribute("data-layout-ref", selector);
     if (!document.body.classList.contains("layout-inspector-active")) return;
     if (!element.hasAttribute("data-layout-inspector-title")) {
@@ -685,23 +761,37 @@ const App = (() => {
   }
 
   function getDimensionSelector(element) {
-    if (element.id) return `#${element.id}`;
-    if (element.classList.length > 0) {
-      const genericClasses = new Set([
-        "btn",
-        "btn-primary",
-        "btn-secondary",
-        "btn-sm",
-        "form-control",
-        "form-input",
-        "form-select",
-      ]);
-      const specificClass = Array.from(element.classList).find(
-        (className) => !genericClasses.has(className),
-      );
-      if (specificClass) return `.${specificClass}`;
-      return `.${element.classList.item(0)}`;
-    }
+    const genericClasses = new Set([
+      "card",
+      "btn",
+      "btn-primary",
+      "btn-secondary",
+      "btn-sm",
+      "form-control",
+      "form-input",
+      "form-select",
+    ]);
+    const classes = Array.from(element.classList || []);
+    const specificClasses = classes.filter(
+      (className) => !genericClasses.has(className),
+    );
+    const candidates = specificClasses.map(
+      (className) => `.${className}`,
+    );
+    if (element.id) candidates.unshift(`#${element.id}`);
+
+    const sources = [
+      VIEW_STYLE_SOURCES[currentView],
+      "ui/css/workspace.css",
+      "ui/css/layout.css",
+      "ui/css/components.css",
+      "ui/css/variables.css",
+    ].filter(Boolean);
+    const matchingSelector = [...candidates].reverse().find((selector) =>
+      sources.some((source) => stylesheetContainsSelector(source, selector)),
+    );
+    if (matchingSelector) return matchingSelector;
+    if (candidates.length > 0) return candidates[0];
     return element.tagName.toLowerCase();
   }
 
@@ -769,6 +859,9 @@ const App = (() => {
         break;
       case "exportar":
         if (window.initExportar) await window.initExportar();
+        break;
+      case "ajustes":
+        if (window.initSettings) await window.initSettings();
         break;
       default:
         // Placeholder views

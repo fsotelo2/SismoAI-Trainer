@@ -29,6 +29,12 @@ const Bridge = (() => {
 
   // Public API
   return {
+    // Settings
+    getAppSettings: () => call("get_app_settings"),
+    saveAppPreferences: (preferences) => call("save_app_preferences", preferences),
+    getLabelCategories: () => call("get_label_categories"),
+    saveLabelCategories: (categories) => call("save_label_categories", categories),
+
     // Project
     selectDataFolder: () => call("select_data_folder"),
     getProjectState: () => call("get_project_state"),

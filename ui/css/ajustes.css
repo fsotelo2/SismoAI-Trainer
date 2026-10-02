@@ -1,1 +1,1088 @@
-/* Estilos específicos del menú Ajustes. */
+/* Fase Ajustes — tarjetas ordenadas y responsivas */
+.settings-view.workspace-view {
+  width: 1200px;
+  height: 796px;
+  min-width: 1200px;
+  min-height: 796px;
+  flex: 0 0 auto;
+  overflow: auto;
+}
+.settings-view {
+  overflow:auto;
+  padding:2px 2px 8px
+}
+.settings-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  align-content:start
+}
+.settings-card {
+  min-width:0;
+  padding:16px
+}
+.settings-card-header {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:18px
+}
+.settings-card-header h2 {
+  font-size:17px;
+  font-weight:600;
+  color:var(--color-text-primary)
+}
+.settings-card-header p {
+  font-size:12px;
+  color:var(--color-text-muted);
+  margin-top:3px
+}
+.settings-icon {
+  width:42px;
+  height:42px;
+  border-radius:9px;
+  display:grid;
+  place-items:center;
+  font-size:25px;
+  flex:none
+}
+.settings-icon.blue {
+  color:#2563eb;
+  background:#eff6ff
+}
+.settings-icon.purple {
+  color:#7c3aed;
+  background:#f3e8ff
+}
+.settings-icon.amber {
+  color:#b45309;
+  background:#fef3c7
+}
+.settings-label {
+  display:block;
+  font-weight:600;
+  margin-bottom:9px;
+  color:var(--color-text-primary)
+}
+.theme-options {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px
+}
+.theme-option {
+  border:1px solid var(--color-border);
+  border-radius:7px;
+  background:var(--color-bg-hover);
+  color:var(--color-text-secondary);
+  padding:13px 8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  cursor:pointer;
+  font:inherit
+}
+.theme-option span {
+  font-size:19px
+}
+.theme-option.selected {
+  background:var(--color-primary-light);
+  border:1px solid var(--color-primary);
+  color:var(--color-primary);
+  font-weight:600
+}
+.settings-hint {
+  font-size:12px;
+  color:var(--color-text-muted);
+  margin-top:12px;
+  line-height:1.5
+}
+.settings-static-row {
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:3px 12px;
+  padding:10px 0;
+  border-bottom:1px solid var(--color-border);
+  font-size:13px;
+  color:var(--color-text-secondary)
+}
+.settings-static-row strong {
+  color:var(--color-text-primary);
+  font-weight:500
+}
+.settings-static-row small {
+  grid-column:1/-1;
+  color:var(--color-text-muted);
+  font-size:11px
+}
+.settings-catalog,.settings-info {
+  grid-column:1/-1
+}
+.settings-note {
+  padding:10px 12px;
+  background:var(--color-primary-light);
+  border-radius:6px;
+  color:var(--color-text-secondary);
+  font-size:12px;
+  line-height:1.5;
+  margin-bottom:14px
+}
+.settings-catalog-layout {
+  display:grid;
+  grid-template-columns:minmax(230px,.72fr) minmax(0,1.5fr);
+  gap:5px
+}
+.settings-classes,.settings-categories {
+  border:1px solid var(--color-border);
+  border-radius:8px;
+  padding:6px;
+  min-width:0
+}
+.settings-classes h3,.settings-categories h3 {
+  font-size:14px;
+  margin-bottom:10px
+}
+.settings-class-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 4px;
+  border-bottom:1px solid var(--color-border)
+}
+.settings-class-row>div {
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  flex:1
+}
+.settings-class-row strong {
+  font-size:13px
+}
+.settings-class-row small {
+  font-size:12px;
+  color:var(--color-text-muted)
+}
+.class-symbol {
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  font-size:24px
+}
+.class-symbol.seismic {
+  color:#2563eb
+}
+.class-symbol.nonsismic {
+  color:#dc2626
+}
+.fixed-pill {
+  font-size:11px;
+  padding:4px 8px;
+  border-radius:5px;
+  background:var(--color-primary-light);
+  color:var(--color-primary)
+}
+.settings-categories-heading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:8px
+}
+.settings-categories-heading h3 {
+  margin:0
+}
+.settings-table-wrap {
+  overflow:auto;
+  border:1px solid var(--color-border);
+  border-radius:6px
+}
+.settings-table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px
+}
+.settings-table th,.settings-table td {
+  padding:5px 5px;
+  text-align:left;
+  border-bottom:1px solid var(--color-border);
+  white-space:nowrap
+}
+.settings-table th {
+  background:var(--color-bg-hover);
+  font-weight:600
+}
+.settings-table td:nth-child(2) {
+  white-space:normal;
+  color:var(--color-text-muted)
+}
+.settings-table button {
+  border:0;
+  background:transparent;
+  color:var(--color-primary);
+  cursor:pointer;
+  padding:4px 6px
+}
+.category-status {
+  font-size:11px;
+  border-radius:5px;
+  padding:4px 7px;
+  background:var(--color-success-bg);
+  color:#047857
+}
+.category-status.inactive {
+  background:var(--color-warning-bg);
+  color:#92400e
+}
+.settings-editor {
+  margin-top:12px;
+  padding:12px;
+  border:1px solid var(--color-border);
+  border-radius:7px;
+  background:var(--color-bg-app)
+}
+.settings-editor h4 {
+  font-size:13px;
+  margin-bottom:10px
+}
+.settings-editor label {
+  display:block;
+  font-size:12px;
+  font-weight:600;
+  margin:8px 0;
+  color:var(--color-text-secondary)
+}
+.settings-editor input {
+  display:block;
+  width:100%;
+  margin-top:5px;
+  padding:9px;
+  border:1px solid var(--color-border);
+  border-radius:5px;
+  background:var(--color-bg-card);
+  color:var(--color-text-primary);
+  font:inherit
+}
+.settings-editor-actions {
+  display:flex;
+  justify-content:flex-end;
+  gap:7px;
+  margin-top:10px
+}
+#settings-category-error {
+  font-size:12px;
+  color:var(--color-danger);
+  margin-top:8px
+}
+.settings-info-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px
+}
+.settings-info-grid>div {
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding:4px 6px;
+  border-right:1px solid var(--color-border)
+}
+.settings-info-grid>div:last-child {
+  border:0
+}
+.settings-info-grid small {
+  font-size:11px;
+  color:var(--color-text-muted)
+}
+.settings-info-grid strong {
+  font-size:13px;
+  font-weight:500
+}
+
+/* Theme tokens */
+:root[data-theme="dark"] {
+  --color-bg-app:#0f172a;
+  --color-bg-card:#1e293b;
+  --color-bg-sidebar:#172033;
+  --color-bg-hover:#263449;
+  --color-border:#334155;
+  --color-border-subtle:#475569;
+  --color-text-primary:#f1f5f9;
+  --color-text-secondary:#cbd5e1;
+  --color-text-muted:#94a3b8;
+  --color-primary-light:#172f55;
+  --color-success-bg:#064e3b;
+  --color-warning-bg:#78350f;
+  --color-danger-bg:#7f1d1d;
+  --color-accent-purple-light:#3b2360
+}
+/* Selectores de ajuste fino para el inspector F7.
+   Cada elemento tiene su propia referencia CSS y admite --layout-x/--layout-y. */
+.settings-appearance-icon,.settings-catalog-icon,.settings-info-icon,
+.settings-theme-label,.settings-theme-options,.settings-theme-light,
+.settings-theme-dark,.settings-theme-system,.settings-language-row,
+.settings-storage-row,.settings-catalog-note,.settings-class-temblor,
+.settings-class-no-sismico,.settings-classes-hint,.settings-catalog-hint,
+.settings-categories-title,.settings-add-category-button,
+.settings-category-table-wrap,.settings-category-editor,
+.settings-category-name-input,.settings-category-description-input,
+.settings-cancel-category-button,.settings-save-category-button,
+.settings-app-info-grid,.settings-category-edit-button,
+.settings-category-toggle-button,.settings-category-delete-button {
+  --layout-x: 0px;
+  --layout-y: 0px;
+}
+.settings-theme-light,.settings-theme-dark,.settings-theme-system,
+.settings-add-category-button,.settings-cancel-category-button,
+.settings-save-category-button,.settings-category-edit-button,
+.settings-category-toggle-button,.settings-category-delete-button {
+  position: relative;
+}
+/* Reglas específicas por componente para edición desde el inspector F7. */
+.settings-appearance {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+
+/* Geometría espacial unificada del menú Ajustes: todos los elementos
+   inspeccionables usan --x, --y, --w y --h (no --layout-x/y). */
+.settings-view [data-layout-ref] {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+  position: relative;
+  left: auto;
+  top: auto;
+  width: var(--w);
+  height: var(--h);
+  translate: var(--x) var(--y);
+  box-sizing: border-box;
+}
+/* Mantener el flujo base; el desplazamiento visual es independiente por elemento. */
+.settings-view .settings-card,
+.settings-view .settings-card-header,
+.settings-view .settings-catalog-layout,
+.settings-view .settings-classes,
+.settings-view .settings-categories,
+.settings-view .settings-info-grid {
+  min-width: 0;
+}
+
+/* Controles espaciales individuales para todos los contenedores y tarjetas de Ajustes. */
+.settings-view .settings-app-info-grid {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-appearance {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-appearance-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-appearance-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-card {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-card-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog-layout {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-catalog-note {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-categories {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-categories-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-categories-title {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-category-editor {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-category-table-wrap {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-class-no-sismico {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-class-row {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-class-temblor {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-classes {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-editor {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-editor-actions {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-general {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-general-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-general-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-grid {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-app {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-environment {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-grid {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-header {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-heading {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-python {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-info-version {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-language-row {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-message {
+  --x: 0px;
+  --y: 0px;
+  --w: 0px;
+  --h: 0px;
+}
+.settings-view .settings-note {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-static-row {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-storage-row {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-table-wrap {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-theme-options {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .settings-view {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .theme-options {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+.settings-view .workspace-view {
+  --x: 0px;
+  --y: 0px;
+  --w: auto;
+  --h: auto;
+}
+
+
+/* Lienzo espacial de Ajustes: tarjetas principales con coordenadas absolutas,
+   siguiendo el modelo de regiones de ui/css/dataset.css. */
+.settings-grid {
+  display: block;
+  position: relative;
+  min-height: 1030px;
+}
+
+.settings-grid > .settings-appearance {
+  --x: 0px;
+  --y: 0px;
+  --w: calc(50% - 7px);
+  --h: 210px;
+}
+
+.settings-grid > .settings-general {
+  --x: calc(50% + 7px);
+  --y: 0px;
+  --w: calc(50% - 7px);
+  --h: 210px;
+}
+
+.settings-grid > .settings-catalog {
+  --x: 0px;
+  --y: 215px;
+  --w: 100%;
+  --h: 405px;
+}
+
+.settings-grid > .settings-info {
+  --x: 0px;
+  --y: 625px;
+  --w: 100%;
+  --h: 130px;
+}
+
+.settings-grid > .settings-card {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  margin: 0;
+  overflow: auto;
+}
+
+/* Elementos internos: desplazamiento y dimensiones independientes dentro
+   de su contenedor, conservando el flujo y la composición interna por defecto. */
+.settings-view [data-layout-ref] {
+  left: var(--x, 0px);
+  top: var(--y, 0px);
+  translate: none;
+  width: var(--w, auto);
+  height: var(--h, auto);
+}
+@media (max-width: 1050px) {
+  .settings-grid {
+    min-height: 1600px;
+  }
+  .settings-grid > .settings-appearance,
+  .settings-grid > .settings-general,
+  .settings-grid > .settings-catalog,
+  .settings-grid > .settings-info {
+    left: var(--x);
+    width: var(--w);
+  }
+  .settings-grid > .settings-general {
+    --x: 0px;
+    --y: 265px;
+    --w: 100%;
+  }
+  .settings-grid > .settings-catalog {
+    --y: 530px;
+    --h: 600px;
+  }
+  .settings-grid > .settings-info {
+    --y: 1200px;
+  }
+  .settings-grid > .settings-appearance {
+    --w: 100%;
+  }
+}
+
+
+/* Corrección de desbordamiento y lienzo adaptable de Ajustes */
+.settings-view.workspace-view {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+.settings-view,
+.settings-view *,
+.settings-view *::before,
+.settings-view *::after {
+  box-sizing: border-box;
+}
+
+.settings-grid {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 770px;
+  overflow: hidden;
+}
+
+.settings-grid > .settings-appearance {
+  --x: 0px;
+  --y: 0px;
+  --w: calc(50% - 7px);
+  --h: 210px;
+}
+.settings-grid > .settings-general {
+  --x: calc(50% + 7px);
+  --y: 0px;
+  --w: calc(50% - 7px);
+  --h: 210px;
+}
+.settings-grid > .settings-catalog {
+  --x: 0px;
+  --y: 215px;
+  --w: 100%;
+  --h: 405px;
+}
+.settings-grid > .settings-info {
+  --x: 0px;
+  --y: 625px;
+  --w: 100%;
+  --h: 130px;
+}
+
+.settings-grid > .settings-card {
+  max-width: 100%;
+  min-width: 0;
+  overflow: auto;
+}
+
+.settings-catalog-layout {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.5fr);
+}
+.settings-classes,
+.settings-categories,
+.settings-category-table-wrap {
+  min-width: 0;
+  max-width: 100%;
+}
+.settings-categories-heading {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.settings-categories-heading h3 {
+  min-width: 0;
+}
+.settings-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+.settings-table th:nth-child(1) { width: 25%; }
+.settings-table th:nth-child(2) { width: 42%; }
+.settings-table th:nth-child(3) { width: 15%; }
+.settings-table th:nth-child(4) { width: 18%; }
+.settings-table th,
+.settings-table td {
+  overflow-wrap: anywhere;
+}
+.settings-table td:last-child {
+  white-space: nowrap;
+}
+.settings-info-grid {
+  min-width: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1050px) {
+  .settings-grid {
+    min-height: 1600px;
+  }
+  .settings-grid > .settings-appearance,
+  .settings-grid > .settings-general,
+  .settings-grid > .settings-catalog,
+  .settings-grid > .settings-info {
+    left: var(--x);
+    width: var(--w);
+  }
+  .settings-grid > .settings-appearance {
+    --w: 100%;
+  }
+  .settings-grid > .settings-general {
+    --x: 0px;
+    --y: 215px;
+    --w: 100%;
+  }
+  .settings-grid > .settings-catalog {
+    --y: 430px;
+    --h: 600px;
+  }
+  .settings-grid > .settings-info {
+    --y: 1035px;
+    --h: 130px;
+  }
+  .settings-catalog-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+
+/* La tarjeta de información debe mostrar su contenido completo sin scroll interno. */
+.settings-grid {
+  min-height: 800px;
+}
+.settings-grid > .settings-info {
+  --y: 625px;
+  --h: 170px;
+  overflow: hidden;
+}
+.settings-view .settings-info-grid {
+  overflow: visible;
+}
+@media (max-width: 1050px) {
+  .settings-grid {
+    min-height: 1200px;
+  }
+  .settings-grid > .settings-info {
+    --y: 1035px;
+    --h: 150px;
+  }
+}
+
+
+/* El panel de subcategorías ocupa todo el ancho disponible; la tabla usa
+   el alto restante y desplaza sus filas internamente cuando sea necesario. */
+.settings-view .settings-catalog {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.settings-view .settings-catalog-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.5fr);
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+.settings-view .settings-categories {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+.settings-view .settings-category-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+.settings-view .settings-table {
+  display: table;
+  width: 100%;
+  min-width: 100%;
+  table-layout: fixed;
+}
+.settings-view .settings-table th,
+.settings-view .settings-table td {
+  overflow-wrap: anywhere;
+}
+.settings-view .settings-category-editor:not([hidden]) {
+  flex: 0 0 auto;
+  max-height: 45%;
+  overflow-y: auto;
+}
+@media (max-width: 1050px) {
+  .settings-view .settings-catalog-layout {
+    grid-template-columns: minmax(0, 1fr);
+    overflow: auto;
+  }
+  .settings-view .settings-categories {
+    min-height: 220px;
+  }
+  .settings-view .settings-category-table-wrap {
+    min-height: 140px;
+  }
+}
+
+
+/* Editor compacto: título, campos y acciones en una sola fila. */
+.settings-view .settings-category-editor:not([hidden]) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+  max-height: none;
+  overflow: visible;
+  padding: 10px 12px;
+}
+.settings-view .settings-category-editor h4 {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+}
+.settings-view .settings-category-editor label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
+}
+.settings-view .settings-category-editor input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 7px 9px;
+}
+.settings-view .settings-editor-actions {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  gap: 7px;
+  margin: 0;
+}
+.settings-view #settings-category-error {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .settings-view .settings-category-editor:not([hidden]) {
+    flex-wrap: wrap;
+  }
+  .settings-view .settings-category-editor label {
+    flex: 1 1 240px;
+  }
+  .settings-view .settings-category-editor h4 {
+    flex-basis: 100%;
+  }
+}
+
+
+/* Catálogo simplificado: solo nombre, estado y acciones. */
+.settings-view .settings-table th:nth-child(1) { width: 60%; }
+.settings-view .settings-table th:nth-child(2) { width: 18%; }
+.settings-view .settings-table th:nth-child(3) { width: 22%; }
+.settings-view .settings-category-editor:not([hidden]) label {
+  flex: 1 1 auto;
+}
+.settings-view .settings-category-editor input {
+  min-width: 180px;
+}
+
+
+/* Proporción y márgenes de la tarjeta inferior de información */
+.settings-grid {
+  min-height: 790px;
+}
+.settings-grid > .settings-info {
+  --x: 0px;
+  --y: 630px;
+  --w: 100%;
+  --h: 130px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+@media (max-width: 1050px) {
+  .settings-grid {
+    min-height: 1190px;
+  }
+  .settings-grid > .settings-info {
+    --y: 1035px;
+    --h: 140px;
+  }
+}
+
+
+/* Compactación de espacios internos en Ajustes */
+.settings-view {
+  padding: 2px;
+}
+.settings-view .settings-grid {
+  gap: 8px;
+}
+.settings-view .settings-card {
+  padding: 12px;
+}
+.settings-view .settings-card-header {
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.settings-view .settings-label {
+  margin-bottom: 5px;
+}
+.settings-view .settings-hint {
+  margin-top: 7px;
+}
+.settings-view .settings-note {
+  padding: 7px 10px;
+  margin-bottom: 8px;
+}
+.settings-view .settings-catalog-layout {
+  gap: 5px;
+}
+.settings-view .settings-classes,
+.settings-view .settings-categories {
+  padding: 5px;
+}
+.settings-view .settings-classes h3,
+.settings-view .settings-categories h3 {
+  margin-bottom: 6px;
+}
+.settings-view .settings-class-row {
+  gap: 7px;
+  padding: 8px 3px;
+}
+.settings-view .settings-categories-heading {
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.settings-view .settings-info-grid {
+  gap: 6px;
+}
+.settings-view .settings-info-grid > div {
+  gap: 3px;
+  padding: 5px 8px;
+}
+.settings-view .settings-static-row {
+  gap: 2px 8px;
+  padding: 7px 0;
+}
+.settings-view .settings-theme-options {
+  gap: 6px;
+}
+.settings-view .settings-theme-option {
+  gap: 6px;
+  padding: 9px 6px;
+}

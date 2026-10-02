@@ -1,5 +1,35 @@
 # SismoAI Trainer — Historial de versiones
 
+## [v0.8.0] — Ajustes y configuración de la aplicación
+
+**Fecha:** 2026-10-02  
+**Rama de integración:** `main`  
+**Rama de origen:** `fase-ajustes`  
+**Versión anterior:** 0.7.0  
+**Tipo:** MINOR
+
+**Justificación:** se incorpora el módulo Ajustes para administrar la presentación y preferencias generales de la aplicación, así como el catálogo de subcategorías de la clase NO_SISMICO.
+
+**Cambios**
+- **Added:** menú Ajustes integrado en la navegación, con secciones de Apariencia, Preferencias generales, Etiquetas y subcategorías e Información de la aplicación.
+- **Added:** selección de tema Claro, Oscuro o Sistema y persistencia de la preferencia para sesiones futuras.
+- **Added:** consulta de preferencias generales y almacenamiento de configuración local independiente de la carpeta del proyecto.
+- **Added:** administración de subcategorías de NO_SISMICO, con creación, edición, activación, desactivación y eliminación; las clases principales TEMBLOR (0) y NO_SISMICO (1) permanecen fijas.
+- **Changed:** formulario de subcategorías simplificado para solicitar únicamente el nombre; la tabla presenta nombre, estado y acciones.
+- **Changed:** eliminación de subcategorías mediante el diálogo de confirmación personalizado compartido con otros módulos.
+- **Changed:** distribución espacial del menú con dimensiones y posiciones editables mediante variables CSS `--x`, `--y`, `--w` y `--h`, ajuste adaptable al ancho disponible y reducción de padding y gaps.
+- **Changed:** panel de subcategorías expandido para aprovechar el área disponible, con desplazamiento vertical interno para listas extensas.
+
+**Verificación**
+- Fase validada y aprobada por el usuario en ejecución local.
+- No se declara una nueva ejecución automatizada de pruebas como parte de esta integración.
+
+**Compatibilidad**
+- Se mantienen las clases principales fijas y las subcategorías se aplican únicamente a NO_SISMICO.
+- La configuración de apariencia y preferencias se guarda para su uso en sesiones posteriores.
+
+---
+
 ## [v0.7.0] — Exportación y empaquetado para ESP32-S3
 
 **Fecha:** 2026-10-02  
