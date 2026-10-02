@@ -988,3 +988,23 @@
   border-top: 1px solid var(--color-border);
   background: var(--color-bg-hover);
 }
+.models-validation-dialog .models-dialog-header {
+  box-sizing: border-box;
+  min-height: 58px;
+}
+.models-validation-dialog .models-dialog-header > div {
+  display: grid;
+  gap: 3px;
+}
+.models-validation-dialog .models-dialog-header p {
+  margin: 0;
+  color: rgba(255,255,255,.88);
+  font-size: 12px;
+  line-height: 1.25;
+}
+.models-validation-dialog .models-dialog-header [data-validation-x] {
+  min-width: 34px;
+  padding: 4px 9px;
+  font-size: 22px;
+  line-height: 1;
+}
