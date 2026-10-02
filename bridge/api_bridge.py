@@ -2311,6 +2311,38 @@ class ApiBridge:
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
+    def export_model_pipeline(self, experiment_id: str, export_name: str,
+                              output_directory: str = "", verify: bool = True) -> dict:
+        """Run the complete ONNX -> INT8 -> Test evaluation -> bundle workflow."""
+        try:
+            registry = self.get_model_experiments()
+            if not registry.get("success"):
+                raise ValueError(registry.get("error", "No se pudo consultar Modelos."))
+            record = next((x for x in registry.get("experiments", [])
+                           if x.get("experiment_id") == str(experiment_id)), None)
+            if record is None:
+                raise ValueError("Experimento no encontrado.")
+            config = record.get("config") or {}
+            if config.get("architecture") != "1d_cnn":
+                raise ValueError("El flujo de exportación solo admite la arquitectura CNN 1D.")
+            onnx_result = self.export_model_onnx(experiment_id, export_name,
+                                                 output_directory, verify)
+            if not onnx_result.get("success"):
+                raise ValueError(onnx_result.get("error", "Falló la etapa ONNX."))
+            exported = onnx_result.get("export") or {}
+            from core.models.export_pipeline import run_post_onnx_stages
+            pipeline = run_post_onnx_stages(
+                exported["onnx_path"],
+                os.path.dirname(exported["onnx_path"]),
+                str(export_name).strip(),
+                self._dataset_path,
+                config,
+                exported["input_shape"][1:],
+            )
+            return {"success": True, "export": exported, "pipeline": pipeline}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
     def get_export_history(self) -> dict:
         """Read persisted ONNX export reports from the project's Modelos/exports folder."""
         try:
