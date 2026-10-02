@@ -90,8 +90,15 @@ def run_post_onnx_stages(onnx_path: str, output_dir: str, export_name: str,
     if str(manifest.get("dataset_id")) != str(expected_dataset_id):
         raise ValueError("El Dataset activo no corresponde al experimento entrenado.")
     x_cal, _ = _load_split_arrays(dataset_manifest_path, config, "train")
-    if tuple(x_cal.shape[1:]) != tuple(int(v) for v in expected_input_shape):
-        raise ValueError("La forma de calibración no coincide con el modelo.")
+    expected = tuple(int(v) for v in expected_input_shape)
+    actual = tuple(int(v) for v in x_cal.shape[1:])
+    if actual != expected:
+        raise ValueError(
+            "Dimensiones incompatibles para calibración INT8: Dataset Train "
+            + str(actual) + " (canales, puntos), modelo ONNX "
+            + str(expected) + " (canales, puntos). "
+            "Revisa la selección de sensores y la configuración del experimento."
+        )
     count = max(1, min(int(calibration_count), len(x_cal)))
     indices = np.linspace(0, len(x_cal)-1, count, dtype=np.int64)
     x_cal = x_cal[indices]
