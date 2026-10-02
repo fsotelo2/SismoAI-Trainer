@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('ui', 'ui')]
+datas = [('../ui', 'ui')]
 binaries = []
 hiddenimports = ['webview', 'webview.platforms.edgechromium']
 for package in ['numpy', 'scipy', 'torch', 'onnx', 'onnxruntime', 'onnxscript']:
@@ -11,8 +11,8 @@ for package in ['numpy', 'scipy', 'torch', 'onnx', 'onnxruntime', 'onnxscript']:
     hiddenimports += h
 
 a = Analysis(
-    ['main.py'],
-    pathex=['.'],
+    ['../main.py'],
+	pathex=['..'],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
