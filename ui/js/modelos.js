@@ -343,9 +343,9 @@
     const ok = !error && !!result?.success;
     const architecture = result?.architecture || "—";
     dlg.innerHTML =
-      '<form method="dialog" class="models-dialog-header"><h2>' +
+      '<div class="models-dialog-header"><div><h2>Resultado de validación</h2><p>' +
       (ok ? "Validación completada" : "Validación fallida") +
-      '</h2><button class="btn btn-secondary" aria-label="Cerrar">Cerrar</button></form>' +
+      '</p></div><button class="btn btn-secondary" type="button" aria-label="Cerrar" data-validation-x>×</button></div>' +
       (ok
         ? '<div class="models-validation-summary"><div><span>Arquitectura</span><strong>' +
           esc(names[architecture] || architecture) +
@@ -361,6 +361,7 @@
         : '<p class="models-validation-error">' + esc(error || result?.error || "La validación no se completó.") + '</p>') +
       '<footer class="models-validation-footer"><button class="btn btn-primary" type="button" data-validation-close>Aceptar</button></footer>';
     dlg.querySelector("[data-validation-close]")?.addEventListener("click", () => dlg.close());
+    dlg.querySelector("[data-validation-x]")?.addEventListener("click", () => dlg.close());
     dlg.showModal();
   }
   async function validateExperiment(id) {
