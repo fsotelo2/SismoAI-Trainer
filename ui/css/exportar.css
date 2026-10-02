@@ -237,3 +237,7 @@
 @media (max-width: 680px) {
   .export-grid { grid-template-columns:1fr; }
 }
+
+.export-status-ok { color: #059669; font-weight: 600; }
+.export-pipeline-step.complete b { background: #16a34a; color: #fff; }
+#export-history-body .btn { padding: 3px 8px; font-size: 11px; }
