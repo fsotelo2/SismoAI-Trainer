@@ -719,3 +719,134 @@
     --w: 100%;
   }
 }
+
+
+/* Corrección de desbordamiento y lienzo adaptable de Ajustes */
+.settings-view.workspace-view {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+.settings-view,
+.settings-view *,
+.settings-view *::before,
+.settings-view *::after {
+  box-sizing: border-box;
+}
+
+.settings-grid {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 770px;
+  overflow: hidden;
+}
+
+.settings-grid > .settings-appearance {
+  --x: 0px;
+  --y: 0px;
+  --w: calc(50% - 7px);
+  --h: 210px;
+}
+.settings-grid > .settings-general {
+  --x: calc(50% + 7px);
+  --y: 0px;
+  --w: calc(50% - 7px);
+  --h: 210px;
+}
+.settings-grid > .settings-catalog {
+  --x: 0px;
+  --y: 215px;
+  --w: 100%;
+  --h: 405px;
+}
+.settings-grid > .settings-info {
+  --x: 0px;
+  --y: 625px;
+  --w: 100%;
+  --h: 130px;
+}
+
+.settings-grid > .settings-card {
+  max-width: 100%;
+  min-width: 0;
+  overflow: auto;
+}
+
+.settings-catalog-layout {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.5fr);
+}
+.settings-classes,
+.settings-categories,
+.settings-category-table-wrap {
+  min-width: 0;
+  max-width: 100%;
+}
+.settings-categories-heading {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.settings-categories-heading h3 {
+  min-width: 0;
+}
+.settings-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+.settings-table th:nth-child(1) { width: 25%; }
+.settings-table th:nth-child(2) { width: 42%; }
+.settings-table th:nth-child(3) { width: 15%; }
+.settings-table th:nth-child(4) { width: 18%; }
+.settings-table th,
+.settings-table td {
+  overflow-wrap: anywhere;
+}
+.settings-table td:last-child {
+  white-space: nowrap;
+}
+.settings-info-grid {
+  min-width: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1050px) {
+  .settings-grid {
+    min-height: 1600px;
+  }
+  .settings-grid > .settings-appearance,
+  .settings-grid > .settings-general,
+  .settings-grid > .settings-catalog,
+  .settings-grid > .settings-info {
+    left: var(--x);
+    width: var(--w);
+  }
+  .settings-grid > .settings-appearance {
+    --w: 100%;
+  }
+  .settings-grid > .settings-general {
+    --x: 0px;
+    --y: 215px;
+    --w: 100%;
+  }
+  .settings-grid > .settings-catalog {
+    --y: 430px;
+    --h: 600px;
+  }
+  .settings-grid > .settings-info {
+    --y: 1035px;
+    --h: 130px;
+  }
+  .settings-catalog-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
