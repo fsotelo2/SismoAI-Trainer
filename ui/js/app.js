@@ -566,6 +566,14 @@ const App = (() => {
         });
       });
 
+      if (currentView === "ajustes") {
+        activeView
+          .querySelectorAll("div, section, article, header, footer, aside, main, form, fieldset")
+          .forEach((element) => {
+            setLayoutLabel(element, getElementSelector(element), false, false);
+          });
+      }
+
       activeView.querySelectorAll(LAYOUT_CONTENT).forEach((element) => {
         setLayoutLabel(element, getElementSelector(element), true, false);
       });
