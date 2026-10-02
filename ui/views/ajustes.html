@@ -4,9 +4,9 @@
       <header class="settings-card-header"><span class="settings-icon settings-appearance-icon blue">◐</span><div><h2>Apariencia</h2><p>Configura el tema visual de la aplicación.</p></div></header>
       <label class="settings-label settings-theme-label">Tema de la aplicación</label>
       <div class="theme-options settings-theme-options" role="group" aria-label="Tema de la aplicación">
-        <button class="theme-option settings-theme-light selected" data-settings-theme="light" type="button"><span>☀</span> Claro</button>
-        <button class="theme-option settings-theme-dark" data-settings-theme="dark" type="button"><span>☾</span> Oscuro</button>
-        <button class="theme-option settings-theme-system" data-settings-theme="system" type="button"><span>▣</span> Sistema</button>
+        <button class="settings-theme-light theme-option selected" data-settings-theme="light" type="button"><span>☀</span> Claro</button>
+        <button class="settings-theme-dark theme-option" data-settings-theme="dark" type="button"><span>☾</span> Oscuro</button>
+        <button class="settings-theme-system theme-option" data-settings-theme="system" type="button"><span>▣</span> Sistema</button>
       </div>
       <p class="settings-hint settings-classes-hint">La preferencia se guarda para futuras sesiones.</p>
     </section>
@@ -28,13 +28,13 @@
           <p class="settings-hint settings-catalog-hint">Las clases principales no se pueden modificar.</p>
         </div>
         <div class="settings-categories">
-          <div class="settings-categories-heading settings-categories-title"><h3>Subcategorías de NO_SISMICO</h3><button class="btn btn-outline btn-sm settings-add-category-button" data-settings-action="add-category" type="button">＋ Agregar subcategoría</button></div>
+          <div class="settings-categories-heading settings-categories-title"><h3>Subcategorías de NO_SISMICO</h3><button class="settings-add-category-button btn btn-outline btn-sm" data-settings-action="add-category" type="button">＋ Agregar subcategoría</button></div>
           <div class="settings-table-wrap settings-category-table-wrap"><table class="settings-table"><thead><tr><th>Nombre</th><th>Descripción</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="settings-category-rows"><tr><td colspan="4">Cargando catálogo…</td></tr></tbody></table></div>
           <div id="settings-category-editor" class="settings-editor settings-category-editor" hidden>
             <h4 id="settings-editor-title">Nueva subcategoría</h4>
             <label>Nombre<input id="settings-category-name" class="settings-category-name-input" maxlength="40" placeholder="Ej. MAQUINARIA"></label>
             <label>Descripción<input id="settings-category-description" class="settings-category-description-input" maxlength="160" placeholder="Descripción de uso"></label>
-            <div class="settings-editor-actions"><button class="btn btn-secondary btn-sm settings-cancel-category-button" data-settings-action="cancel-category" type="button">Cancelar</button><button class="btn btn-primary btn-sm settings-save-category-button" data-settings-action="save-category" type="button">Guardar</button></div>
+            <div class="settings-editor-actions"><button class="settings-cancel-category-button btn btn-secondary btn-sm" data-settings-action="cancel-category" type="button">Cancelar</button><button class="settings-save-category-button btn btn-primary btn-sm" data-settings-action="save-category" type="button">Guardar</button></div>
             <p id="settings-category-error" role="status"></p>
           </div>
         </div>
